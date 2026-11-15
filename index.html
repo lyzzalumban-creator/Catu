@@ -3259,6 +3259,27 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
   ['pointerup','pointercancel','scroll'].forEach(n=>addEventListener(n,hide,true));
   document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.ws3-bar'))e.preventDefault()});
 })();
+/* pembaruan otomatis: saat dibuka (atau kembali ke aplikasi), cek versi terbaru di server; kalau beda, muat ulang.
+   Hanya menyimpan sidik jari versi di kunci 'catu.ver'; data keuangan ('kantong.v1') tidak disentuh. */
+(function(){
+  if(!/^https?:$/.test(location.protocol))return;
+  let busy=false,lastCheck=0;
+  const hash=t=>{let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return String(h>>>0)};
+  async function check(){
+    if(busy||Date.now()-lastCheck<30000)return;busy=true;lastCheck=Date.now();
+    try{
+      const r=await fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      const h=hash(await r.text());let old=null;
+      try{old=localStorage.getItem('catu.ver')}catch(e){}
+      try{localStorage.setItem('catu.ver',h)}catch(e){}
+      if(old&&old!==h&&!(typeof ui!=='undefined'&&ui.sheet)){
+        const u=new URL(location.href);u.searchParams.set('v',h);location.replace(u.toString());
+      }
+    }catch(e){}finally{busy=false}
+  }
+  check();
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
+})();
 </script>
 </body>
 </html>
