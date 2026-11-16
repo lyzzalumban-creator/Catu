@@ -473,10 +473,42 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 /* analitik */
 .mnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .mnav b{font-size:17px}
+.seg2{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--s2);border-radius:99px;padding:4px}
+.seg2-t{position:absolute;left:4px;top:4px;bottom:4px;width:calc(50% - 4px);border-radius:99px;background:var(--acc);transition:transform .4s var(--emph)}
+.seg2.r .seg2-t{transform:translateX(100%);transition:transform .5s var(--spring)}
+.seg2 button{position:relative;height:40px;font-weight:650;color:var(--mute);transition:color .25s var(--emph)}
+.seg2 button.on{color:var(--acc-ink);font-weight:700}
+.dn-w{position:relative;width:236px;margin:16px auto 12px}
+.dseg{transition:opacity .35s var(--emph),stroke-width .35s var(--emph)}
+.dseg.on{transition:opacity .35s var(--emph),stroke-width .5s var(--spring);stroke-width:17}
+.dn-w.has-sel .dseg:not(.on){opacity:.28}
+.dhit{cursor:pointer;pointer-events:stroke}
+.donut.draw .dseg{animation:dsd .9s var(--emph) both;animation-delay:calc(var(--i)*70ms)}
+@keyframes dsd{from{stroke-dasharray:.01 480}}
+.donut-c .dc-a,.donut-c .dc-b{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transition:opacity .3s var(--emph),transform .35s var(--emph)}
+.donut-c .dc-b{opacity:0;transform:translateY(5px);pointer-events:none}
+.dn-w.has-sel .dc-a{opacity:0;transform:translateY(-5px)}
+.dn-w.has-sel .dc-b{opacity:1;transform:none}
+.dcb-n{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:650}.dcb-n i{width:9px;height:9px;border-radius:50%;flex:none}
+.dc-b b{font-size:21px;font-weight:750;letter-spacing:-.02em}.dc-b small{font-size:12px;color:var(--mute)}
+.lg2-w{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 2px;margin:12px 0 2px}
+.lg2{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tx2);padding:8px 9px;border-radius:99px;transition:background .3s var(--emph),color .3s var(--emph),opacity .3s var(--emph),transform .35s var(--spring)}
+.lg2 i{width:9px;height:9px;border-radius:50%;flex:none}.lg2 b{color:var(--mute);font-weight:600}
+.lg2:active{transform:scale(.95)}
+@media(max-width:350px){.st{padding:0 8px}.st b{font-size:13px}.st span{font-size:11.5px}}
+.lg2.on{background:var(--s3);color:var(--tx);font-weight:650}.lg2.on b{color:var(--tx2)}
+.an-draw .pbar i{transform-origin:left;animation:wsg .8s var(--emph) both}
+.grp{transition:background .3s var(--emph)}
+.grp.on{background:color-mix(in srgb,var(--rc) 10%,transparent);margin:0 -16px;padding:0 16px;border-radius:20px}
+.sub-w{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.grp.open .sub-w{grid-template-rows:1fr;transition:grid-template-rows .5s var(--spring)}
+.sub-in{min-height:0;overflow:hidden}
+.cat-h .chev{transition:transform .4s var(--emph)}.cat-h .chev.o{transition:transform .5s var(--spring)}
+@media (prefers-reduced-motion:reduce){.seg2-t,.seg2.r .seg2-t,.dseg,.dseg.on,.sub-w,.grp.open .sub-w,.cat-h .chev,.cat-h .chev.o,.donut-c .dc-a,.donut-c .dc-b{transition-duration:1ms}.donut.draw .dseg,.an-draw .pbar i{animation:none}}
 .donut-w{position:relative;width:256px;margin:10px auto 12px}
 .donut{display:block;width:100%}
 .donut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.donut-c b{font-size:17px;font-weight:750;letter-spacing:-.02em}
+.donut-c b{font-size:21px;font-weight:750;letter-spacing:-.02em}
 .donut-c small{font-size:12px;color:var(--mute)}
 .stats{display:grid;grid-template-columns:1fr 1fr 1fr;margin:16px 0 4px;background:var(--s2);border-radius:var(--r-lg);padding:14px 0}
 .st{padding:0 12px;min-width:0;border-left:1px solid var(--line2)}.st:first-child{border-left:0}
@@ -895,8 +927,8 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 /* gerak kalender: sama dengan grup dompet di kartu (pegas .5s, grid-rows) dan tanpa animasi ulang tiap render */
 .mcal.cm-swap .cg,.mcal.cm-swap .cw{animation:cpfade .32s var(--emph) both}
 @keyframes cpfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.cpw{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}
-.cpw.open{grid-template-rows:1fr}
+.cpw{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.cpw.open{grid-template-rows:1fr;transition:grid-template-rows .5s var(--spring)}
 .cpi{min-height:0;overflow:hidden;padding-top:10px}
 .cpw{scroll-margin-bottom:110px}
 .cm-s .cd{min-height:66px;padding-top:6px}
@@ -917,10 +949,13 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .dh3 .dtn{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--mute);white-space:nowrap}
 .dh3 .dt small{display:flex;flex-wrap:wrap;gap:1px 10px}
 .dh3 .dsp{white-space:nowrap}
-.md-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}
+.md-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.md.open .md-b{transition:grid-template-rows .5s var(--spring)}
+.dh3 .chev,.chd .chev{transition:transform .4s var(--emph)}
+.dh3 .chev.o,.chd .chev.o{transition:transform .5s var(--spring)}
 .md.open .md-b{grid-template-rows:1fr}
 .md-in{min-height:0;overflow:hidden}
-@media (prefers-reduced-motion:reduce){.md-b,.cpw,.cd.has{transition-duration:1ms}.cpanel,.mcal.cm-swap .cg,.mcal.cm-swap .cw{animation:none}}
+@media (prefers-reduced-motion:reduce){.md-b,.md.open .md-b,.cpw,.cpw.open,.cd.has,.dh3 .chev,.chd .chev,.dh3 .chev.o,.chd .chev.o{transition-duration:1ms}.cpanel,.mcal.cm-swap .cg,.mcal.cm-swap .cw{animation:none}}
 .dh2{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px;font-size:12px;color:var(--mute);font-weight:600}
 .dh2 b{font-weight:600;font-variant-numeric:tabular-nums}
 .tr2 .lm b{white-space:nowrap}
@@ -1086,7 +1121,7 @@ const IC={
 /* ============ data & akuntansi ============ */
 let S=null,D={bal:{},debt:{}};
 const ui={view:'home',wlSel:'',range:30,sheet:null,flow:null,pay:null,gest:null,xfer:null,form:null,backup:null,accd:null,amt:{expr:''},
-  mutN:40,mutF:'all',mutDay:{},mutSel:'',calFull:false,mg:'wallet',sync:'local',an:{y:new Date().getFullYear(),m:new Date().getMonth(),type:'exp'}};
+  mutN:40,mutF:'all',mutDay:{},mutSel:'',calFull:false,anSel:'',anDrawn:'',mg:'wallet',sync:'local',an:{y:new Date().getFullYear(),m:new Date().getMonth(),type:'exp'}};
 
 function effect(t,bal,debt,sg){
   const a=t.amt*sg;
@@ -2296,27 +2331,45 @@ function setReadout(i,scrub){
 
 /* ---- analitik ---- */
 const isExpT=t=>t.t==='exp'||t.t==='gfee',isIncT=t=>t.t==='inc';
-function donut(rows,total){
-  /* potongan tebal bersudut membulat dengan celah, seperti referensi */
-  const C=80,RO=78,RI=50,CR=6,GAP=4.5,TAU=Math.PI*2;
-  const pt=(r,a)=>[(C+r*Math.sin(a)).toFixed(2),(C-r*Math.cos(a)).toFixed(2)];
-  let out='';
-  if(total&&rows.length===1){
-    out=`<path fill-rule="evenodd" fill="${rows[0].color}" d="M${C} ${C-RO}A${RO} ${RO} 0 1 1 ${C-.01} ${C-RO}ZM${C} ${C-RI}A${RI} ${RI} 0 1 0 ${C+.01} ${C-RI}Z"/>`;
+/* donat: cincin tipis bertepi bulat; kategori <3% (atau di luar 6 teratas) digabung jadi "Lainnya".
+   Tiap segmen punya lingkaran sentuh yang lebih lebar supaya mudah diketuk. */
+let AN=null;
+const AN_OTHER='#5B5B66';
+function anSegs(rows,total){
+  let big=rows.filter((r,i)=>i<6&&total&&r.total/total>=.03),rest=rows.filter(r=>!big.includes(r));
+  if(rest.length===1){big.push(rest[0]);rest=[]}
+  big.sort((a,b)=>b.total-a.total);
+  const segs=big.map(r=>({k:r.k,name:r.cat?r.cat.name:'Tanpa kategori',total:r.total,color:r.color}));
+  rest.forEach(r=>{r.color=AN_OTHER;r.og=1});
+  if(rest.length)segs.push({k:'_o',name:'Lainnya',total:rest.reduce((a,r)=>a+r.total,0),color:AN_OTHER});
+  return segs;
+}
+const anPct=(v,t)=>{if(!t)return'0%';const p=v/t*100;return p<1?'<1%':Math.round(p)+'%'};
+function donut(segs,total,draw){
+  const R=76,SW=12,GAP=3,C=2*Math.PI*R;let out=`<circle cx="100" cy="100" r="${R}" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="${SW}"/>`;
+  if(total&&segs.length===1){
+    out+=`<circle class="dseg" data-c="${esc(segs[0].k)}" cx="100" cy="100" r="${R}" fill="none" stroke="${segs[0].color}" stroke-width="${SW}" style="--i:0"/>`;
+    out+=`<circle class="dhit" data-action="ansel" data-arg="${esc(segs[0].k)}" cx="100" cy="100" r="${R}" fill="none" stroke="transparent" stroke-width="30"/>`;
   }else if(total){
-    let a0=0;
-    rows.forEach(r=>{
-      const sw=r.total/total*TAU,s0=a0,s1=a0+sw;a0=s1;
-      const ro=RO-CR,ri=RI+CR,go=(GAP/2+CR)/ro,gi=(GAP/2+CR)/ri;
-      let ao0=s0+go,ao1=s1-go,ai0=s0+gi,ai1=s1-gi;
-      if(ao1<=ao0){const m=(s0+s1)/2;ao0=ao1=ai0=ai1=m}   /* potongan sangat kecil jadi bulatan kecil */
-      const big=(x,y)=>(y-x)>Math.PI?1:0,p1=pt(ro,ao0),p2=pt(ro,ao1),p3=pt(ri,ai1),p4=pt(ri,ai0);
-      out+=`<path d="M${p1}A${ro} ${ro} 0 ${big(ao0,ao1)} 1 ${p2}L${p3}A${ri} ${ri} 0 ${big(ai0,ai1)} 0 ${p4}Z" fill="${r.color}" stroke="${r.color}" stroke-width="${CR*2}" stroke-linejoin="round"/>`;
-    });
-  }else{
-    out=`<path fill-rule="evenodd" fill="var(--s3)" d="M${C} ${C-RO}A${RO} ${RO} 0 1 1 ${C-.01} ${C-RO}ZM${C} ${C-RI}A${RI} ${RI} 0 1 0 ${C+.01} ${C-RI}Z"/>`;
+    let a=0,hits='';
+    segs.forEach((g,i)=>{const len=g.total/total*C,dash=Math.max(.01,len-SW-GAP),off=-(a+SW/2+GAP/2);
+      out+=`<circle class="dseg" data-c="${esc(g.k)}" cx="100" cy="100" r="${R}" fill="none" stroke="${g.color}" stroke-width="${SW}" stroke-linecap="round" stroke-dasharray="${dash.toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}" style="--i:${i};--d:${dash.toFixed(2)}"/>`;
+      hits+=`<circle class="dhit" data-action="ansel" data-arg="${esc(g.k)}" cx="100" cy="100" r="${R}" fill="none" stroke="transparent" stroke-width="30" stroke-dasharray="${len.toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-a).toFixed(2)}"/>`;
+      a+=len});
+    out+=hits;
   }
-  return`<svg viewBox="0 0 160 160" class="donut" aria-hidden="true">${out}</svg>`;
+  return`<svg viewBox="0 0 200 200" class="donut ${draw?'draw':''}" aria-hidden="true">${out}</svg>`;
+}
+function anCenterB(g){return`<span class="dcb-n"><i style="background:${g.color}"></i>${esc(g.name)} · ${anPct(g.total,AN.total)}</span><b class="num">${money(g.total)}</b><small>dari ${money(AN.total)}</small>`}
+/* pilih segmen: perbarui kelas dan teks tengah saja, tanpa menggambar ulang */
+const anAllLabel=()=>{const b=document.querySelector('[data-action="tgcall"]');if(b)b.textContent=document.querySelector('.grp[data-ck].open')?'Tutup semua':'Buka semua'};
+function anSelSync(){
+  const w=$('.dn-w');if(!w||!AN)return;const k=ui.anSel,g=AN.segs.find(x=>x.k===k);
+  w.classList.toggle('has-sel',!!g);
+  w.querySelectorAll('.dseg').forEach(e=>e.classList.toggle('on',!!g&&e.dataset.c===k));
+  document.querySelectorAll('.lg2').forEach(e=>e.classList.toggle('on',!!g&&e.dataset.c===k));
+  if(g)w.querySelector('.dc-b').innerHTML=anCenterB(g);
+  document.querySelectorAll('.grp[data-ck]').forEach(e=>e.classList.toggle('on',!!g&&(e.dataset.ck===k||(k==='_o'&&!!e.dataset.og))));
 }
 /* ---- laporan: grafik arus kas (masuk vs keluar) ---- */
 const AR=[[30,'1 Bln'],[90,'3 Bln'],[180,'6 Bln'],[365,'1 Thn'],[0,'Semua']];
@@ -2416,20 +2469,24 @@ VIEWS.an=function(){
   list.forEach(t=>{const k=t.cat||'_';const o=map[k]||(map[k]={total:0,subs:{}});o.total+=t.amt;const sn=t.sub||'Umum';o.subs[sn]=(o.subs[sn]||0)+t.amt});
   const rows=Object.keys(map).map(k=>{const cat=S.cats.find(c=>c.id===k);return{k,cat,color:'',...map[k]}}).sort((a,b)=>b.total-a.total);
   rows.forEach((r,i)=>r.color=rampCol(A.type,i,rows.length));
+  const segs=anSegs(rows,total),dkey=key+A.type,draw=ui.anDrawn!==dkey;ui.anDrawn=dkey;
+  if(ui.anSel&&!segs.some(g=>g.k===ui.anSel))ui.anSel='';
+  AN={segs,total};const selG=segs.find(g=>g.k===ui.anSel),totTxt=money(total);
   const mx=rows.length?rows[0].total:1,anyOpen=rows.some(r=>!S.settings.anCollapsed[r.k]),dl=total-ptot;
   const now=new Date(),isCur=A.y===now.getFullYear()&&A.m===now.getMonth(),days=isCur?now.getDate():new Date(A.y,A.m+1,0).getDate();
   const dtxt=ptot>0?`${dl>=0?'Naik':'Turun'} ${money(Math.abs(dl))} dari ${MON[pm.getMonth()]}`:'Belum ada data bulan sebelumnya';
-  return`${anFlowBlk()}<section class="blk">
+  return`${anFlowBlk()}<section class="blk ${draw?'an-draw':''}">
     <div class="mnav"><button class="ibtn sm" data-action="anprev" aria-label="Bulan sebelumnya">${IC.back}</button><b>${MON[A.m]} ${A.y}</b><button class="ibtn sm" data-action="annext" aria-label="Bulan berikutnya">${IC.fwd}</button></div>
-    <div class="bgroup" role="group" style="margin-top:0"><button class="${A.type==='exp'?'on':''}" data-action="antype" data-arg="exp">Pengeluaran</button><button class="${A.type==='inc'?'on':''}" data-action="antype" data-arg="inc">Pemasukan</button></div>
-    <div class="donut-w">${donut(rows,total)}<div class="donut-c"><small>Total ${A.type==='exp'?'keluar':'masuk'}</small><b class="num" ${mv('dt:'+A.type,total)}>${money(total)}</b><small>${rows.length} kategori</small></div></div>
+    <div class="seg2 ${A.type==='inc'?'r':''}" role="group" aria-label="Jenis"><span class="seg2-t"></span><button class="${A.type==='exp'?'on':''}" data-action="antype" data-arg="exp" data-t="exp">Pengeluaran</button><button class="${A.type==='inc'?'on':''}" data-action="antype" data-arg="inc" data-t="inc">Pemasukan</button></div>
+    <div class="dn-w ${selG?'has-sel':''}">${donut(segs,total,draw)}<div class="donut-c"><div class="dc-a"><small>Total ${A.type==='exp'?'keluar':'masuk'}</small><b class="num" ${totTxt.length>13?'style="font-size:17px" ':''}${mv('dt:'+A.type,total)}>${totTxt}</b><small>${rows.length} kategori</small></div><div class="dc-b">${selG?anCenterB(selG):''}</div></div></div>
     <p class="dchip ${ptot>0?((dl>=0)===(A.type==='exp')?'bad':'good'):''}">${ptot>0?`<i>${dl>=0?'▲':'▼'}</i>`:''}${esc(dtxt)}</p>
+    ${segs.length?`<div class="lg2-w">${segs.map(g=>`<button class="lg2 ${selG&&selG.k===g.k?'on':''}" data-action="ansel" data-arg="${esc(g.k)}" data-c="${esc(g.k)}" aria-pressed="${!!selG&&selG.k===g.k}"><i style="background:${g.color}"></i>${esc(g.name)}<b>${anPct(g.total,total)}</b></button>`).join('')}</div>`:''}
     <div class="stats"><div class="st"><span>Masuk</span><b class="pos" ${mv('si',inc)}>${priv()?money(inc):cpRp(inc)}</b></div><div class="st"><span>Keluar</span><b ${mv('sx',ex)}>${priv()?money(ex):cpRp(ex)}</b></div><div class="st"><span>Rata-rata/hari</span><b>${priv()?money(ex/days):cpRp(ex/days)}</b></div></div>
   </section>
   <section class="blk"><div class="blk-h"><h2>Per kategori</h2><button class="tbtn" data-action="tgcall">${anyOpen?'Tutup semua':'Buka semua'}</button></div><div class="surface">
-    ${rows.map(r=>{const open=!S.settings.anCollapsed[r.k],pc=total?Math.round(r.total/total*100):0;
-      return`<div class="grp"><button class="cat-h" data-action="tgc" data-id="${esc(r.k)}"><div class="cat-l">${catIcon(r.cat,38)}<span class="lm"><b>${r.cat?esc(r.cat.name):'Tanpa kategori'}</b></span><span class="p">${pc}%</span><span class="lr"><b>${money(r.total)}</b></span>${chev(open)}</div><div class="pbar"><i style="width:${(r.total/mx*100).toFixed(1)}%;background:${r.color}"></i></div></button>
-      ${open?Object.keys(r.subs).sort((a,b)=>r.subs[b]-r.subs[a]).map(s=>`<div class="sub-r"><span>${esc(s)}</span><span class="num">${money(r.subs[s])}</span></div>`).join('')+'<div style="height:8px"></div>':''}</div>`}).join('')||'<p class="empty">Belum ada data di bulan ini.</p>'}
+    ${rows.map(r=>{const open=!S.settings.anCollapsed[r.k],pc=total?Math.round(r.total/total*100):0,on=!!selG&&(selG.k===r.k||(selG.k==='_o'&&r.og));
+      return`<div class="grp ${open?'open':''} ${on?'on':''}" data-ck="${esc(r.k)}" ${r.og?'data-og="1" ':''}style="--rc:${r.color}"><button class="cat-h" data-action="tgc" data-id="${esc(r.k)}" aria-expanded="${open}"><div class="cat-l">${catIcon(r.cat,38)}<span class="lm"><b>${r.cat?esc(r.cat.name):'Tanpa kategori'}</b></span><span class="p">${pc}%</span><span class="lr"><b>${money(r.total)}</b></span>${chev(open)}</div><div class="pbar"><i style="width:${total?(r.total/total*100).toFixed(1):0}%;background:${r.color}"></i></div></button>
+      <div class="sub-w"><div class="sub-in">${Object.keys(r.subs).sort((a,b)=>r.subs[b]-r.subs[a]).map(sn=>`<div class="sub-r"><span>${esc(sn)}</span><span class="num">${money(r.subs[sn])}</span></div>`).join('')}<div style="height:8px"></div></div></div></div>`}).join('')||'<p class="empty">Belum ada data di bulan ini.</p>'}
   </div></section>`;
 };
 
@@ -3124,22 +3181,32 @@ const A={
   sigpre(el,arg){S.settings.sigMin=+arg;persist();render()},
   sigdemo(){askSign(S.settings.sigMin,null,true)},
   sigcancel(){closeSign()},
-  nav(el,arg){ui.view=arg;if(ui.sheet)closeSheet();render();window.scrollTo(0,0)},
+  nav(el,arg){ui.view=arg;if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0)},
   'gestun-tog'(){S.settings.gestun=!gestOn();if(!S.settings.gestun&&ui.mutF==='gest')ui.mutF='all';persist();render();if(ui.sheet)renderSheet()},
   privacy(){S.settings.privacy=!S.settings.privacy;persist();render();if(ui.sheet)renderSheet()},
   range(el,arg){ui.range=+arg;render()},
   arange(el,arg){ui.arange=+arg;render()},
   tg(el,arg,id){S.settings.collapsed[id]=!S.settings.collapsed[id];persist();const n=document.getElementById('wg-'+id);if(n){const o=!S.settings.collapsed[id];n.classList.toggle('open',o);n.querySelector('.wg-h').setAttribute('aria-expanded',o);const c=n.querySelector('.chev');if(c)c.classList.toggle('o',o);const any=S.groups.some(g=>!S.settings.collapsed[g.id]);document.querySelectorAll('[data-action="tgall"]').forEach(b=>b.textContent=any?'Tutup semua':'Buka semua')}else render()},
   tgall(el){const any=S.groups.some(g=>!S.settings.collapsed[g.id]);S.groups.forEach(g=>{S.settings.collapsed[g.id]=any;const n=document.getElementById('wg-'+g.id);if(n){n.classList.toggle('open',!any);const c=n.querySelector('.chev');if(c)c.classList.toggle('o',!any)}});persist();if(el)el.textContent=any?'Buka semua':'Tutup semua'},
-  tgc(el,arg,id){S.settings.anCollapsed[id]=!S.settings.anCollapsed[id];persist();render()},
-  tgcall(){
-    const key=ui.an.y+'-'+pad(ui.an.m+1),ids={},f=ui.an.type==='exp'?isExpT:isIncT;
-    S.tx.filter(t=>t.d.startsWith(key)&&f(t)).forEach(t=>ids[t.cat||'_']=1);
-    const ks=Object.keys(ids),any=ks.some(k=>!S.settings.anCollapsed[k]);ks.forEach(k=>S.settings.anCollapsed[k]=any);persist();render();
+  tgc(el,arg,id){
+    S.settings.anCollapsed[id]=!S.settings.anCollapsed[id];const open=!S.settings.anCollapsed[id],g=el.closest('.grp');
+    if(g){g.classList.toggle('open',open);el.setAttribute('aria-expanded',open);const c=el.querySelector('.chev');if(c)c.classList.toggle('o',open)}
+    persist();anAllLabel();
   },
-  anprev(){const a=ui.an;a.m--;if(a.m<0){a.m=11;a.y--}render()},
-  annext(){const a=ui.an;a.m++;if(a.m>11){a.m=0;a.y++}render()},
-  antype(el,arg){ui.an.type=arg;render()},
+  tgcall(){
+    const gs=[...document.querySelectorAll('.grp[data-ck]')],any=gs.some(g=>g.classList.contains('open'));
+    gs.forEach(g=>{const k=g.dataset.ck;S.settings.anCollapsed[k]=any;g.classList.toggle('open',!any);const b=g.querySelector('.cat-h');if(b)b.setAttribute('aria-expanded',!any);const c=g.querySelector('.chev');if(c)c.classList.toggle('o',!any)});
+    persist();anAllLabel();
+  },
+  anprev(){const a=ui.an;a.m--;if(a.m<0){a.m=11;a.y--}ui.anSel='';render()},
+  annext(){const a=ui.an;a.m++;if(a.m>11){a.m=0;a.y++}ui.anSel='';render()},
+  antype(el,arg){
+    if(ui.an.type===arg)return;const g=el.closest('.seg2'),go=()=>{ui.an.type=arg;ui.anSel='';render()};
+    if(!g||RM())return go();
+    g.classList.toggle('r',arg==='inc');g.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===arg));
+    clearTimeout(ui._antm);ui._antm=setTimeout(go,240);
+  },
+  ansel(el,arg){ui.anSel=ui.anSel===arg?'':arg;anSelSync()},
   mutmore(){ui.mutN+=40;render()},
   mutf(el,arg){ui.mutF=arg;ui.mutN=40;ui.mutDay={};render()},
   mutcal(el,arg){ui.mutSel=ui.mutSel===arg?'':arg;calSync()},
@@ -3150,7 +3217,7 @@ const A={
     old.style.transition='none';old.style.height='';old.style.overflow='hidden';
     old.className=neu.className+' cm-swap';old.innerHTML=neu.innerHTML;
     const h1=old.offsetHeight;old.style.height=h0+'px';void old.offsetHeight;
-    old.style.transition='height .5s var(--spring)';old.style.height=h1+'px';
+    old.style.transition=h1<h0?'height .4s var(--emph)':'height .5s var(--spring)';old.style.height=h1+'px';
     clearTimeout(old._t);old._t=setTimeout(()=>{old.style.transition=old.style.height=old.style.overflow='';old.classList.remove('cm-swap')},560);
   },
   mutcalx(){ui.mutSel='';calSync()},

@@ -31,3 +31,6 @@ Kalender bisa dinyalakan atau dimatikan di Atur → Tampilan → Kalender di Riw
 
 ## Gerak (animasi)
 Gerak di kalender dan riwayat mengikuti bahasa gerak bagian kartu kredit: easing pegas `--spring` dengan durasi .5 detik dan buka-tutup lewat `grid-template-rows` (sama seperti grup dompet). Panel tanggal membuka dan menutup dengan gerak itu, ganti ringkas/penuh pada kalender menganimasikan tinggi, dan ketuk tanggal tidak lagi menggambar ulang kalender. Pengguna yang mengaktifkan `prefers-reduced-motion` mendapat perpindahan tanpa animasi.
+
+## Analitik (donat)
+Donat memakai cincin tipis bertepi bulat. Kategori di bawah 3% (atau di luar 6 teratas) digabung menjadi satu segmen "Lainnya" di donat dan legenda, sedangkan daftar Per kategori tetap menampilkan semuanya. Ketuk segmen donat atau chip legenda untuk menyorot satu kategori: segmen lain meredup, tengah donat berganti ke kategori itu, dan barisnya di bawah ikut menyala; ketuk lagi untuk batal. Pilihan Pengeluaran/Pemasukan memakai tuas geser. Donat dan bar kategori tergambar sekali saat masuk tab atau ganti bulan/jenis, tidak berulang saat baris dilipat atau dibuka. Warna bar tiap kategori sama dengan warna segmennya. Gerak mengikuti bahasa gerak kartu (pegas saat membuka, mulus tanpa bounce saat menutup) dan menghormati `prefers-reduced-motion`.
