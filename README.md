@@ -37,3 +37,9 @@ Donat memakai cincin tipis bertepi bulat. Kategori di bawah 3% (atau di luar 6 t
 
 ## Kalkulator nominal
 Papan angka berupa grid 4×4 yang sejajar: angka dan tombol = di kiri, operator ÷ × − + di satu kolom di kanan dengan tinggi baris yang sama. Tombol hapus (⌫) ada di sebelah kanan tampilan nominal; ketuk menghapus satu karakter, tahan untuk mengosongkan. Tinggi tombol menyesuaikan tinggi layar (52/46/42 px) supaya tombol Simpan tidak menutup baris bawah.
+
+## Cadangan, ekspor, pengingat
+- Atur → Data: **Cadangkan sekarang** (unduh file `.json`, mencatat `settings.lastBackup`) dan **Ekspor CSV** (pemisah `;`, BOM UTF-8, terbuka benar di Excel Indonesia). Beranda menampilkan pengingat kalau data belum dicadangkan 7 hari (tombol Nanti menunda 3 hari).
+- **Jatuh tempo kartu**: kartu dengan tagihan dan tanggal jatuh tempo ≤5 hari lagi muncul di atas Beranda dengan tombol Bayar. Tanggal jatuh tempo berikutnya juga tampil sebagai "Tempo" di kalender Riwayat.
+- **Anggaran per kategori** (`cat.budget`): atur di Kelola → Kategori (atau tombol "Atur anggaran bulanan" di Analitik). Meter di Analitik hijau di bawah 80%, kuning 80–99%, merah mulai 100%.
+- **Transaksi berulang** (`S.recur`): nyalakan "Ulangi tiap bulan" saat mencatat, atau kelola di Kelola → Berulang. Transaksi dibuat otomatis saat aplikasi dibuka pada atau setelah tanggalnya (`runRecur`), dan rencana berikutnya tampil di kalender dengan garis kuning.
