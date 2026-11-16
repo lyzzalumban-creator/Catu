@@ -735,6 +735,7 @@ input:disabled{opacity:.6}
 .dsh-next{margin-top:14px;border-top:1px solid var(--line2)}
 .dsh-n{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line2);font-size:13.5px}.dsh-n:last-child{border-bottom:0}
 .dsh-n span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dsh-n em{font-style:normal;color:var(--mute);font-size:12px;margin-left:6px}
+.dsh-ic{display:inline-block;vertical-align:middle;margin-right:8px;line-height:0}
 .dsh-n b{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:650}
 .wg-bar{position:relative}
 .wg-bar.pu{background:linear-gradient(to bottom,var(--pc) 0 34%,transparent 34% calc(34% + 2px),var(--c) calc(34% + 2px) 100%);box-shadow:0 0 10px color-mix(in srgb,var(--pc) 40%,transparent)}
@@ -848,7 +849,7 @@ input:disabled{opacity:.6}
 .catprev{display:flex;justify-content:center;margin:0 0 14px}
 .subed{display:flex;flex-direction:column;gap:8px}
 .sub-row{display:flex;align-items:center;gap:8px}
-.sub-row .sub-ic{flex:none;width:52px;height:52px;padding:0;text-align:center;font-size:24px;border-radius:16px;background:var(--s3)}
+.sub-row .sub-ic{flex:none;width:52px;height:52px;padding:0;text-align:center;font-size:24px;border-radius:16px;background:var(--sbg,var(--s3));box-shadow:inset 0 0 0 1.8px var(--srg,var(--line2))}
 .sub-row .sub-nm{flex:1;height:52px}
 .sub-x{flex:none;width:44px;height:52px;border-radius:14px;background:var(--s2);color:var(--tx3);font-size:20px;line-height:1}
 .sub-x:active{background:#3a1c20;color:#FF9A9A}
@@ -1178,6 +1179,7 @@ const catHex=c=>c&&hexOk(c.color)?c.color:PAL[catCol(c)%PAL.length][1];
 const ringFit=h=>{const n=parseInt(h.slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255,L=(.2126*r+.7152*g+.0722*b)/255;if(L>=.38)return h;const m=Math.min(.6,(.38-L)*1.6+.15),f=x=>Math.round(x+(255-x)*m).toString(16).padStart(2,'0');return'#'+f(r)+f(g)+f(b)};
 const catIconX=(content,c,size)=>{const t=c&&c.t==='inc'?'inc':'exp';return`<span class="shi rg" style="--sz:${size}px;--c:${TYPE_BG[t]};--oc:${TYPE_FG[t]};--rc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b></span>`};
 const catIcon=(c,size)=>catIconX(c?esc(c.icon):'📦',c,size);
+const txIcon=(c,t,size)=>c&&t.sub&&c.si&&c.si[t.sub]?catIconX(esc(c.si[t.sub]),c,size):catIcon(c,size);
 const hexOk=h=>/^#[0-9a-f]{6}$/i.test(h||'');
 function darkTint(h){const n=parseInt(h.slice(1),16),f=x=>Math.round(x*.22+10).toString(16).padStart(2,'0');return'#'+f(n>>16&255)+f(n>>8&255)+f(n&255)}
 const colIcon=(ch,hex,shape,size)=>shapeIconC(ch,darkTint(hex),hex,shape,size);
@@ -2265,8 +2267,8 @@ function txRow(t){
   const cat=S.cats.find(c=>c.id===t.cat),an=accName(t.acc);
   let ico,title='',meta='',sign='',cls='';
   switch(t.t){
-    case'exp':ico=catIcon(cat,42);title=cat?cat.name+(t.sub?' · '+t.sub:''):'Tanpa kategori';sign='−';break;
-    case'inc':ico=catIcon(cat,42);title=cat?cat.name+(t.sub?' · '+t.sub:''):'Tanpa kategori';sign='+';cls='pos';break;
+    case'exp':ico=txIcon(cat,t,42);title=cat?cat.name+(t.sub?' · '+t.sub:''):'Tanpa kategori';sign='−';break;
+    case'inc':ico=txIcon(cat,t,42);title=cat?cat.name+(t.sub?' · '+t.sub:''):'Tanpa kategori';sign='+';cls='pos';break;
     case'pay':title='Bayar kartu';meta=an+' → '+accName(t.to);break;
     case'xfer':title='Transfer';meta=an+' → '+accName(t.to);break;
     case'gcard':title='Gestun · tarik limit';sign='+';cls='warnc';break;
@@ -2492,7 +2494,7 @@ function txRow2(t){
   const cat=S.cats.find(c=>c.id===t.cat);let ico,title,chips='',amt='',cls='';
   const catTxt=cat?cat.name+(t.sub?' · '+t.sub:''):'Tanpa kategori';
   switch(t.t){
-    case'exp':case'inc':ico=catIcon(cat,42);title=t.note||catTxt;
+    case'exp':case'inc':ico=txIcon(cat,t,42);title=t.note||catTxt;
       chips=accChip(t.acc)+(t.note?`<i class="tchip cat">${esc(catTxt)}</i>`:'')+(t.rec?'<i class="tchip cat">↻ Berulang</i>':'');
       cls=t.t==='inc'?'pos':'neg';amt=(t.t==='inc'?'+':'−')+money(t.amt);break;
     case'pay':case'xfer':
@@ -2984,7 +2986,7 @@ function catDash(){
     <div class="dsh-s"><div><span class="ws2-k">Kategori</span><b>${tn}</b></div><div><span class="ws2-k">Sub-kategori</span><b>${S.cats.filter(c=>c.t===t).reduce((a,c)=>a+c.subs.length,0)}</b></div></div>
     ${rows.length?`<div class="kd-rows">${rows.slice(0,6).map(k=>{const o=cc(k);return`<div class="kd-r"><div class="kd-rh"><b>${esc(o.n)}</b><span>${money(M.cats[k])} <em>/ ${Math.round(M.cats[k]/M.tot*100)}%</em></span></div>${bar(M.cats[k],o.clr)}</div>`}).join('')}</div>
     <div class="blk-h" style="margin:16px 0 0"><h2 style="font-size:15px">Sub-kategori teratas</h2></div>
-    <div class="kd-rows" style="margin-top:6px">${subs.map(k=>{const[id,sn]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b>${esc(o.n)} › ${sn?esc(sn):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div>`:'<p class="empty" style="margin:14px 0 8px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
+    <div class="kd-rows" style="margin-top:6px">${subs.map(k=>{const[id,sn]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b><span class="dsh-ic">${o.c?catIconX(esc((o.c.si&&o.c.si[sn])||o.c.icon||'📦'),o.c,24):''}</span>${esc(o.n)} › ${sn?esc(sn):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div>`:'<p class="empty" style="margin:14px 0 8px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
 }
 
 /* ---- peruntukan: daftar bernama + warna, dipakai lintas bank ---- */
@@ -3366,7 +3368,7 @@ function openForm(kind,id){
   ui.accd=null;ui.form={kind,id:id||null,bg:o&&o.bg?o.bg:null};ui.sheet='form';renderSheet();
 }
 const subRow=(c,name,orig)=>`<div class="sub-row"><input class="sub-ic" maxlength="4" value="${esc(((c.si||{})[orig]||''))}" placeholder="${esc(c.icon||'📦')}" aria-label="Ikon sub-kategori" inputmode="text"><input class="sub-nm" value="${esc(name)}" data-orig="${esc(orig||'')}" placeholder="Nama sub-kategori" maxlength="30"><button type="button" class="sub-x" data-action="subdel" aria-label="Hapus sub-kategori">×</button></div>`;
-const subEditor=o=>{const c=o||{icon:'📦',subs:[],si:{}};return`<div class="f"><span>Sub-kategori</span><div class="subed" id="subEd">${c.subs.map(n=>subRow(c,n,n)).join('')}</div><button type="button" class="sub-add" data-action="subadd">+ Tambah sub-kategori</button><small class="sub-hint">Ikon kosong = ikut ikon kategori.</small></div>`};
+const subEditor=o=>{const c=o||{icon:'📦',t:'exp',subs:[],si:{},color:COLS[S.cats.length%COLS.length]};return`<div class="f"><span>Sub-kategori</span><div class="subed" id="subEd" style="--sbg:${TYPE_BG[c.t==='inc'?'inc':'exp']};--srg:${ringFit(catHex(c))}">${c.subs.map(n=>subRow(c,n,n)).join('')}</div><button type="button" class="sub-add" data-action="subadd">+ Tambah sub-kategori</button><small class="sub-hint">Ikon kosong = ikut ikon kategori.</small></div>`};
 function formHTML(){
   const F=ui.form,k=F.kind,o=F.id?S[FK[k]].find(x=>x.id===F.id):null;
   let b='';
@@ -3414,7 +3416,7 @@ function cardFromForm(){
   return Object.assign({},o||{},{name:fv('name')||'Kartu',bank:fv('bank'),last4:(fv('last4')||'0000').replace(/\D/g,'').padStart(4,'0').slice(-4),net:fv('net')||'visa',theme:fv('theme')||'obsidian',pool:fv('pool'),wallet:fv('wallet'),limit:num(fv('limit')),cut:clamp(num(fv('cut'))||1,1,31),due:clamp(num(fv('due'))||1,1,31),minPct:clamp(num(fv('minPct')),0,100),bg:F.bg,contrast:+fv('contrast')});
 }
 function updateCardPrev(){const p=$('#cardPrev');if(p)p.innerHTML=cardHTML(cardFromForm(),ui.form.id?undefined:1250000)}
-function updateCatPrev(){const p=$('#catPrev');if(!p)return;const o=ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;p.innerHTML=catIcon({id:ui.form.id||'new',icon:fv('icon')||'📦',t:o?o.t:(fv('t')||'exp'),color:fv('color')},72)}
+function updateCatPrev(){const p=$('#catPrev');if(!p)return;const o=ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const t=o?o.t:(fv('t')||'exp'),cc={id:ui.form.id||'new',icon:fv('icon')||'📦',t,color:fv('color')};p.innerHTML=catIcon(cc,72);const e=$('#subEd');if(e){e.style.setProperty('--sbg',TYPE_BG[t==='inc'?'inc':'exp']);e.style.setProperty('--srg',ringFit(catHex(cc)))}}
 function saveForm(){
   const F=ui.form,k=F.kind,col=S[FK[k]],o=F.id?col.find(x=>x.id===F.id):null;
   let rec;
