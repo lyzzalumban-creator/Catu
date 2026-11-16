@@ -190,7 +190,7 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .dots i.on{width:20px;background:var(--acc)}
 
 /* dompet kartu: kartu menyembul dari saku, ketuk untuk menarik keluar */
-.wl{container-type:inline-size;--lip:124px;--st:40px;--ch:54.2cqw;--p1:#1F2C12;--p2:#0A1004;--bk:#121A0A;--ln:rgba(168,245,82,.34);--ink:#D9F5B4;--nc:#A8F552;--dot:rgba(168,245,82,.5)}
+.wl{container-type:inline-size;--lip:104px;--st:40px;--ch:50.4cqw;--p1:#1F2C12;--p2:#0A1004;--bk:#121A0A;--ln:rgba(168,245,82,.34);--ink:#D9F5B4;--nc:#A8F552;--dot:rgba(168,245,82,.5)}
 .wl.wk-blue{--p1:#46A6E0;--p2:#2B7CB6;--bk:#3A91CB;--ln:rgba(255,255,255,.32);--ink:#EAF6FF;--nc:#fff;--dot:rgba(255,255,255,.5)}
 .wl.wk-graphite{--p1:#34343B;--p2:#17171B;--bk:#222228;--ln:rgba(255,255,255,.16);--ink:#C6C6CE;--nc:#fff;--dot:rgba(255,255,255,.3)}
 .wl.wk-rose{--p1:#EC8FAB;--p2:#B3446A;--bk:#C95A7D;--ln:rgba(255,255,255,.3);--ink:#FFE9F0;--nc:#fff;--dot:rgba(255,255,255,.5)}
@@ -201,9 +201,9 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .sw.sw-rose{background:linear-gradient(135deg,#EC8FAB,#B3446A)}
 .sw.sw-leather{background:linear-gradient(135deg,#CF9A55,#85551F)}
 .wl-stage{position:relative;overflow:hidden;border-radius:0 0 38px 38px;height:calc(var(--lip) + var(--n)*var(--st) + 14px);transition:height .6s var(--spring)}
-.wl.open .wl-stage{height:calc(var(--lip) + 22px + var(--ch) + 14px)}
+.wl.open .wl-stage{height:calc(var(--lip) + 12px + var(--ch) + 8px)}
 .wl-back{position:absolute;left:0;right:0;bottom:0;height:calc(var(--lip) + 30px);border-radius:34px 34px 38px 38px;background:var(--bk);box-shadow:inset 0 0 0 1px var(--ln);pointer-events:none}
-.wc{position:absolute;left:7cqw;width:86cqw;display:block;text-align:left;z-index:calc(var(--i) + 1);bottom:calc(var(--lip) + (var(--n) - var(--i))*var(--st) - var(--ch));transition:bottom .65s var(--spring)}
+.wc{position:absolute;left:10cqw;width:80cqw;display:block;text-align:left;z-index:calc(var(--i) + 1);bottom:calc(var(--lip) + (var(--n) - var(--i))*var(--st) - var(--ch));transition:bottom .65s var(--spring)}
 .wc .cc{box-shadow:0 -4px 14px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.26),inset 0 0 0 1px rgba(255,255,255,.15)}
 .cc-id{display:none}
 /* kartu terbuka + foto: desain foto dibiarkan bersih (tanpa nama, tanpa chip), logo jaringan dan nomor akhir jadi satu label kaca di kiri atas */
@@ -615,6 +615,11 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 .lg-stats b.num{white-space:normal}
 .lg-stats small{display:block;font-size:11px;color:var(--mute);margin-top:1px}
 .wl-dh .lm small{display:block;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip}
+.wl .chips .chip{padding:6px 12px;font-size:12px}
+@media (max-height:780px){.wl-detail .chips{display:none}}
+.wl .lg-stats{display:none}.wl .lg-amt.hd .lg-df{display:none}.wl .lg-amt.hd .lg-ds{display:inline}
+.wl-detail{padding:12px 14px}
+.wl .wl-pocket b{font-size:30px}
 .lg-ds{display:none}.lg-ds.soon{color:var(--warn)}
 @media (max-height:780px){.wl-detail .lg-stats{display:none}.wl-detail .lg-g{margin-top:10px}.lg-amt.hd .lg-df{display:none}.lg-amt.hd .lg-ds{display:inline}}
 .wl-detail .bgroup{margin-top:12px}
@@ -1968,7 +1973,7 @@ function wlDetailHTML(id){
   return`<div class="wl-dh"><span class="lm"><b>${esc(c.name)} ••${esc(c.last4)}</b><small>${esc(c.bank||'')}${ci.pool?' · '+esc(ci.pool.name):''}</small></span><button class="tbtn" data-action="open-accd" data-id="${c.id}">Riwayat</button></div>
     ${limitBlock(c)}
     <div class="bgroup"><button class="fill" data-action="swipe" data-id="${c.id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${c.id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${c.id}">Gestun</button>`:''}</div>
-    ${S.cards.length>1&&S.settings.cardView==='wallet'?`<div class="chips" style="margin-top:10px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
+    ${S.cards.length>1&&S.settings.cardView==='wallet'?`<div class="chips" style="margin-top:8px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
 }
 const cswSlot=k=>{k=Math.min(k,3);return`translate3d(${k*14}%,${-k*14}%,${-k*45}px) skewY(5deg)`};
 function cswOrder(){
