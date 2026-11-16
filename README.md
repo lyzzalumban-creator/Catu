@@ -15,3 +15,6 @@ Saat halaman dibuka (atau saat kembali ke aplikasi), `index.html` mengecek versi
 
 ## Dompet terhubung ke kartu kredit
 Setiap kartu punya satu dompet terhubung (field `wallet` pada kartu). Bayar kartu hanya keluar dari dompet itu, dan dana gestun cair ke dompet itu. Kartu lama yang belum punya dompet terhubung tetap bisa dipakai dengan memilih dompet manual, sampai dompetnya diatur lewat Kelola → Kartu → Ubah.
+
+## Menu Gestun
+Menu Gestun bisa dinyalakan atau dimatikan di Atur (`settings.gestun`, bawaan aktif). Saat nonaktif, tombol Gestun di Beranda, kartu, dan filter Transaksi disembunyikan. Riwayat gestun yang sudah ada tetap tersimpan dan terlihat di daftar transaksi.

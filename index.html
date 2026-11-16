@@ -1196,7 +1196,7 @@ function normalize(s){
   st.pack=st.pack&&typeof st.pack==='object'?{day:String(st.pack.day||''),added:Math.max(0,+st.pack.added||0),used:Math.max(0,+st.pack.used||0)}:{day:'',added:0,used:0};
   ['groups','wallets','pools','cards','cats','tx'].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
-  st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
+  st.gestun=st.gestun===undefined?true:!!st.gestun;st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
   s.updated=s.updated||0;return s;
 }
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -1688,9 +1688,10 @@ function blkChart(){
     <div class="split sub"><div class="tile"><span>Total aset</span><b id="asetVal">–</b></div><div class="tile"><span>Tagihan kartu kredit</span><b class="neg" id="lbVal">–</b></div></div>
   </section>`;
 }
+const gestOn=()=>S.settings.gestun!==false;
 function blkActions(){
-  const a=[['open-xfer','Transfer',IC.swap,2,'clover4'],['qpay','Bayar',IC.card,3,'cookie6'],['qgest','Gestun',IC.bolt,5,'sunny']];
-  return`<section class="blk acts">${a.map(x=>`<button class="act" data-action="${x[0]}">${x[3]<0?shapeIconC(x[2],'var(--acc)','var(--acc-ink)',x[4],60):shapeIcon(x[2],x[3],x[4],60)}<span>${x[1]}</span></button>`).join('')}</section>`;
+  const a=[['open-xfer','Transfer',IC.swap,2,'clover4'],['qpay','Bayar',IC.card,3,'cookie6']];if(gestOn())a.push(['qgest','Gestun',IC.bolt,5,'sunny']);
+  return`<section class="blk acts" style="grid-template-columns:repeat(${a.length},1fr)">${a.map(x=>`<button class="act" data-action="${x[0]}">${x[3]<0?shapeIconC(x[2],'var(--acc)','var(--acc-ink)',x[4],60):shapeIcon(x[2],x[3],x[4],60)}<span>${x[1]}</span></button>`).join('')}</section>`;
 }
 /* Pengukur limit: garis-garis tegak berwarna hijau→merah, penanda ideal 30% (terinspirasi kartu "Opt-In Rate"). */
 function limitBlock(c){
@@ -1727,7 +1728,7 @@ function wlDetailHTML(id){
   const dueTxt=due&&ci.mine>0?`<span class="due ${dn<=3?'soon':''}">Jatuh tempo ${dn===0?'hari ini':dn+' hari lagi'}</span>`:'';
   return`<div class="wl-dh"><span class="lm"><b>${esc(c.name)} ••${esc(c.last4)}</b><small>${esc(c.bank||'')} · Tagihan ${money(ci.mine)}</small></span><button class="tbtn" data-action="open-accd" data-id="${c.id}">Riwayat</button></div>
     ${limitBlock(c)}${dueTxt}
-    <div class="bgroup"><button class="fill" data-action="swipe" data-id="${c.id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${c.id}">Bayar</button><button class="tonal" data-action="open-gest" data-id="${c.id}">Gestun</button></div>
+    <div class="bgroup"><button class="fill" data-action="swipe" data-id="${c.id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${c.id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${c.id}">Gestun</button>`:''}</div>
     ${S.cards.length>1?`<div class="chips" style="margin-top:12px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
 }
 const cswSlot=k=>{k=Math.min(k,3);return`translate3d(${k*14}%,${-k*16}%,${-k*45}px) skewY(5deg)`};
@@ -2125,7 +2126,7 @@ VIEWS.mut=function(){
   return`<section class="blk"><div class="blk-h"><h2 style="flex:1">Transaksi</h2><button class="ibtn sm ${ui.mutS?'on':''}" data-action="muts" aria-label="Cari transaksi"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button></div>
     ${ui.mutS?`<input id="mutq" class="mutq" data-input="mutq" placeholder="Cari catatan, kategori, dompet, nominal" value="${esc(ui.mutQ||'')}" autocomplete="off">`:''}
     <div class="mtabs" id="mtabs">${months.map(k=>`<button class="mm ${k===m?'on':''}" data-action="mutm" data-arg="${k}"><span>${MONS[+k.slice(5)-1]}</span><small>${k.slice(0,4)}</small></button>`).join('')}</div>
-    <div class="chips" style="margin:2px 0 12px">${MUTF.map(f=>`<button class="chip ${ui.mutF===f[0]?'on':''}" data-action="mutf" data-arg="${f[0]}">${f[1]}</button>`).join('')}</div>
+    <div class="chips" style="margin:2px 0 12px">${MUTF.filter(f=>f[0]!=='gest'||gestOn()||ui.mutF==='gest').map(f=>`<button class="chip ${ui.mutF===f[0]?'on':''}" data-action="mutf" data-arg="${f[0]}">${f[1]}</button>`).join('')}</div>
     <div id="mutBody">${mutBody()}</div></section>`;
 };
 
@@ -2483,6 +2484,7 @@ VIEWS.set=function(){
   const st={local:'Tersimpan di perangkat ini.',online:'Tersimpan online ke akun kamu.',saving:'Sedang menyimpan…',err:'Sinkron gagal. Data tetap aman di perangkat.'}[ui.sync];
   return`<section class="blk"><div class="blk-h"><h2>Susunan Beranda</h2></div><div class="surface">${lay}</div></section>
    <section class="blk"><div class="blk-h"><h2>Tampilan</h2></div><div class="surface">
+     <div class="setrow"><div><b>Menu Gestun</b><small>Tampilkan tombol Gestun di Beranda dan kartu</small></div><button class="sw-t ${gestOn()?'on':''}" data-action="gestun-tog" role="switch" aria-checked="${gestOn()}" aria-label="Menu Gestun"></button></div>
      <div class="setrow"><div><b>Mode privasi</b><small>Sembunyikan semua nominal</small></div><button class="sw-t ${S.settings.privacy?'on':''}" data-action="privacy" role="switch" aria-checked="${S.settings.privacy}" aria-label="Mode privasi"></button></div>
      <div class="setrow" style="display:block"><div><b>Tampilan kartu</b><small>Cara kartu kredit ditampilkan di beranda</small></div><div class="bgroup" role="group">${[['wallet','Dompet'],['stack','Tumpukan'],['col','Kolom'],['car','Putar']].map(m=>`<button class="${S.settings.cardView===m[0]?'on':''}" data-action="cardview" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div></div>
      ${(S.settings.cardView==='wallet'||(S.settings.cardView==='col'&&S.cards.length<2)||(S.settings.cardView==='car'&&S.cards.length<2)||(S.settings.cardView==='stack'&&!S.cards.length))?`<div class="setrow" style="display:block"><div><b>Warna dompet kartu</b><small>Dompet tempat kartu kredit menyembul di Beranda</small></div><div class="sw-row" style="margin-top:12px">${Object.keys(WL_COLORS).map(k=>`<button class="sw sw-${k} ${S.settings.wl===k?'on':''}" data-action="wlcolor" data-arg="${k}" aria-label="${WL_COLORS[k]}"></button>`).join('')}</div></div>`:''}
@@ -2703,6 +2705,7 @@ function xClose(){
 
 /* ---- gestun ---- */
 function openGest(cardId){
+  if(!gestOn())return toast('Menu Gestun nonaktif. Aktifkan di Atur');
   const w=S.wallets.find(x=>x.id===cardWallet(S.cards.find(c=>c.id===cardId)))||S.wallets.find(x=>/bank/i.test(x.name||''))||S.wallets[0];
   ui.gest={card:cardId,wallet:w?w.id:'',feeMode:'pct',feeVal:'',scheme:'A',date:today()};ui.amt={expr:''};ui.sheet='gest';renderSheet();
 }
@@ -2742,7 +2745,7 @@ function accdHTML(){
   let head,acts;
   if(card){
     head=`<div class="cprev" style="width:100%">${cardHTML(a)}</div>`;
-    acts=`<div class="bgroup" style="margin-bottom:6px"><button class="fill" data-action="swipe" data-id="${id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${id}">Bayar</button><button class="tonal" data-action="open-gest" data-id="${id}">Gestun</button><button class="tonal" data-action="fedit" data-arg="card" data-id="${id}">Ubah</button></div>${limitBlock(a)}`;
+    acts=`<div class="bgroup" style="margin-bottom:6px"><button class="fill" data-action="swipe" data-id="${id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${id}">Gestun</button>`:''}<button class="tonal" data-action="fedit" data-arg="card" data-id="${id}">Ubah</button></div>${limitBlock(a)}`;
   }else{
     const g=S.groups.find(x=>x.id===a.g);
     head=`<div class="accd-h">${accIcon(a,64)}<div><div class="lbl">${esc(g?g.name:'')}</div><b style="font-size:17px">${esc(a.name)}</b></div><div class="big num" ${mv('s:ab:'+id,D.bal[id]||0)}>${money(D.bal[id]||0)}</div></div>`;
@@ -3029,6 +3032,7 @@ const A={
   sigdemo(){askSign(S.settings.sigMin,null,true)},
   sigcancel(){closeSign()},
   nav(el,arg){ui.view=arg;if(ui.sheet)closeSheet();render();window.scrollTo(0,0)},
+  'gestun-tog'(){S.settings.gestun=!gestOn();if(!S.settings.gestun&&ui.mutF==='gest')ui.mutF='all';persist();render();if(ui.sheet)renderSheet()},
   privacy(){S.settings.privacy=!S.settings.privacy;persist();render();if(ui.sheet)renderSheet()},
   range(el,arg){ui.range=+arg;render()},
   arange(el,arg){ui.arange=+arg;render()},
@@ -3086,7 +3090,7 @@ const A={
   wlcolor(el,arg){S.settings.wl=arg;persist();render()},
   'open-xfer'(el,arg,id){if(S.wallets.length<2)return toast('Butuh minimal 2 dompet');openXfer(id)},
   qpay(){if(!S.cards.length)return toast('Belum ada kartu kredit');openPay(S.cards[0].id)},
-  qgest(){if(!S.cards.length)return toast('Belum ada kartu kredit');openGest(S.cards[0].id)},
+  qgest(){if(!gestOn())return toast('Menu Gestun nonaktif. Aktifkan di Atur');if(!S.cards.length)return toast('Belum ada kartu kredit');openGest(S.cards[0].id)},
   swipe(el,arg,id){openNew({acc:id})},
   ftype(el,arg){const f=ui.flow,from=f.type;f.type=arg;f.cat='';f.sub='';f.openCat='';if(arg==='inc'&&isCard(f.acc))f.acc='';renderSheet();if(from!==arg)vtabPlay(from,arg)},
   facc(el,arg,id){const f=ui.flow;f.acc=id;if(f.ret){f.step=f.ret;f.ret=0}else f.step=2;renderSheet()},
