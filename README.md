@@ -25,4 +25,6 @@ Di tab Transaksi, hari ini terbuka dan hari sebelumnya tertutup. Header tiap har
 ## Kalender di Riwayat
 Di bawah ringkasan Keluar/Masuk/Selisih, tab Transaksi menampilkan kalender bulan. Tiap tanggal menampilkan selisih harian (masuk dikurangi keluar) dalam bentuk ringkas (misalnya `+10jt`, `−192rb`), hijau untuk plus dan merah untuk minus. Tanggal yang hanya berisi transfer atau bayar kartu bertanda titik. Ketuk tanggal untuk menampilkan riwayat transaksi tanggal itu tepat di bawah kalender; ketuk lagi atau tekan tombol tutup untuk menyembunyikannya. Kalender ikut filter dan pencarian, dan memakai titik saat mode privasi aktif.
 
+Kalender awalnya ringkas: satu baris berisi 7 hari terakhir (sampai hari ini) dengan selisih tiap hari dan total selisih minggu itu di header. Ketuk bar kalender untuk membuka seluruh bulan, ketuk lagi untuk meringkas. Di bulan lain, baris ringkas menampilkan minggu terakhir (bulan lalu) atau minggu pertama (bulan depan). Status ringkas atau penuh tidak disimpan.
+
 Kalender bisa dinyalakan atau dimatikan di Atur → Tampilan → Kalender di Riwayat (`settings.calendar`, bawaan aktif). Saat nonaktif, kalender dan panel riwayat tanggal disembunyikan, dan daftar per hari tetap tampil.
