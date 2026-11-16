@@ -1207,7 +1207,9 @@ function cardInfo(c){
   return{pool:pool||null,limit,mine,other,used:mine+other,remain:limit-mine-other};
 }
 const accById=id=>S.wallets.find(x=>x.id===id)||S.cards.find(x=>x.id===id)||null;
-const accName=id=>{const a=accById(id);return a?a.name:''};
+/* nama dompet kembar (mis. 'Darurat' di dua bank) otomatis ditampilkan sebagai 'Darurat · Bank' */
+const wLbl=w=>{const k=(w.name||'').trim().toLowerCase();if(!S.wallets.some(x=>x!==w&&(x.name||'').trim().toLowerCase()===k))return w.name;const g=S.groups.find(x=>x.id===w.g);return g?w.name+' · '+g.name:w.name};
+const accName=id=>{const a=accById(id);return a?(S.wallets.includes(a)?wLbl(a):a.name):''};
 const isCard=id=>S.cards.some(c=>c.id===id);
 function defaultCats(){return[
  {id:'c_makan',t:'exp',name:'Makan',icon:'🍜',col:5,subs:['Sarapan','Makan siang','Makan malam','Kopi & jajan']},
@@ -2175,7 +2177,7 @@ const grpCol=g=>g.color||PAL[hsh(g.id+'g')%PAL.length][1];
 const walCol=w=>w.color||PAL[hsh(w.id)%PAL.length][1];
 function wgRow(w,i){
   const b=D.bal[w.id]||0;
-  return`<div class="wg-r" style="--c:${walCol(w)};--d:${i*40}ms"><button class="wg-m" data-action="open-accd" data-id="${w.id}"><i class="wg-bar"></i><span class="lm"><b>${esc(w.name)}</b><small>${esc(w.note||'Ketuk untuk detail')}</small></span><b class="wg-amt ${b<0?'neg':''}" ${mv('wb:'+w.id,b)}>${money(b)}</b></button><button class="wg-add" data-action="open-acc" data-id="${w.id}" aria-label="Catat di ${esc(w.name)}">${IC.plus||'+'}</button></div>`;
+  return`<div class="wg-r" style="--c:${walCol(w)};--d:${i*40}ms"><button class="wg-m" data-action="open-accd" data-id="${w.id}"><i class="wg-bar"></i><span class="lm"><b>${esc(wLbl(w))}</b><small>${esc(w.note||'Ketuk untuk detail')}</small></span><b class="wg-amt ${b<0?'neg':''}" ${mv('wb:'+w.id,b)}>${money(b)}</b></button><button class="wg-add" data-action="open-acc" data-id="${w.id}" aria-label="Catat di ${esc(w.name)}">${IC.plus||'+'}</button></div>`;
 }
 const ring=(f,c)=>{const R=15,C=2*Math.PI*R,l=Math.max(.001,Math.min(1,f))*C;return`<span class="wg-ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="${R}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/><circle cx="20" cy="20" r="${R}" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${l.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg></span>`};
 function blkWallets(){
@@ -2740,7 +2742,7 @@ const mrow=(kind,id,ico,a,b,c)=>`<button class="lrow" data-action="fedit" data-a
 /* ---- kelola > dompet: grafik Pareto (dompet mana yang menyimpan sebagian besar uang) ---- */
 let PC=null;
 function parData(){
-  let w=S.wallets.map(x=>({n:x.name,v:D.bal[x.id]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  let w=S.wallets.map(x=>({n:wLbl(x),v:D.bal[x.id]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   if(w.length>8){const rest=w.slice(7);w=w.slice(0,7);w.push({n:'Lainnya',v:rest.reduce((a,x)=>a+x.v,0),multi:rest.length})}
   const tot=w.reduce((a,x)=>a+x.v,0);let c=0;w.forEach(x=>{x.pre=c/tot;c+=x.v;x.cum=c/tot});
   return{w,tot};
@@ -2903,11 +2905,32 @@ function catDash(){
     <div class="blk-h" style="margin:16px 0 0"><h2 style="font-size:15px">Sub-kategori teratas</h2></div>
     <div class="kd-rows" style="margin-top:6px">${subs.map(k=>{const[id,sn]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b>${esc(o.n)} › ${sn?esc(sn):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div>`:'<p class="empty" style="margin:14px 0 8px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
 }
+
+/* ---- kelola > dompet: dasbor per peruntukan (lintas bank) ---- */
+const PUR_BASE=['Harian','Darurat','Tabungan','Investasi','Tagihan','Liburan'];
+const purKey=x=>(x||'').trim().toLowerCase();
+function purOpts(){const seen=new Set(),out=[];S.wallets.map(w=>w.p).concat(PUR_BASE).forEach(x=>{x=(x||'').trim();if(x&&!seen.has(purKey(x))){seen.add(purKey(x));out.push(x)}});return out}
+function purData(){
+  const m={};
+  S.wallets.forEach(w=>{const k=purKey(w.p)||'_';const o=m[k]||(m[k]={n:k==='_'?'Tanpa peruntukan':w.p.trim(),v:0,tg:0,ws:[],banks:new Set()});
+    o.v+=D.bal[w.id]||0;o.tg+=w.tg||0;o.ws.push(w);const g=S.groups.find(x=>x.id===w.g);if(g)o.banks.add(g.name)});
+  return Object.keys(m).map(k=>m[k]).sort((a,b)=>(a.n==='Tanpa peruntukan')-(b.n==='Tanpa peruntukan')||b.v-a.v);
+}
+function purDash(){
+  if(!S.wallets.some(w=>w.p))return'';
+  const rows=purData(),tot=rows.reduce((a,r)=>a+r.v,0),pos=rows.reduce((a,r)=>a+Math.max(0,r.v),0);
+  const clr=i=>PAL[(i*3+1)%PAL.length][1];
+  return`<div class="surface kd dsh" style="margin-bottom:12px"><span class="ws2-k">Saldo per peruntukan</span><b class="num ws2-v" style="font-size:26px">${money(tot)}</b>
+    ${pos>0?`<div class="dsh-split" aria-hidden="true">${rows.map((r,i)=>r.v>0?`<i style="width:${(r.v/pos*100).toFixed(1)}%;background:${clr(i)}"></i>`:'').join('')}</div>`:''}
+    <div class="kd-rows">${rows.map((r,i)=>{const hasT=r.tg>0,v=hasT?Math.min(100,Math.max(0,r.v)/r.tg*100):(pos>0?Math.max(0,r.v)/pos*100:0),done=hasT&&r.v>=r.tg;
+      return`<div class="kd-r"><div class="kd-rh"><b>${esc(r.n)}</b><span>${money(r.v)} <em>${hasT?'/ '+money(r.tg):'/ '+Math.round(v)+'%'}</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${done?'var(--acc)':clr(i)}"></i></div>
+      <small class="lbl" style="display:block;margin-top:6px">${hasT?(done?'Target tercapai · ':Math.round(v)+'% dari target · '):''}${[...r.banks].map(esc).join(', ')} · ${r.ws.length} dompet</small></div>`}).join('')}</div></div>`;
+}
 VIEWS.manage=function(){
   if(ui.mg==='pool')ui.mg='card';
   const k=ui.mg;let rows='';
   if(k==='group')rows=S.groups.map(g=>mrow('group',g.id,colIcon(esc(g.name.charAt(0).toUpperCase()),grpCol(g),'squircle',40),esc(g.name),S.wallets.filter(w=>w.g===g.id).length+' dompet',money(grpBal(g)))).join('');
-  if(k==='wallet')rows=S.wallets.map(w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc(g?g.name:'–'),money(D.bal[w.id]||0))}).join('');
+  if(k==='wallet')rows=S.wallets.map(w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc((g?g.name:'–')+(w.p?' · '+w.p:'')),money(D.bal[w.id]||0))}).join('');
   if(k==='card')rows=cardList();
   if(k==='rec')rows=S.recur.map(r=>{const c=S.cats.find(x=>x.id===r.cat);return mrow('rec',r.id,catIcon(c,40),esc((c?c.name:'Tanpa kategori')+(r.note?' · '+r.note:'')),'Tiap tanggal '+r.day+' · '+esc(accName(r.acc)),(r.t==='inc'?'+':'−')+money(r.amt))}).join('');
   if(k==='cat'){const sec=t=>{const M=catMonth(t);return S.cats.filter(c=>c.t===t).map(c=>mrow('cat',c.id,catIcon(c,40),esc(c.name),c.subs.length?esc(c.subs.join(', ')):'Tanpa sub-kategori',M.cats[c.id]?money(M.cats[c.id]):'')).join('')};
@@ -2915,7 +2938,7 @@ VIEWS.manage=function(){
   const lbl=MG.find(x=>x[0]===k)[1];
   return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></div>
     <div class="chips" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
-    ${k==='wallet'?paretoBlk():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}<div class="surface">${rows||'<p class="empty">Belum ada. Ketuk tombol tambah di atas.</p>'}</div></section>`;
+    ${k==='wallet'?purDash()+paretoBlk():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}<div class="surface">${rows||'<p class="empty">Belum ada. Ketuk tombol tambah di atas.</p>'}</div></section>`;
 };
 
 /* ---- atur ---- */
@@ -3109,7 +3132,7 @@ function limitWarn(amt){
 }
 
 /* ---- pilihan dompet/kartu horizontal ---- */
-const walletChips=(act,cur,except)=>`<div class="chips">${S.wallets.filter(w=>w.id!==except).map(w=>`<button class="chip tall ${w.id===cur?'on':''}" data-action="${act}" data-id="${w.id}">${esc(w.name)}<small>${money(D.bal[w.id]||0)}</small></button>`).join('')||'<span class="lbl">Belum ada dompet</span>'}</div>`;
+const walletChips=(act,cur,except)=>`<div class="chips">${S.wallets.filter(w=>w.id!==except).map(w=>`<button class="chip tall ${w.id===cur?'on':''}" data-action="${act}" data-id="${w.id}">${esc(wLbl(w))}<small>${money(D.bal[w.id]||0)}</small></button>`).join('')||'<span class="lbl">Belum ada dompet</span>'}</div>`;
 const cardChips=(act,cur)=>S.cards.length>1?`<div class="chips" style="margin-bottom:10px">${S.cards.map(c=>`<button class="chip ${c.id===cur?'on':''}" data-action="${act}" data-id="${c.id}">${esc(c.name)} ••${esc(c.last4)}</button>`).join('')}</div>`:'';
 
 /* ---- bayar kartu ---- */
@@ -3236,7 +3259,7 @@ const subEditor=o=>{const c=o||{icon:'📦',subs:[],si:{}};return`<div class="f"
 function formHTML(){
   const F=ui.form,k=F.kind,o=F.id?S[FK[k]].find(x=>x.id===F.id):null;
   let b='';
-  if(k==='rec'){const accs=S.wallets.map(w=>[w.id,w.name]).concat(S.cards.map(c=>[c.id,c.name+' ••'+c.last4+' (kartu)']));
+  if(k==='rec'){const accs=S.wallets.map(w=>[w.id,wLbl(w)]).concat(S.cards.map(c=>[c.id,c.name+' ••'+c.last4+' (kartu)']));
     const catOpt=t=>S.cats.filter(c=>c.t===t).map(c=>`<option value="${esc(c.id)}" ${o&&o.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
     b=`<div class="f"><span>Kategori</span><select id="f_cat" name="cat"><option value="">Pilih kategori…</option><optgroup label="Pengeluaran">${catOpt('exp')}</optgroup><optgroup label="Pemasukan">${catOpt('inc')}</optgroup></select></div>`+
       fld('Akun',sel('acc',[['','Pilih akun…']].concat(accs),o?o.acc:''))+
@@ -3244,7 +3267,7 @@ function formHTML(){
       fld('Tanggal tiap bulan',inp('day',o?o.day:today().slice(8),'inputmode="numeric" maxlength="2"'),'Bulan yang lebih pendek memakai tanggal terakhir bulan itu.')+
       fld('Catatan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Gaji, Netflix, Cicilan" maxlength="40"'));}
   if(k==='group')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Kas & Bank"'))+colorField(o?grpCol(o):COLS[0]);
-  if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name]),o?o.g:(S.groups[0]||{}).id))+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
+  if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name]),o?o.g:(S.groups[0]||{}).id))+fld('Peruntukan',inp('p',o&&o.p?o.p:'','list="dl_p" maxlength="24" placeholder="Contoh: Darurat" autocomplete="off"')+`<datalist id="dl_p">${purOpts().map(x=>`<option value="${esc(x)}">`).join('')}</datalist>`,'Dompet dengan peruntukan sama dijumlahkan di dasbor, walau beda bank.')+fld('Target (Rp)',inp('tg',o&&o.tg?nf.format(o.tg):'','data-input="money" inputmode="numeric" placeholder="Opsional"'),'Isi kalau kantong ini punya tujuan saldo.')+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
   if(k==='pool')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Plafon Bank"'))+fld('Limit bersama (Rp)',inp('limit',o?nf.format(o.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bersama oleh kartu-kartu dalam grup ini.');
   if(k==='cat'){
     const col=o?catCol(o):0;
@@ -3261,7 +3284,7 @@ function formHTML(){
       fld('Nama kartu',inp('name',c.name,'data-input="cprev"'))+fld('Bank',inp('bank',c.bank,'data-input="cprev"'))+
       `<div class="row2" style="grid-template-columns:1fr 1fr;margin:0">${fld('4 digit terakhir',inp('last4',c.last4,'maxlength="4" inputmode="numeric" data-input="cprev"'))}${fld('Jaringan',sel('net',[['visa','Visa'],['mc','Mastercard']],c.net,'data-input="cprev"'))}</div>`+
       `<div class="f"><span>Tema</span><div class="sw-row">${Object.keys(THEMES).map(t=>`<button type="button" class="sw th-${t} ${t===(c.theme||'obsidian')?'on':''}" data-action="ctheme" data-arg="${t}" aria-label="Tema ${THEMES[t]}"></button>`).join('')}</div><input type="hidden" name="theme" value="${esc(c.theme||'obsidian')}"></div>`+
-      fld('Dompet terhubung',sel('wallet',[['','Pilih dompet…']].concat(S.wallets.map(w=>[w.id,w.name+' · '+rp(D.bal[w.id]||0)])),c.wallet||''),'Kartu ini hanya dibayar dari dompet ini, dan dana gestun cair ke sini.')+
+      fld('Dompet terhubung',sel('wallet',[['','Pilih dompet…']].concat(S.wallets.map(w=>[w.id,wLbl(w)+' · '+rp(D.bal[w.id]||0)])),c.wallet||''),'Kartu ini hanya dibayar dari dompet ini, dan dana gestun cair ke sini.')+
       fld('Grup limit',sel('pool',[['','Tanpa grup (limit sendiri)']].concat(S.pools.map(p=>[p.id,p.name+' · '+rp(p.limit)])),c.pool||''))+
       fld('Limit sendiri (Rp)',inp('limit',c.limit?nf.format(c.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bila kartu tidak masuk grup limit.')+
       `<div class="row2" style="grid-template-columns:1fr 1fr 1fr;margin:0">${fld('Tgl cetak',inp('cut',c.cut||'','inputmode="numeric" maxlength="2"'))}${fld('Jatuh tempo',inp('due',c.due||'','inputmode="numeric" maxlength="2"'))}${fld('Min. bayar %',inp('minPct',c.minPct==null?10:c.minPct,'inputmode="numeric" maxlength="3"'))}</div>`+
@@ -3282,7 +3305,7 @@ function saveForm(){
   const F=ui.form,k=F.kind,col=S[FK[k]],o=F.id?col.find(x=>x.id===F.id):null;
   let rec;
   if(k==='group'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,color:hexOk(fv('color'))?fv('color'):undefined}}
-  if(k==='wallet'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(!fv('g'))return toast('Buat kelompok akun dulu');rec={name:n,note:(fv('note')||'').trim(),color:hexOk(fv('color'))?fv('color'):undefined,g:fv('g'),open:num(fv('open'))}}
+  if(k==='wallet'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(!fv('g'))return toast('Buat kelompok akun dulu');rec={name:n,note:(fv('note')||'').trim(),color:hexOk(fv('color'))?fv('color'):undefined,g:fv('g'),p:(fv('p')||'').trim(),tg:num(fv('tg'))||0,open:num(fv('open'))}}
   if(k==='pool'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,limit:num(fv('limit'))}}
   if(k==='cat'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,t:o?o.t:fv('t'),icon:fv('icon')||'📦',col:+fv('col'),subs:[],si:{},budget:(o?o.t:fv('t'))==='exp'?num(fv('budget')):0};
     const seen={},ren={};
@@ -3648,7 +3671,7 @@ const A={
   'x-open'(el,arg){
     const X=ui.xfer,xs=document.getElementById('xs'),i=+arg;if(!X||!xs||X.pick!==null)return;
     X.pick=i;const payer=X.up?1:0;
-    const rows=S.wallets.map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(w.name)}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
+    const rows=S.wallets.map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(wLbl(w))}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
     document.getElementById('xsp'+i).innerHTML=`<div class="xs-ph"><span>${i===payer?'Dari':'Ke'}</span><button type="button" class="xs-x" data-action="x-close" aria-label="Tutup">✕</button></div><div class="xs-list">${rows}</div>`;
     xs.classList.add('pk');
     xs.querySelectorAll('.xs-c').forEach(c=>c.classList.add(+c.dataset.i===i?'on':'sq'));
