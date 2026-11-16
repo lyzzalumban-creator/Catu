@@ -28,3 +28,6 @@ Di bawah ringkasan Keluar/Masuk/Selisih, tab Transaksi menampilkan kalender bula
 Kalender awalnya ringkas: satu baris berisi 7 hari terakhir (sampai hari ini) dengan selisih tiap hari dan total selisih minggu itu di header. Ketuk bar kalender untuk membuka seluruh bulan, ketuk lagi untuk meringkas. Di bulan lain, baris ringkas menampilkan minggu terakhir (bulan lalu) atau minggu pertama (bulan depan). Status ringkas atau penuh tidak disimpan. Baris 7 hari ikut maju saat hari berganti: hari paling lama hilang dan hari baru muncul di kanan, termasuk saat halaman dibiarkan terbuka melewati tengah malam.
 
 Kalender bisa dinyalakan atau dimatikan di Atur → Tampilan → Kalender di Riwayat (`settings.calendar`, bawaan aktif). Saat nonaktif, kalender dan panel riwayat tanggal disembunyikan, dan daftar per hari tetap tampil.
+
+## Gerak (animasi)
+Gerak di kalender dan riwayat mengikuti bahasa gerak bagian kartu kredit: easing pegas `--spring` dengan durasi .5 detik dan buka-tutup lewat `grid-template-rows` (sama seperti grup dompet). Panel tanggal membuka dan menutup dengan gerak itu, ganti ringkas/penuh pada kalender menganimasikan tinggi, dan ketuk tanggal tidak lagi menggambar ulang kalender. Pengguna yang mengaktifkan `prefers-reduced-motion` mendapat perpindahan tanpa animasi.
