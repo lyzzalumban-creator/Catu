@@ -1207,7 +1207,9 @@ function cardInfo(c){
   return{pool:pool||null,limit,mine,other,used:mine+other,remain:limit-mine-other};
 }
 const accById=id=>S.wallets.find(x=>x.id===id)||S.cards.find(x=>x.id===id)||null;
-const accName=id=>{const a=accById(id);return a?a.name:''};
+/* nama dompet kembar (mis. 'Darurat' di dua bank) otomatis ditampilkan sebagai 'Darurat · Bank' */
+const wLbl=w=>{const k=(w.name||'').trim().toLowerCase();if(!S.wallets.some(x=>x!==w&&(x.name||'').trim().toLowerCase()===k))return w.name;const g=S.groups.find(x=>x.id===w.g);return g?w.name+' · '+g.name:w.name};
+const accName=id=>{const a=accById(id);return a?(S.wallets.includes(a)?wLbl(a):a.name):''};
 const isCard=id=>S.cards.some(c=>c.id===id);
 function defaultCats(){return[
  {id:'c_makan',t:'exp',name:'Makan',icon:'🍜',col:5,subs:['Sarapan','Makan siang','Makan malam','Kopi & jajan']},
@@ -2175,7 +2177,7 @@ const grpCol=g=>g.color||PAL[hsh(g.id+'g')%PAL.length][1];
 const walCol=w=>w.color||PAL[hsh(w.id)%PAL.length][1];
 function wgRow(w,i){
   const b=D.bal[w.id]||0;
-  return`<div class="wg-r" style="--c:${walCol(w)};--d:${i*40}ms"><button class="wg-m" data-action="open-accd" data-id="${w.id}"><i class="wg-bar"></i><span class="lm"><b>${esc(w.name)}</b><small>${esc(w.note||'Ketuk untuk detail')}</small></span><b class="wg-amt ${b<0?'neg':''}" ${mv('wb:'+w.id,b)}>${money(b)}</b></button><button class="wg-add" data-action="open-acc" data-id="${w.id}" aria-label="Catat di ${esc(w.name)}">${IC.plus||'+'}</button></div>`;
+  return`<div class="wg-r" style="--c:${walCol(w)};--d:${i*40}ms"><button class="wg-m" data-action="open-accd" data-id="${w.id}"><i class="wg-bar"></i><span class="lm"><b>${esc(wLbl(w))}</b><small>${esc(w.note||'Ketuk untuk detail')}</small></span><b class="wg-amt ${b<0?'neg':''}" ${mv('wb:'+w.id,b)}>${money(b)}</b></button><button class="wg-add" data-action="open-acc" data-id="${w.id}" aria-label="Catat di ${esc(w.name)}">${IC.plus||'+'}</button></div>`;
 }
 const ring=(f,c)=>{const R=15,C=2*Math.PI*R,l=Math.max(.001,Math.min(1,f))*C;return`<span class="wg-ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="${R}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/><circle cx="20" cy="20" r="${R}" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${l.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg></span>`};
 function blkWallets(){
@@ -2740,7 +2742,7 @@ const mrow=(kind,id,ico,a,b,c)=>`<button class="lrow" data-action="fedit" data-a
 /* ---- kelola > dompet: grafik Pareto (dompet mana yang menyimpan sebagian besar uang) ---- */
 let PC=null;
 function parData(){
-  let w=S.wallets.map(x=>({n:x.name,v:D.bal[x.id]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  let w=S.wallets.map(x=>({n:wLbl(x),v:D.bal[x.id]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   if(w.length>8){const rest=w.slice(7);w=w.slice(0,7);w.push({n:'Lainnya',v:rest.reduce((a,x)=>a+x.v,0),multi:rest.length})}
   const tot=w.reduce((a,x)=>a+x.v,0);let c=0;w.forEach(x=>{x.pre=c/tot;c+=x.v;x.cum=c/tot});
   return{w,tot};
@@ -3130,7 +3132,7 @@ function limitWarn(amt){
 }
 
 /* ---- pilihan dompet/kartu horizontal ---- */
-const walletChips=(act,cur,except)=>`<div class="chips">${S.wallets.filter(w=>w.id!==except).map(w=>`<button class="chip tall ${w.id===cur?'on':''}" data-action="${act}" data-id="${w.id}">${esc(w.name)}<small>${money(D.bal[w.id]||0)}</small></button>`).join('')||'<span class="lbl">Belum ada dompet</span>'}</div>`;
+const walletChips=(act,cur,except)=>`<div class="chips">${S.wallets.filter(w=>w.id!==except).map(w=>`<button class="chip tall ${w.id===cur?'on':''}" data-action="${act}" data-id="${w.id}">${esc(wLbl(w))}<small>${money(D.bal[w.id]||0)}</small></button>`).join('')||'<span class="lbl">Belum ada dompet</span>'}</div>`;
 const cardChips=(act,cur)=>S.cards.length>1?`<div class="chips" style="margin-bottom:10px">${S.cards.map(c=>`<button class="chip ${c.id===cur?'on':''}" data-action="${act}" data-id="${c.id}">${esc(c.name)} ••${esc(c.last4)}</button>`).join('')}</div>`:'';
 
 /* ---- bayar kartu ---- */
@@ -3257,7 +3259,7 @@ const subEditor=o=>{const c=o||{icon:'📦',subs:[],si:{}};return`<div class="f"
 function formHTML(){
   const F=ui.form,k=F.kind,o=F.id?S[FK[k]].find(x=>x.id===F.id):null;
   let b='';
-  if(k==='rec'){const accs=S.wallets.map(w=>[w.id,w.name]).concat(S.cards.map(c=>[c.id,c.name+' ••'+c.last4+' (kartu)']));
+  if(k==='rec'){const accs=S.wallets.map(w=>[w.id,wLbl(w)]).concat(S.cards.map(c=>[c.id,c.name+' ••'+c.last4+' (kartu)']));
     const catOpt=t=>S.cats.filter(c=>c.t===t).map(c=>`<option value="${esc(c.id)}" ${o&&o.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
     b=`<div class="f"><span>Kategori</span><select id="f_cat" name="cat"><option value="">Pilih kategori…</option><optgroup label="Pengeluaran">${catOpt('exp')}</optgroup><optgroup label="Pemasukan">${catOpt('inc')}</optgroup></select></div>`+
       fld('Akun',sel('acc',[['','Pilih akun…']].concat(accs),o?o.acc:''))+
@@ -3282,7 +3284,7 @@ function formHTML(){
       fld('Nama kartu',inp('name',c.name,'data-input="cprev"'))+fld('Bank',inp('bank',c.bank,'data-input="cprev"'))+
       `<div class="row2" style="grid-template-columns:1fr 1fr;margin:0">${fld('4 digit terakhir',inp('last4',c.last4,'maxlength="4" inputmode="numeric" data-input="cprev"'))}${fld('Jaringan',sel('net',[['visa','Visa'],['mc','Mastercard']],c.net,'data-input="cprev"'))}</div>`+
       `<div class="f"><span>Tema</span><div class="sw-row">${Object.keys(THEMES).map(t=>`<button type="button" class="sw th-${t} ${t===(c.theme||'obsidian')?'on':''}" data-action="ctheme" data-arg="${t}" aria-label="Tema ${THEMES[t]}"></button>`).join('')}</div><input type="hidden" name="theme" value="${esc(c.theme||'obsidian')}"></div>`+
-      fld('Dompet terhubung',sel('wallet',[['','Pilih dompet…']].concat(S.wallets.map(w=>[w.id,w.name+' · '+rp(D.bal[w.id]||0)])),c.wallet||''),'Kartu ini hanya dibayar dari dompet ini, dan dana gestun cair ke sini.')+
+      fld('Dompet terhubung',sel('wallet',[['','Pilih dompet…']].concat(S.wallets.map(w=>[w.id,wLbl(w)+' · '+rp(D.bal[w.id]||0)])),c.wallet||''),'Kartu ini hanya dibayar dari dompet ini, dan dana gestun cair ke sini.')+
       fld('Grup limit',sel('pool',[['','Tanpa grup (limit sendiri)']].concat(S.pools.map(p=>[p.id,p.name+' · '+rp(p.limit)])),c.pool||''))+
       fld('Limit sendiri (Rp)',inp('limit',c.limit?nf.format(c.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bila kartu tidak masuk grup limit.')+
       `<div class="row2" style="grid-template-columns:1fr 1fr 1fr;margin:0">${fld('Tgl cetak',inp('cut',c.cut||'','inputmode="numeric" maxlength="2"'))}${fld('Jatuh tempo',inp('due',c.due||'','inputmode="numeric" maxlength="2"'))}${fld('Min. bayar %',inp('minPct',c.minPct==null?10:c.minPct,'inputmode="numeric" maxlength="3"'))}</div>`+
@@ -3669,7 +3671,7 @@ const A={
   'x-open'(el,arg){
     const X=ui.xfer,xs=document.getElementById('xs'),i=+arg;if(!X||!xs||X.pick!==null)return;
     X.pick=i;const payer=X.up?1:0;
-    const rows=S.wallets.map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(w.name)}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
+    const rows=S.wallets.map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(wLbl(w))}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
     document.getElementById('xsp'+i).innerHTML=`<div class="xs-ph"><span>${i===payer?'Dari':'Ke'}</span><button type="button" class="xs-x" data-action="x-close" aria-label="Tutup">✕</button></div><div class="xs-list">${rows}</div>`;
     xs.classList.add('pk');
     xs.querySelectorAll('.xs-c').forEach(c=>c.classList.add(+c.dataset.i===i?'on':'sq'));
