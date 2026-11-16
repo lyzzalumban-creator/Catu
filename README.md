@@ -12,3 +12,6 @@ Aplikasi pencatat keuangan pribadi (dompet, kartu kredit, transaksi, laporan) da
 
 ## Pembaruan otomatis
 Saat halaman dibuka (atau saat kembali ke aplikasi), `index.html` mengecek versi terbaru di server dan memuat ulang sendiri kalau ada yang berubah. Sidik jari versi disimpan di kunci `catu.ver`; data keuangan (`kantong.v1`) tidak diubah. Syaratnya, perubahan sudah digabung ke branch yang dipublikasikan GitHub Pages.
+
+## Dompet terhubung ke kartu kredit
+Setiap kartu punya satu dompet terhubung (field `wallet` pada kartu). Bayar kartu hanya keluar dari dompet itu, dan dana gestun cair ke dompet itu. Kartu lama yang belum punya dompet terhubung tetap bisa dipakai dengan memilih dompet manual, sampai dompetnya diatur lewat Kelola → Kartu → Ubah.
