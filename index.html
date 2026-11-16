@@ -888,6 +888,12 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .ca.p{color:var(--onAccC);background:var(--accC)}
 .ca.n{color:#FFB0AA;background:var(--negC)}
 .ca.z{color:var(--mute);background:none}
+.cpanel{background:var(--s2);border-radius:var(--r-xl);padding:4px 16px 6px;margin-bottom:10px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent);animation:cpin .22s var(--emph) both}
+@keyframes cpin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.cpanel{animation:none}}
+.cph{display:flex;align-items:center;gap:10px;padding:10px 0 6px;border-bottom:1px solid var(--line)}
+.cph .dt{flex:1;min-width:0}.cph .dt b{display:block;font-size:14px;font-weight:700}.cph .dt small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
+.cph .dtn{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .md{scroll-margin-top:84px}
 @media(max-width:350px){.mcal{padding:12px 3px 8px}.cg{gap:2px}.cd{padding:4px 0}.ca{font-size:9px;padding:3px 2px;letter-spacing:-.02em}}
 .md+.md{border-top:1px solid var(--line)}
@@ -1224,7 +1230,7 @@ function normalize(s){
   st.pack=st.pack&&typeof st.pack==='object'?{day:String(st.pack.day||''),added:Math.max(0,+st.pack.added||0),used:Math.max(0,+st.pack.used||0)}:{day:'',added:0,used:0};
   ['groups','wallets','pools','cards','cats','tx'].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
-  st.gestun=st.gestun===undefined?true:!!st.gestun;st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
+  st.gestun=st.gestun===undefined?true:!!st.gestun;st.calendar=st.calendar===undefined?true:!!st.calendar;st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
   s.updated=s.updated||0;return s;
 }
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -1717,6 +1723,7 @@ function blkChart(){
   </section>`;
 }
 const gestOn=()=>S.settings.gestun!==false;
+const calOn=()=>S.settings.calendar!==false;
 function blkActions(){
   const a=[['open-xfer','Transfer',IC.swap,2,'clover4'],['qpay','Bayar',IC.card,3,'cookie6']];if(gestOn())a.push(['qgest','Gestun',IC.bolt,5,'sunny']);
   return`<section class="blk acts" style="grid-template-columns:repeat(${a.length},1fr)">${a.map(x=>`<button class="act" data-action="${x[0]}">${x[3]<0?shapeIconC(x[2],'var(--acc)','var(--acc-ink)',x[4],60):shapeIcon(x[2],x[3],x[4],60)}<span>${x[1]}</span></button>`).join('')}</section>`;
@@ -2149,6 +2156,9 @@ function mutBody(){
     const inner=`<span class="cn ${isT?'t':''}">${d}</span>${amt}`;
     cells+=o?`<button class="cd has ${on?'sel':''}" data-action="mutcal" data-arg="${ds}" aria-label="${d} ${MON[cm]}, ${o.n} transaksi">${inner}</button>`:`<i class="cd">${inner}</i>`}
   const cal=`<div class="mcal"><div class="cw">${['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(x=>`<span>${x}</span>`).join('')}</div><div class="cg">${cells}</div></div>`;
+  let panel='';
+  if(calOn()&&ui.mutSel&&byD[ui.mutSel]){const o=byD[ui.mutSel],rows=l.filter(t=>t.d===ui.mutSel).map(txRow2).join('');
+    panel=`<div class="cpanel"><div class="cph"><span class="dt"><b>${esc(relDate(ui.mutSel))}</b><small>${o.n} transaksi</small></span><span class="dtn ${o.net<0?'neg':o.net>0?'pos':''}">${o.net<0?'−':o.net>0?'+':''}${money(Math.abs(o.net))}</span><button class="ibtn sm" data-action="mutcalx" aria-label="Tutup riwayat tanggal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>${rows}</div>`}
   /* hari ini terbuka, hari sebelumnya tertutup; saat mencari/memfilter semua terbuka. Ringkasan hari tetap terlihat di header. */
   const filtering=!!q||ui.mutF!=='all',td=today();if(ui.mutSel&&ui.mutSel.slice(0,7)!==m)ui.mutSel='';
   let h='',last='',buf='',net=0,cnt=0,di=0,dout=0;
@@ -2157,7 +2167,7 @@ function mutBody(){
     h+=`<div class="md ${open?'open':''}" data-d="${last}"><button class="dh3" data-action="mutday" data-arg="${last}" aria-expanded="${open}"><span class="dt"><b>${esc(relDate(last))}</b><small>${parts.join('')}</small></span><span class="dtn">${net<0?'−':net>0?'+':''}${money(Math.abs(net))}</span>${chev(open)}</button><div class="md-b"><div class="md-in">${buf}</div></div></div>`;buf='';net=0;cnt=0;di=0;dout=0};
   l.forEach(t=>{if(t.d!==last){flush();last=t.d}buf+=txRow2(t);cnt++;if(t.t==='exp'||t.t==='gfee'){net-=t.amt;dout+=t.amt}else if(t.t==='inc'){net+=t.amt;di+=t.amt}});flush();
   const empty=`<p class="empty">${q?'Tidak ada transaksi yang cocok.':'Belum ada transaksi di '+MONF[+m.slice(5)-1]+'.'}</p>`;
-  return sum+cal+`<div class="surface">${h||empty}</div>`;
+  return sum+(calOn()?cal+panel:'')+`<div class="surface">${h||empty}</div>`;
 }
 VIEWS.mut=function(){
   const cur=today().slice(0,7),m=mutMonth(),mi=k=>+k.slice(0,4)*12+ +k.slice(5)-1,mk=n=>Math.floor(n/12)+'-'+String(n%12+1).padStart(2,'0');
@@ -2527,6 +2537,7 @@ VIEWS.set=function(){
   return`<section class="blk"><div class="blk-h"><h2>Susunan Beranda</h2></div><div class="surface">${lay}</div></section>
    <section class="blk"><div class="blk-h"><h2>Tampilan</h2></div><div class="surface">
      <div class="setrow"><div><b>Menu Gestun</b><small>Tampilkan tombol Gestun di Beranda dan kartu</small></div><button class="sw-t ${gestOn()?'on':''}" data-action="gestun-tog" role="switch" aria-checked="${gestOn()}" aria-label="Menu Gestun"></button></div>
+     <div class="setrow"><div><b>Kalender di Riwayat</b><small>Kalender per tanggal di tab Transaksi, ketuk tanggal untuk lihat riwayatnya</small></div><button class="sw-t ${calOn()?'on':''}" data-action="cal-tog" role="switch" aria-checked="${calOn()}" aria-label="Kalender di Riwayat"></button></div>
      <div class="setrow"><div><b>Mode privasi</b><small>Sembunyikan semua nominal</small></div><button class="sw-t ${S.settings.privacy?'on':''}" data-action="privacy" role="switch" aria-checked="${S.settings.privacy}" aria-label="Mode privasi"></button></div>
      <div class="setrow" style="display:block"><div><b>Tampilan kartu</b><small>Cara kartu kredit ditampilkan di beranda</small></div><div class="bgroup" role="group">${[['wallet','Dompet'],['stack','Tumpukan'],['col','Kolom'],['car','Putar']].map(m=>`<button class="${S.settings.cardView===m[0]?'on':''}" data-action="cardview" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div></div>
      ${(S.settings.cardView==='wallet'||(S.settings.cardView==='col'&&S.cards.length<2)||(S.settings.cardView==='car'&&S.cards.length<2)||(S.settings.cardView==='stack'&&!S.cards.length))?`<div class="setrow" style="display:block"><div><b>Warna dompet kartu</b><small>Dompet tempat kartu kredit menyembul di Beranda</small></div><div class="sw-row" style="margin-top:12px">${Object.keys(WL_COLORS).map(k=>`<button class="sw sw-${k} ${S.settings.wl===k?'on':''}" data-action="wlcolor" data-arg="${k}" aria-label="${WL_COLORS[k]}"></button>`).join('')}</div></div>`:''}
@@ -3091,7 +3102,9 @@ const A={
   antype(el,arg){ui.an.type=arg;render()},
   mutmore(){ui.mutN+=40;render()},
   mutf(el,arg){ui.mutF=arg;ui.mutN=40;ui.mutDay={};render()},
-  mutcal(el,arg){ui.mutSel=arg;ui.mutDay[arg]=true;const b=$('#mutBody');if(b)b.innerHTML=mutBody();const t=document.querySelector('.md[data-d="'+arg+'"]');if(t)t.scrollIntoView({behavior:'smooth',block:'start'})},
+  mutcal(el,arg){ui.mutSel=ui.mutSel===arg?'':arg;const b=$('#mutBody');if(b)b.innerHTML=mutBody()},
+  mutcalx(){ui.mutSel='';const b=$('#mutBody');if(b)b.innerHTML=mutBody()},
+  'cal-tog'(){S.settings.calendar=!calOn();ui.mutSel='';persist();render();if(ui.sheet)renderSheet()},
   mutday(el,arg){const m=el.closest('.md');if(!m)return;const o=!m.classList.contains('open');m.classList.toggle('open',o);el.setAttribute('aria-expanded',o);const c=el.querySelector('.chev');if(c)c.classList.toggle('o',o);ui.mutDay[arg]=o},
   mutm(el,arg){
     const old=mutMonth();if(old===arg)return;
