@@ -851,10 +851,10 @@ input:disabled{opacity:.6}
 .kg-h{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:10px 4px 6px}
 .kg-h b{display:block;font-size:14px}.kg-h small{display:block;color:var(--mute);font-size:12px;margin-top:2px}
 .kg-e{font-size:12.5px;color:var(--acc);font-weight:650}
-.hp-pv{height:76px;border-radius:15px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .12s}
-.hp-pv b{position:absolute;left:13px;bottom:10px;font-size:12.5px;font-weight:650;letter-spacing:.3px}
+.hp-pv{height:46px;border-radius:15px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .12s}
+.hp-pv b{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:650;letter-spacing:.3px}
 .hp{--hh:120;--ss:80%;--ll:56%}
-.hp-row{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:10px;margin-top:16px}
+.hp-row{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:10px;margin-top:14px}
 .hp-row>label{font-size:11.5px;color:var(--mute);font-weight:600}
 .hp-sl{position:relative;height:14px;margin-right:11px;border-radius:8px;touch-action:none;cursor:pointer}
 .hp-sl::before{content:'';position:absolute;inset:-16px -12px}
@@ -863,7 +863,14 @@ input:disabled{opacity:.6}
 .hp-sl.lig{background:linear-gradient(90deg,hsl(var(--hh) var(--ss) 8%),hsl(var(--hh) var(--ss) 50%),hsl(var(--hh) var(--ss) 94%))}
 .hp-th{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.4);transform:translate(-50%,-50%);pointer-events:none}
 .hp-hx{font:inherit;font-size:14px;letter-spacing:.04em;text-transform:uppercase;padding:9px 12px}
-.hp-pre{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:20px}
+.hp-pre{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:12px}
+.hp-tg{display:flex;align-items:center;gap:6px;margin:14px 2px 0;padding:4px 0;font-size:13px;font-weight:650;color:var(--acc)}
+.hp-tg svg{transition:transform .4s var(--spring)}.hp.open .hp-tg svg{transform:rotate(180deg)}
+.hp-adv{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}
+.hp.open .hp-adv{grid-template-rows:1fr}
+.hp-adv-in{min-height:0;overflow:hidden;padding:0 12px 4px 0;margin-right:-12px}
+.hp:not(.open) .hp-adv-in{visibility:hidden}
+.hp.open .hp-adv-in{overflow:visible}
 .hp-s{aspect-ratio:1;width:100%;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:box-shadow .2s,transform .2s var(--spring)}
 .hp-s:active{transform:scale(.9)}
 .hp-s.on{box-shadow:0 0 0 2px var(--s1),0 0 0 4px #fff}
@@ -1239,9 +1246,10 @@ function colorField(cur){
   const sl=(k,lab,cls)=>`<div class="hp-row"><label>${lab}</label><div class="hp-sl ${cls}" data-sk="${k}" role="slider" aria-label="${lab}" aria-valuemin="${mn[k]}" aria-valuemax="${mx[k]}" aria-valuenow="${nowv[k]}"><i class="hp-th" style="left:${(clamp(pos[k],0,1)*100).toFixed(2)}%;background:${hex}"></i></div></div>`;
   return`<div class="f"><span>Warna</span><div class="hp" data-hex="${hex}" data-h="${hsl[0]}" data-s="${hsl[1]}" data-l="${hsl[2]}" style="--hh:${hsl[0]};--ss:${hsl[1]}%;--ll:${hsl[2]}%">
     <div class="hp-pv" style="background:${hex}"><b style="color:${hexInk(hex)}">${hex}</b></div>
-    ${sl('h','Rona','hue')}${sl('s','Kejenuhan','sat')}${sl('l','Kecerahan','lig')}
-    <div class="hp-row"><label>Kode hex</label><input class="hp-hx" value="${hex}" maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Kode hex warna" data-input="hphex"></div>
     <div class="hp-pre">${HP_GRID.map(c=>`<button type="button" class="hp-s ${hex===c?'on':''}" style="background:${c}" data-action="pcol" data-arg="${c}" aria-label="Warna ${c}"></button>`).join('')}</div>
+    <button type="button" class="hp-tg" data-action="hptog" aria-expanded="false">Atur manual<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="hp-adv"><div class="hp-adv-in">${sl('h','Rona','hue')}${sl('s','Kejenuhan','sat')}${sl('l','Kecerahan','lig')}
+      <div class="hp-row"><label>Kode hex</label><input class="hp-hx" value="${hex}" maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Kode hex warna" data-input="hphex"></div></div></div>
   </div><input type="hidden" name="color" value="${esc(cur||'')}"></div>`;
 }
 /* terapkan keadaan HSL di dataset ke semua bagian pemilih */
@@ -3892,6 +3900,7 @@ const A={
   fsaveform(){saveForm()},
   fdelform(el){deleteForm(el)},
   ctheme(el,arg){const h=$('#panel [name=theme]');if(h)h.value=arg;el.parentElement.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b===el));updateCardPrev()},
+  hptog(el){const r=el.closest('.hp'),o=r.classList.toggle('open');el.setAttribute('aria-expanded',o)},
   pcol(el,arg){hpSet(el.closest('.hp'),arg)},
   kureset(el){const r=el.closest('.ku');kuSet(r,+r.dataset.f0,false)},
   subadd(){const ed=$('#subEd');if(!ed)return;const o=ui.form&&ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const ic=($('#panel [name=icon]')||{}).value||(o&&o.icon)||'📦';ed.insertAdjacentHTML('beforeend',subRow({icon:ic.trim()||'📦',si:{}},'',''));const n=ed.lastElementChild.querySelector('.sub-nm');n&&n.focus()},
