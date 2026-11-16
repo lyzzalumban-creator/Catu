@@ -52,6 +52,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 /* shapes (M3E) */
 .shi{position:relative;width:var(--sz);height:var(--sz);flex:none;display:grid;place-items:center}
 .shi svg.shp{position:absolute;inset:0;width:100%;height:100%;fill:var(--c);transition:transform .6s var(--spring)}
+.shi.rg svg.shp{overflow:visible;stroke:var(--rc);stroke-width:1.8px;vector-effect:non-scaling-stroke}
+.shi.rg svg.shp path{vector-effect:non-scaling-stroke}
 .shi b{position:relative;color:var(--oc);font-size:calc(var(--sz)*.44);font-weight:700;line-height:1;display:grid;place-items:center}
 .shi b svg{width:calc(var(--sz)*.42);height:calc(var(--sz)*.42)}
 button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) scale(.94)}
@@ -1170,7 +1172,12 @@ const shapeIconC=(content,c,oc,shape,size)=>`<span class="shi" style="--sz:${siz
 const shapeIcon=(content,col,shape,size)=>{const p=PAL[((col%PAL.length)+PAL.length)%PAL.length];return shapeIconC(content,p[0],p[1],shape,size)};
 const catCol=c=>c&&c.col!=null?+c.col:hsh(c?c.id:'x')%PAL.length;
 const catShape=c=>SHAPES[hsh((c?c.id:'x')+'s')%SHAPES.length];
-const catIcon=(c,size)=>shapeIcon(c?esc(c.icon):'📦',catCol(c),catShape(c),size);
+/* stiker kategori: latar = jenis (hijau pemasukan, merah pengeluaran), cincin tipis = warna pilihan sendiri */
+const TYPE_BG={inc:'#1E4A24',exp:'#52201F'},TYPE_FG={inc:'#A8F552',exp:'#FF8A8A'};
+const catHex=c=>c&&hexOk(c.color)?c.color:PAL[catCol(c)%PAL.length][1];
+const ringFit=h=>{const n=parseInt(h.slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255,L=(.2126*r+.7152*g+.0722*b)/255;if(L>=.38)return h;const m=Math.min(.6,(.38-L)*1.6+.15),f=x=>Math.round(x+(255-x)*m).toString(16).padStart(2,'0');return'#'+f(r)+f(g)+f(b)};
+const catIconX=(content,c,size)=>{const t=c&&c.t==='inc'?'inc':'exp';return`<span class="shi rg" style="--sz:${size}px;--c:${TYPE_BG[t]};--oc:${TYPE_FG[t]};--rc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b></span>`};
+const catIcon=(c,size)=>catIconX(c?esc(c.icon):'📦',c,size);
 const hexOk=h=>/^#[0-9a-f]{6}$/i.test(h||'');
 function darkTint(h){const n=parseInt(h.slice(1),16),f=x=>Math.round(x*.22+10).toString(16).padStart(2,'0');return'#'+f(n>>16&255)+f(n>>8&255)+f(n&255)}
 const colIcon=(ch,hex,shape,size)=>shapeIconC(ch,darkTint(hex),hex,shape,size);
@@ -1193,6 +1200,7 @@ function hpSet(root,hex,keepThumb){
   if(!keepThumb)th.style.left=(hexHue(hex)/360*100).toFixed(2)+'%';
   root.querySelectorAll('.hp-s').forEach(x=>x.classList.toggle('on',x.dataset.arg===hex));
   const h=root.parentElement.querySelector('[name=color]');if(h)h.value=hex;
+  if($('#catPrev'))updateCatPrev();
 }
 let HPD=null;
 const hpMove=e=>{if(!HPD)return;const r=HPD.getBoundingClientRect(),p=clamp((e.clientX-r.left)/r.width,0,1);HPD.querySelector('.hp-th').style.left=(p*100).toFixed(2)+'%';HPD.setAttribute('aria-valuenow',Math.round(p*360));hpSet(HPD.closest('.hp'),hsl2hex(p*360,82,56),true)};
@@ -2969,7 +2977,7 @@ function catDash(){
   const t=ui.ct||'exp',M=catMonth(t),col=t==='inc'?'var(--acc)':null,tn=S.cats.filter(c=>c.t===t).length;
   const rows=Object.keys(M.cats).sort((a,b)=>M.cats[b]-M.cats[a]),subs=Object.keys(M.subs).sort((a,b)=>M.subs[b]-M.subs[a]).slice(0,6);
   const bar=(v,c)=>`<div class="kd-rb"><i style="width:${Math.max(M.tot?v/M.tot*100:0,3).toFixed(1)}%;background:${c}"></i></div>`;
-  const cc=id=>{const c=S.cats.find(x=>x.id===id);return{c,n:c?c.name:'Tanpa kategori',clr:PAL[catCol(c)%PAL.length][1]}};
+  const cc=id=>{const c=S.cats.find(x=>x.id===id);return{c,n:c?c.name:'Tanpa kategori',clr:ringFit(catHex(c))}};
   return`<div class="seg2 ${t==='inc'?'r':''}" role="group" aria-label="Jenis" style="margin-bottom:12px"><span class="seg2-t"></span><button class="${t==='exp'?'on':''}" data-action="cttype" data-arg="exp" data-t="exp">Pengeluaran</button><button class="${t==='inc'?'on':''}" data-action="cttype" data-arg="inc" data-t="inc">Pemasukan</button></div>
   <div class="surface kd dsh"><span class="ws2-k">${t==='inc'?'Pemasukan':'Pengeluaran'} ${MON[new Date().getMonth()]}</span><b class="num ws2-v" style="font-size:26px">${money(M.tot)}</b>
     ${M.tot>0?`<div class="dsh-split" aria-hidden="true">${rows.map(k=>`<i style="width:${(M.cats[k]/M.tot*100).toFixed(1)}%;background:${cc(k).clr}"></i>`).join('')}</div>`:''}
@@ -3076,7 +3084,7 @@ function subPop(){
   const tile=(label,val,ico)=>`<button class="cat ${cur===val?'on':''}" data-action="fsub" data-arg="${esc(val)}">${ico}<span>${esc(label)}</span></button>`;
   return`<div class="ov ov2" data-action="fsubclose"></div><div class="panel2" id="panel2"><div class="handle"><i></i></div>
     <div class="sh-h"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">${catIcon(c,40)}<h3 style="font-size:18px">Pilih sub-kategori<small style="display:block;font-size:12.5px;color:var(--mute);font-weight:500;margin-top:2px">${esc(c.name)}</small></h3></div><button class="ibtn sm" data-action="fsubclose" aria-label="Tutup">${IC.x}</button></div>
-    <div class="grid4">${tile('Tanpa sub','',shapeIcon('⊘',catCol(c),'squircle',60))}${c.subs.map(sn=>tile(sn,sn,shapeIcon(esc((c.si&&c.si[sn])||c.icon||'📦'),catCol(c),'squircle',60))).join('')}</div></div>`;
+    <div class="grid4">${tile('Tanpa sub','',catIconX('⊘',c,60))}${c.subs.map(sn=>tile(sn,sn,catIconX(esc((c.si&&c.si[sn])||c.icon||'📦'),c,60))).join('')}</div></div>`;
 }
 function renderSheet(){
   const el=$('#sheet');
@@ -3181,7 +3189,7 @@ function flowStep1(){
 }
 function flowStep2(){
   const f=ui.flow,cats=S.cats.filter(c=>c.t===f.type),sel=cats.find(c=>c.id===f.openCat);
-  let h=`<div class="sh-h">${backBtn}<h3>Pilih kategori</h3>${closeBtn}</div><div class="grid4">${cats.map(c=>`<button class="cat ${(f.openCat||f.cat)===c.id?'on':''}" data-action="fcat" data-id="${c.id}">${shapeIcon(c.icon?esc(c.icon):'📦',catCol(c),'squircle',64)}<span>${esc(c.name)}</span></button>`).join('')}</div>`;
+  let h=`<div class="sh-h">${backBtn}<h3>Pilih kategori</h3>${closeBtn}</div><div class="grid4">${cats.map(c=>`<button class="cat ${(f.openCat||f.cat)===c.id?'on':''}" data-action="fcat" data-id="${c.id}">${catIconX(c.icon?esc(c.icon):'📦',c,64)}<span>${esc(c.name)}</span></button>`).join('')}</div>`;
   if(!cats.length)h+='<p class="empty">Belum ada kategori. Tambah di Kelola.</p>';
   return h;
 }
@@ -3376,11 +3384,11 @@ function formHTML(){
   if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name,grpCol(g)]),o?o.g:(S.groups[0]||{}).id))+fld('Peruntukan',sel('pu',[['','Tanpa peruntukan']].concat(S.purs.map(q=>[q.id,q.name,purCol(q)]),[['__new','+ Peruntukan baru…']]),o&&o.pu?o.pu:'','data-input="pusel"')+inp('pun','','maxlength="24" placeholder="Nama peruntukan baru" hidden style="margin-top:8px"'),'Dompet dengan peruntukan sama dijumlahkan di dasbor, walau beda bank. Ubah nama dan warna di Kelola → Peruntukan.')+fld('Target (Rp)',inp('tg',o&&o.tg?nf.format(o.tg):'','data-input="money" inputmode="numeric" placeholder="Opsional"'),'Isi kalau kantong ini punya tujuan saldo.')+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
   if(k==='pool')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Plafon Bank"'))+fld('Limit bersama (Rp)',inp('limit',o?nf.format(o.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bersama oleh kartu-kartu dalam grup ini.');
   if(k==='cat'){
-    const col=o?catCol(o):0;
-    b=`<div class="catprev" id="catPrev">${catIcon(o||{id:'new',icon:'📦',col},72)}</div>`+
-      fld('Jenis',o?`<input value="${o.t==='exp'?'Pengeluaran':'Pemasukan'}" disabled><input type="hidden" name="t" value="${o.t}">`:sel('t',[['exp','Pengeluaran'],['inc','Pemasukan']],'exp'))+
+    const init=o||{id:'new',icon:'📦',t:'exp',color:COLS[S.cats.length%COLS.length]};
+    b=`<div class="catprev" id="catPrev">${catIcon(init,72)}</div>`+
+      fld('Jenis',o?`<input value="${o.t==='exp'?'Pengeluaran':'Pemasukan'}" disabled><input type="hidden" name="t" value="${o.t}">`:sel('t',[['exp','Pengeluaran'],['inc','Pemasukan']],'exp','data-input="catprev"'))+
       fld('Ikon (emoji)',inp('icon',o?o.icon:'📦','maxlength="4" data-input="catprev"'))+fld('Nama',inp('name',o?o.name:''))+
-      `<div class="f"><span>Warna</span><div class="sw-row pal10">${PAL.map((p,i)=>`<button type="button" class="sw ${i===col?'on':''}" style="background:${p[1]}" data-action="ccol" data-arg="${i}" aria-label="Warna ${i+1}"></button>`).join('')}</div><input type="hidden" name="col" value="${col}"></div>`+
+      colorField(catHex(init))+
       (!o||o.t==='exp'?fld('Anggaran bulanan (Rp)',inp('budget',o&&o.budget?nf.format(o.budget):'','data-input="money" inputmode="numeric" placeholder="Tanpa batas"'),'Batas pengeluaran per bulan. Bar di Analitik berubah kuning lalu merah saat mendekati batas.'):'')+
       subEditor(o);
   }
@@ -3406,7 +3414,7 @@ function cardFromForm(){
   return Object.assign({},o||{},{name:fv('name')||'Kartu',bank:fv('bank'),last4:(fv('last4')||'0000').replace(/\D/g,'').padStart(4,'0').slice(-4),net:fv('net')||'visa',theme:fv('theme')||'obsidian',pool:fv('pool'),wallet:fv('wallet'),limit:num(fv('limit')),cut:clamp(num(fv('cut'))||1,1,31),due:clamp(num(fv('due'))||1,1,31),minPct:clamp(num(fv('minPct')),0,100),bg:F.bg,contrast:+fv('contrast')});
 }
 function updateCardPrev(){const p=$('#cardPrev');if(p)p.innerHTML=cardHTML(cardFromForm(),ui.form.id?undefined:1250000)}
-function updateCatPrev(){const p=$('#catPrev');if(p)p.innerHTML=catIcon({id:ui.form.id||'new',icon:fv('icon')||'📦',col:+fv('col')},72)}
+function updateCatPrev(){const p=$('#catPrev');if(!p)return;const o=ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;p.innerHTML=catIcon({id:ui.form.id||'new',icon:fv('icon')||'📦',t:o?o.t:(fv('t')||'exp'),color:fv('color')},72)}
 function saveForm(){
   const F=ui.form,k=F.kind,col=S[FK[k]],o=F.id?col.find(x=>x.id===F.id):null;
   let rec;
@@ -3418,7 +3426,7 @@ function saveForm(){
   if(k==='pur'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(S.purs.some(x=>x.id!==F.id&&x.name.trim().toLowerCase()===n.toLowerCase()))return toast('Nama peruntukan sudah ada');
     rec={name:n,color:hexOk(fv('color'))?fv('color'):purNext()}}
   if(k==='pool'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,limit:num(fv('limit'))}}
-  if(k==='cat'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,t:o?o.t:fv('t'),icon:fv('icon')||'📦',col:+fv('col'),subs:[],si:{},budget:(o?o.t:fv('t'))==='exp'?num(fv('budget')):0};
+  if(k==='cat'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,t:o?o.t:fv('t'),icon:fv('icon')||'📦',color:hexOk(fv('color'))?fv('color'):undefined,subs:[],si:{},budget:(o?o.t:fv('t'))==='exp'?num(fv('budget')):0};
     const seen={},ren={};
     document.querySelectorAll('#panel .sub-row').forEach(r=>{const nm=r.querySelector('.sub-nm'),ic=r.querySelector('.sub-ic');const n=nm.value.trim();if(!n||seen[n.toLowerCase()])return;seen[n.toLowerCase()]=1;rec.subs.push(n);const e=[...ic.value.trim()].slice(0,2).join('');if(e)rec.si[n]=e;const og=nm.dataset.orig;if(og&&og!==n)ren[og]=n});
     if(o&&Object.keys(ren).length)S.tx.forEach(t=>{if(t.cat===o.id&&t.sub&&ren[t.sub])t.sub=ren[t.sub]})}
