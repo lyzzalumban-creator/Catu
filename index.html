@@ -482,7 +482,10 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .seg2.r .seg2-t{transform:translateX(100%);transition:transform .5s var(--spring)}
 .seg2 button{position:relative;height:40px;font-weight:650;color:var(--mute);transition:color .25s var(--emph)}
 .seg2 button.on{color:var(--acc-ink);font-weight:700}
-.dn-w{position:relative;width:236px;margin:16px auto 12px}
+.dn-w{position:relative;width:236px;margin:6px auto 12px}
+.an-card{padding:14px 12px 10px;margin:12px 0 10px}
+.an-card .lg2-w{margin:10px 0 0}
+.an-card .dchip{background:var(--s3)}.an-card .dchip.bad{background:rgba(255,107,107,.12)}.an-card .dchip.good{background:rgba(168,245,82,.12)}
 .dseg{transition:opacity .35s var(--emph),stroke-width .35s var(--emph)}
 .dseg.on{transition:opacity .35s var(--emph),stroke-width .5s var(--spring);stroke-width:17}
 .dn-w.has-sel .dseg:not(.on){opacity:.28}
@@ -497,7 +500,7 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .dc-b b{font-size:21px;font-weight:750;letter-spacing:-.02em}.dc-b small{font-size:12px;color:var(--mute)}
 .lg2-w{display:flex;flex-wrap:wrap;justify-content:center;gap:2px 2px;margin:12px 0 2px}
 .lg2{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--tx2);padding:8px 9px;border-radius:99px;transition:background .3s var(--emph),color .3s var(--emph),opacity .3s var(--emph),transform .35s var(--spring)}
-.lg2 i{width:9px;height:9px;border-radius:50%;flex:none}.lg2 b{color:var(--mute);font-weight:600}
+.lg2 i{width:10px;height:10px;border-radius:50%;flex:none}.lg2 b{color:var(--mute);font-weight:600}
 .lg2:active{transform:scale(.95)}
 @media(max-width:350px){.st{padding:0 8px}.st b{font-size:13px}.st span{font-size:11.5px}}
 .lg2.on{background:var(--s3);color:var(--tx);font-weight:650}.lg2.on b{color:var(--tx2)}
@@ -535,9 +538,10 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .donut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .donut-c b{font-size:21px;font-weight:750;letter-spacing:-.02em}
 .donut-c small{font-size:12px;color:var(--mute)}
-.stats{display:grid;grid-template-columns:1fr 1fr 1fr;margin:16px 0 4px;background:var(--s2);border-radius:var(--r-lg);padding:14px 0}
-.st{padding:0 12px;min-width:0;border-left:1px solid var(--line2)}.st:first-child{border-left:0}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 4px}
+.st{padding:12px 12px 11px;min-width:0;background:var(--s2);border-radius:18px;box-shadow:inset 0 0 0 1px var(--line)}
 .st span{display:block;font-size:12px;color:var(--mute);white-space:nowrap}
+.st b.neg{color:var(--neg)}
 .st b{display:block;margin-top:5px;font-size:15px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .dchip{display:table;margin:2px auto 0;padding:7px 14px;border-radius:99px;background:var(--s2);font-size:12.5px;color:var(--mute)}
 .dchip i{font-style:normal;font-size:9px;margin-right:7px;vertical-align:1px}
@@ -1249,6 +1253,7 @@ const hexInk=h=>{const n=parseInt(h.slice(1),16);return((n>>16&255)*.299+(n>>8&2
 const hex2hsl=h=>{const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
   const sa=d===0?0:d/(1-Math.abs(2*l-1));return[Math.round(hexHue(h)),Math.round(sa*100),Math.round(l*100)]};
 const HP_HUES=[2,25,46,75,140,172,200,228,265,325];
+const CAT_AUTO=[2,205,46,145,265,25,172,325,228,75];
 const HP_TONES=[[75,82],[85,60],[78,47],[65,32]];
 const HP_NEUTRAL=['#FAFAFA','#D4D4D8','#A1A1AA','#71717A','#3F3F46','#D6B88A','#A16207','#78350F','#4D7C0F','#1E3A8A'];
 const HP_GRID=HP_TONES.reduce((a,t)=>a.concat(HP_HUES.map(h=>hsl2hex(h,t[0],t[1]))),[]).concat(HP_NEUTRAL);
@@ -1475,6 +1480,8 @@ function normalize(s){
   s.wallets.forEach(w=>{if(w.pu&&!s.purs.some(x=>x.id===w.pu))w.pu=''});
   s.recur=s.recur.filter(r=>r&&r.id&&(r.t==='exp'||r.t==='inc')&&+r.amt>0);s.recur.forEach(r=>{r.day=Math.min(31,Math.max(1,Math.round(+r.day)||1));r.amt=Math.round(+r.amt);r.last=/^\d{4}-\d{2}$/.test(r.last||'')?r.last:today().slice(0,7)});
   s.cats.forEach(c=>{if(c.budget!=null)c.budget=+c.budget>0?Math.round(+c.budget):0});
+  /* kategori tanpa warna sama sekali (tanpa pilihan lama): beri warna awal yang tersebar; yang punya pilihan lama dibiarkan */
+  s.cats.forEach((c,i)=>{if(hexOk(c.color)||c.col!=null)return;c.color=hsl2hex(CAT_AUTO[i%CAT_AUTO.length],82,i<CAT_AUTO.length?60:48)});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
   {const g=st.gd&&typeof st.gd==='object'?st.gd:{};st.gd={cid:String(g.cid||GD_CID).trim().slice(0,200),on:!!g.on,ok:!!g.ok,last:+g.last>0?+g.last:0,fileId:String(g.fileId||''),err:String(g.err||'').slice(0,240)}}
   st.bkBase=+st.bkBase>0?+st.bkBase:Date.now();st.lastBackup=+st.lastBackup>0?+st.lastBackup:0;st.bkSnooze=+st.bkSnooze>0?+st.bkSnooze:0;
@@ -2871,7 +2878,7 @@ VIEWS.an=function(){
   const map={};
   list.forEach(t=>{const k=t.cat||'_';const o=map[k]||(map[k]={total:0,subs:{}});o.total+=t.amt;const sn=t.sub||'Umum';o.subs[sn]=(o.subs[sn]||0)+t.amt});
   const rows=Object.keys(map).map(k=>{const cat=S.cats.find(c=>c.id===k);return{k,cat,color:'',...map[k]}}).sort((a,b)=>b.total-a.total);
-  rows.forEach((r,i)=>r.color=rampCol(A.type,i,rows.length));
+  rows.forEach((r,i)=>r.color=r.cat&&hexOk(r.cat.color)?ringFit(r.cat.color):rampCol(A.type,i,rows.length));
   const segs=anSegs(rows,total),dkey=key+A.type,draw=ui.anDrawn!==dkey;ui.anDrawn=dkey;
   if(ui.anSel&&!segs.some(g=>g.k===ui.anSel))ui.anSel='';
   AN={segs,total};const selG=segs.find(g=>g.k===ui.anSel),totTxt=money(total);
@@ -2881,10 +2888,10 @@ VIEWS.an=function(){
   return`${anFlowBlk()}<section class="blk ${draw?'an-draw':''}">
     <div class="mnav"><button class="ibtn sm" data-action="anprev" aria-label="Bulan sebelumnya">${IC.back}</button><b>${MON[A.m]} ${A.y}</b><button class="ibtn sm" data-action="annext" aria-label="Bulan berikutnya">${IC.fwd}</button></div>
     <div class="seg2 ${A.type==='inc'?'r':''}" role="group" aria-label="Jenis"><span class="seg2-t"></span><button class="${A.type==='exp'?'on':''}" data-action="antype" data-arg="exp" data-t="exp">Pengeluaran</button><button class="${A.type==='inc'?'on':''}" data-action="antype" data-arg="inc" data-t="inc">Pemasukan</button></div>
-    <div class="dn-w ${selG?'has-sel':''}">${donut(segs,total,draw)}<div class="donut-c"><div class="dc-a"><small>Total ${A.type==='exp'?'keluar':'masuk'}</small><b class="num" ${totTxt.length>13?'style="font-size:17px" ':''}${mv('dt:'+A.type,total)}>${totTxt}</b><small>${rows.length} kategori</small></div><div class="dc-b">${selG?anCenterB(selG):''}</div></div></div>
+    <div class="surface an-card"><div class="dn-w ${selG?'has-sel':''}">${donut(segs,total,draw)}<div class="donut-c"><div class="dc-a"><small>Total ${A.type==='exp'?'keluar':'masuk'}</small><b class="num" ${totTxt.length>13?'style="font-size:17px" ':''}${mv('dt:'+A.type,total)}>${totTxt}</b><small>${rows.length} kategori</small></div><div class="dc-b">${selG?anCenterB(selG):''}</div></div></div>
     <p class="dchip ${ptot>0?((dl>=0)===(A.type==='exp')?'bad':'good'):''}">${ptot>0?`<i>${dl>=0?'▲':'▼'}</i>`:''}${esc(dtxt)}</p>
-    ${segs.length?`<div class="lg2-w">${segs.map(g=>`<button class="lg2 ${selG&&selG.k===g.k?'on':''}" data-action="ansel" data-arg="${esc(g.k)}" data-c="${esc(g.k)}" aria-pressed="${!!selG&&selG.k===g.k}"><i style="background:${g.color}"></i>${esc(g.name)}<b>${anPct(g.total,total)}</b></button>`).join('')}</div>`:''}
-    <div class="stats"><div class="st"><span>Masuk</span><b class="pos" ${mv('si',inc)}>${priv()?money(inc):cpRp(inc)}</b></div><div class="st"><span>Keluar</span><b ${mv('sx',ex)}>${priv()?money(ex):cpRp(ex)}</b></div><div class="st"><span>Rata-rata/hari</span><b>${priv()?money(ex/days):cpRp(ex/days)}</b></div></div>
+    ${segs.length?`<div class="lg2-w">${segs.map(g=>`<button class="lg2 ${selG&&selG.k===g.k?'on':''}" data-action="ansel" data-arg="${esc(g.k)}" data-c="${esc(g.k)}" aria-pressed="${!!selG&&selG.k===g.k}"><i style="background:${g.color}"></i>${esc(g.name)}<b>${anPct(g.total,total)}</b></button>`).join('')}</div>`:''}</div>
+    <div class="stats"><div class="st"><span>Masuk</span><b class="pos" ${mv('si',inc)}>${priv()?money(inc):cpRp(inc)}</b></div><div class="st"><span>Keluar</span><b class="neg" ${mv('sx',ex)}>${priv()?money(ex):cpRp(ex)}</b></div><div class="st"><span>Rata-rata/hari</span><b>${priv()?money(ex/days):cpRp(ex/days)}</b></div></div>
   </section>
   <section class="blk"><div class="blk-h"><h2>Per kategori</h2><button class="tbtn" data-action="tgcall">${anyOpen?'Tutup semua':'Buka semua'}</button></div><div class="surface">
     ${rows.map(r=>{const open=!S.settings.anCollapsed[r.k],pc=total?Math.round(r.total/total*100):0,on=!!selG&&(selG.k===r.k||(selG.k==='_o'&&r.og));
