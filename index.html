@@ -888,6 +888,13 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .ca.p{color:var(--onAccC);background:var(--accC)}
 .ca.n{color:#FFB0AA;background:var(--negC)}
 .ca.z{color:var(--mute);background:none}
+.chd{width:100%;display:flex;align-items:center;gap:10px;padding:0 6px 10px;text-align:left}
+.chd .dt{flex:1;min-width:0}.chd .dt b{display:block;font-size:14px;font-weight:700}.chd .dt small{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.35}
+.chd .dtn{font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--mute)}
+.chd .dtn.pos{color:var(--acc)}.chd .dtn.neg{color:var(--neg)}
+.mcal{animation:cpin .22s var(--emph) both}
+.cm-s .cd{min-height:66px;padding-top:6px}
+.cwd{font-size:11px;font-weight:600;color:var(--mute);line-height:1}
 .cpanel{background:var(--s2);border-radius:var(--r-xl);padding:4px 16px 6px;margin-bottom:10px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent);animation:cpin .22s var(--emph) both}
 @keyframes cpin{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){.cpanel{animation:none}}
@@ -1073,7 +1080,7 @@ const IC={
 /* ============ data & akuntansi ============ */
 let S=null,D={bal:{},debt:{}};
 const ui={view:'home',wlSel:'',range:30,sheet:null,flow:null,pay:null,gest:null,xfer:null,form:null,backup:null,accd:null,amt:{expr:''},
-  mutN:40,mutF:'all',mutDay:{},mutSel:'',mg:'wallet',sync:'local',an:{y:new Date().getFullYear(),m:new Date().getMonth(),type:'exp'}};
+  mutN:40,mutF:'all',mutDay:{},mutSel:'',calFull:false,mg:'wallet',sync:'local',an:{y:new Date().getFullYear(),m:new Date().getMonth(),type:'exp'}};
 
 function effect(t,bal,debt,sg){
   const a=t.amt*sg;
@@ -2146,21 +2153,35 @@ function mutBody(){
   let out=0,inn=0;mon.forEach(t=>{if(t.t==='exp'||t.t==='gfee')out+=t.amt;else if(t.t==='inc')inn+=t.amt});
   const l=mon.filter(mutFilter).filter(t=>mutMatch(t,q));
   const sum=`<div class="msum"><div><small>Keluar</small><b class="neg">${money(out)}</b></div><div><small>Masuk</small><b class="pos">${money(inn)}</b></div><div><small>Selisih</small><b class="${inn-out<0?'neg':'pos'}">${inn-out<0?'−':'+'}${money(Math.abs(inn-out))}</b></div></div>`;
-  /* kalender bulan: tiap tanggal menampilkan selisih (masuk − keluar) dari transaksi yang sedang ditampilkan */
-  const byD={};l.forEach(t=>{const o=byD[t.d]||(byD[t.d]={net:0,n:0});o.n++;if(t.t==='exp'||t.t==='gfee')o.net-=t.amt;else if(t.t==='inc')o.net+=t.amt});
+  /* kalender: bawaan ringkas (7 hari terakhir, satu baris); ketuk bar untuk membuka seluruh bulan. Tiap tanggal menampilkan selisih (masuk − keluar). */
+  const lall=sortedTx().filter(mutFilter).filter(t=>mutMatch(t,q));
+  const byD={};lall.forEach(t=>{const o=byD[t.d]||(byD[t.d]={net:0,n:0});o.n++;if(t.t==='exp'||t.t==='gfee')o.net-=t.amt;else if(t.t==='inc')o.net+=t.amt});
   const cmp=v=>{const a=Math.abs(v);let t;if(a>=1e6){t=(a/1e6).toFixed(a>=1e7?0:1).replace('.0','').replace('.',',')+'jt'}else if(a>=1e3){t=Math.round(a/1e3)+'rb'}else t=String(a);return(v<0?'−':'+')+t};
-  const cy=+m.slice(0,4),cm=+m.slice(5)-1,first=new Date(cy,cm,1).getDay(),dim=new Date(cy,cm+1,0).getDate(),tdy=today();
-  let cells='';for(let i=0;i<first;i++)cells+='<i class="cd e"></i>';
-  for(let d=1;d<=dim;d++){const ds=m+'-'+pad(d),o=byD[ds],isT=ds===tdy,on=ui.mutSel===ds;
+  const WD=['Min','Sen','Sel','Rab','Kam','Jum','Sab'],cy=+m.slice(0,4),cm=+m.slice(5)-1,tdy=today(),curM=tdy.slice(0,7),full=!!ui.calFull;
+  const cell=(ds,wd)=>{const o=byD[ds],dd=parseD(ds).getDate(),isT=ds===tdy,on=ui.mutSel===ds;
     const amt=o?(o.net===0?'<em class="ca z">•</em>':`<em class="ca ${o.net>0?'p':'n'}">${S.settings.privacy?'•••':cmp(o.net)}</em>`):'';
-    const inner=`<span class="cn ${isT?'t':''}">${d}</span>${amt}`;
-    cells+=o?`<button class="cd has ${on?'sel':''}" data-action="mutcal" data-arg="${ds}" aria-label="${d} ${MON[cm]}, ${o.n} transaksi">${inner}</button>`:`<i class="cd">${inner}</i>`}
-  const cal=`<div class="mcal"><div class="cw">${['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(x=>`<span>${x}</span>`).join('')}</div><div class="cg">${cells}</div></div>`;
+    const inner=`${wd?`<span class="cwd">${WD[parseD(ds).getDay()]}</span>`:''}<span class="cn ${isT?'t':''}">${dd}</span>${amt}`;
+    return o?`<button class="cd has ${on?'sel':''}" data-action="mutcal" data-arg="${ds}" aria-label="${dd} ${MON[parseD(ds).getMonth()]}, ${o.n} transaksi">${inner}</button>`:`<i class="cd">${inner}</i>`};
+  let head,body;
+  if(full){
+    const first=new Date(cy,cm,1).getDay(),dim=new Date(cy,cm+1,0).getDate();
+    let cells='';for(let i=0;i<first;i++)cells+='<i class="cd e"></i>';for(let d=1;d<=dim;d++)cells+=cell(m+'-'+pad(d),false);
+    head=`<button class="chd" data-action="calfull" aria-expanded="true"><span class="dt"><b>${MON[cm]} ${cy}</b><small>Selisih per tanggal · ketuk untuk meringkas</small></span>${chev(true)}</button>`;
+    body=`<div class="cw">${WD.map(x=>`<span>${x}</span>`).join('')}</div><div class="cg">${cells}</div>`;
+  }else{
+    const anchor=m===curM?tdy:m<curM?m+'-'+pad(new Date(cy,cm+1,0).getDate()):m+'-07';
+    const days=[];for(let i=6;i>=0;i--)days.push(addDays(anchor,-i));
+    const wnet=days.reduce((a,d)=>a+(byD[d]?byD[d].net:0),0),rg=d=>parseD(d).getDate()+' '+MONS[parseD(d).getMonth()];
+    const ttl=m===curM?'7 hari terakhir':m<curM?'Minggu terakhir bulan ini':'Minggu pertama bulan ini';
+    head=`<button class="chd" data-action="calfull" aria-expanded="false"><span class="dt"><b>${ttl}</b><small>${rg(days[0])} – ${rg(days[6])} · ketuk untuk buka bulan</small></span><span class="dtn ${wnet<0?'neg':wnet>0?'pos':''}">${wnet<0?'−':wnet>0?'+':''}${money(Math.abs(wnet))}</span>${chev(false)}</button>`;
+    body=`<div class="cg">${days.map(d=>cell(d,true)).join('')}</div>`;
+  }
+  const cal=`<div class="mcal ${full?'cm-f':'cm-s'}">${head}${body}</div>`;
   let panel='';
-  if(calOn()&&ui.mutSel&&byD[ui.mutSel]){const o=byD[ui.mutSel],rows=l.filter(t=>t.d===ui.mutSel).map(txRow2).join('');
+  if(calOn()&&ui.mutSel&&byD[ui.mutSel]){const o=byD[ui.mutSel],rows=lall.filter(t=>t.d===ui.mutSel).map(txRow2).join('');
     panel=`<div class="cpanel"><div class="cph"><span class="dt"><b>${esc(relDate(ui.mutSel))}</b><small>${o.n} transaksi</small></span><span class="dtn ${o.net<0?'neg':o.net>0?'pos':''}">${o.net<0?'−':o.net>0?'+':''}${money(Math.abs(o.net))}</span><button class="ibtn sm" data-action="mutcalx" aria-label="Tutup riwayat tanggal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>${rows}</div>`}
   /* hari ini terbuka, hari sebelumnya tertutup; saat mencari/memfilter semua terbuka. Ringkasan hari tetap terlihat di header. */
-  const filtering=!!q||ui.mutF!=='all',td=today();if(ui.mutSel&&ui.mutSel.slice(0,7)!==m)ui.mutSel='';
+  const filtering=!!q||ui.mutF!=='all',td=today();
   let h='',last='',buf='',net=0,cnt=0,di=0,dout=0;
   const flush=()=>{if(!last)return;const ov=ui.mutDay[last],open=ov!==undefined?ov:(filtering||last===td);
     const parts=[`<span class="dsp">${cnt} transaksi</span>`];if(di>0)parts.push(`<span class="dsp">Masuk <span class="pos">${money(di)}</span></span>`);if(dout>0)parts.push(`<span class="dsp">Keluar <span class="neg">${money(dout)}</span></span>`);
@@ -3103,13 +3124,14 @@ const A={
   mutmore(){ui.mutN+=40;render()},
   mutf(el,arg){ui.mutF=arg;ui.mutN=40;ui.mutDay={};render()},
   mutcal(el,arg){ui.mutSel=ui.mutSel===arg?'':arg;const b=$('#mutBody');if(b)b.innerHTML=mutBody()},
+  calfull(){ui.calFull=!ui.calFull;const b=$('#mutBody');if(b)b.innerHTML=mutBody()},
   mutcalx(){ui.mutSel='';const b=$('#mutBody');if(b)b.innerHTML=mutBody()},
   'cal-tog'(){S.settings.calendar=!calOn();ui.mutSel='';persist();render();if(ui.sheet)renderSheet()},
   mutday(el,arg){const m=el.closest('.md');if(!m)return;const o=!m.classList.contains('open');m.classList.toggle('open',o);el.setAttribute('aria-expanded',o);const c=el.querySelector('.chev');if(c)c.classList.toggle('o',o);ui.mutDay[arg]=o},
   mutm(el,arg){
     const old=mutMonth();if(old===arg)return;
     const tb0=$('#mtabs'),sl=tb0?tb0.scrollLeft:0;
-    ui.mutM=arg;render();
+    ui.mutM=arg;ui.mutSel='';render();
     const tb=$('#mtabs'),a=tb&&tb.querySelector('.mm.on'),bd=$('#mutBody');
     if(tb&&a){const to=tb.scrollLeft;tb.scrollLeft=sl;tb.scrollTo({left:to,behavior:'smooth'})}
     if(bd){bd.classList.add(arg>old?'sl-in-r':'sl-in-l');setTimeout(()=>bd.classList.remove('sl-in-r','sl-in-l'),500)}
@@ -3327,6 +3349,9 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
   ['pointerup','pointercancel','scroll'].forEach(n=>addEventListener(n,hide,true));
   document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.ws3-bar'))e.preventDefault()});
 })();
+/* ganti hari: kalau halaman dibiarkan terbuka melewati tengah malam, tampilan (kalender 7 hari, label Hari ini) ikut maju */
+{let day=today();const tick=()=>{const t=today();if(t===day)return;day=t;if(!ui.sheet)render()};
+  setInterval(tick,30000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick()})}
 /* pembaruan otomatis: saat dibuka (atau kembali ke aplikasi), cek versi terbaru di server; kalau beda, muat ulang.
    Hanya menyimpan sidik jari versi di kunci 'catu.ver'; data keuangan ('kantong.v1') tidak disentuh. */
 (function(){
