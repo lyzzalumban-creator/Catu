@@ -500,6 +500,9 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .lg2.on{background:var(--s3);color:var(--tx);font-weight:650}.lg2.on b{color:var(--tx2)}
 .an-draw .pbar i{transform-origin:left;animation:wsg .8s var(--emph) both}
 .grp{transition:background .3s var(--emph)}
+.nudge{display:flex;align-items:center;gap:12px;background:var(--warnC);border-radius:var(--r-xl);padding:14px 16px;margin-bottom:18px}
+.nudge .nd-t{flex:1;min-width:0}.nudge b{display:block;font-size:14px;color:var(--warn)}.nudge small{display:block;font-size:12px;color:var(--tx2);margin-top:3px;line-height:1.35}
+.nudge .nd-b{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 .grp.on{background:color-mix(in srgb,var(--rc) 10%,transparent);margin:0 -16px;padding:0 16px;border-radius:20px}
 .sub-w{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
 .grp.open .sub-w{grid-template-rows:1fr;transition:grid-template-rows .5s var(--spring)}
@@ -1293,6 +1296,7 @@ function normalize(s){
   st.pack=st.pack&&typeof st.pack==='object'?{day:String(st.pack.day||''),added:Math.max(0,+st.pack.added||0),used:Math.max(0,+st.pack.used||0)}:{day:'',added:0,used:0};
   ['groups','wallets','pools','cards','cats','tx'].forEach(k=>{if(!Array.isArray(s[k]))s[k]=[]});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
+  st.bkBase=+st.bkBase>0?+st.bkBase:Date.now();st.lastBackup=+st.lastBackup>0?+st.lastBackup:0;st.bkSnooze=+st.bkSnooze>0?+st.bkSnooze:0;
   st.gestun=st.gestun===undefined?true:!!st.gestun;st.calendar=st.calendar===undefined?true:!!st.calendar;st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
   s.updated=s.updated||0;return s;
 }
@@ -2174,9 +2178,28 @@ function txList(list){
   return h||'<p class="empty">Belum ada transaksi.</p>';
 }
 function blkTx(){return`<section class="blk"><div class="blk-h"><h2>Mutasi terbaru</h2><button class="tbtn" data-action="nav" data-arg="mut">Semua</button></div><div class="surface">${txList(sortedTx().slice(0,10))}</div></section>`}
+/* ---- cadangan file, ekspor CSV, dan pengingat ---- */
+const dlFile=(name,text,mime)=>{const b=new Blob([text],{type:mime});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
+function bkFile(){S.settings.lastBackup=Date.now();dlFile('kocekly-cadangan-'+today()+'.json',JSON.stringify(S),'application/json');persist();toast('Cadangan diunduh')}
+const TXLBL={exp:'Pengeluaran',inc:'Pemasukan',xfer:'Transfer',pay:'Bayar kartu',gcard:'Gestun: tarik limit',gin:'Gestun: dana masuk',gfee:'Gestun: biaya admin'};
+function csvExport(){
+  const q=v=>{v=String(v==null?'':v);return/[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+  const rows=[['Tanggal','Jenis','Akun','Ke akun','Kategori','Subkategori','Jumlah','Catatan']];
+  S.tx.slice().sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0).forEach(t=>{const c=S.cats.find(x=>x.id===t.cat);
+    rows.push([t.d,TXLBL[t.t]||t.t,t.acc?accName(t.acc):'',t.to?accName(t.to):'',c?c.name:'',t.sub||'',Math.round(t.amt),t.note||''])});
+  dlFile('kocekly-transaksi-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
+  toast(rows.length-1+' transaksi diekspor');
+}
+const bkAgo=ts=>{if(!ts)return'Belum pernah';const d=Math.floor((Date.now()-ts)/864e5);return d<1?'Hari ini':d+' hari lalu'};
+function bkNudge(){
+  const st=S.settings;if(S.tx.length<5||(typeof gdAuto==='function'&&gdAuto()))return'';
+  const last=Math.max(st.lastBackup,st.bkBase),days=Math.floor((Date.now()-last)/864e5);
+  if(days<7||Date.now()<st.bkSnooze)return'';
+  return`<section class="blk nudge" role="status"><div class="nd-t"><b>${st.lastBackup?'Terakhir dicadangkan '+days+' hari lalu':'Data belum pernah dicadangkan'}</b><small>Simpan salinan supaya aman kalau data HP terhapus.</small></div><div class="nd-b"><button class="pbtn" data-action="bk-file">Cadangkan</button><button class="tbtn" data-action="bk-snooze">Nanti</button></div></section>`;
+}
 VIEWS.home=function(){
   const b={chart:blkChart,actions:blkActions,cards:blkCards,wallets:blkWallets,tx:blkTx};
-  return S.settings.layout.filter(x=>x.on).map(x=>b[x.id]()).join('')||'<p class="empty">Semua blok disembunyikan. Atur di menu Atur, bagian Susunan Beranda.</p>';
+  return bkNudge()+S.settings.layout.filter(x=>x.on).map(x=>b[x.id]()).join('')||'<p class="empty">Semua blok disembunyikan. Atur di menu Atur, bagian Susunan Beranda.</p>';
 };
 const MUTF=[['all','Semua'],['exp','Keluar'],['inc','Masuk'],['card','Kartu'],['xfer','Transfer'],['gest','Gestun']];
 function mutFilter(t){const f=ui.mutF;if(f==='all')return true;if(f==='exp')return t.t==='exp'||t.t==='gfee';if(f==='inc')return t.t==='inc';
@@ -2668,6 +2691,8 @@ VIEWS.set=function(){
    </div></section>
    <section class="blk"><div class="blk-h"><h2>Data</h2></div><div class="surface">
      <div class="setrow"><div><b>Penyimpanan</b><small>${st}</small></div></div>
+     <div class="setrow"><div><b>Cadangkan sekarang</b><small>Unduh file cadangan · ${esc(bkAgo(S.settings.lastBackup))}</small></div><button class="pbtn" data-action="bk-file">Unduh</button></div>
+     <div class="setrow"><div><b>Ekspor CSV</b><small>Semua transaksi untuk Excel atau Sheets</small></div><button class="pbtn" data-action="csv">Ekspor</button></div>
      <div class="setrow"><div><b>Ekspor JSON</b><small>Salin seluruh data sebagai cadangan</small></div><button class="pbtn" data-action="bk-export">Ekspor</button></div>
      <div class="setrow"><div><b>Impor JSON</b><small>Ganti data dengan cadangan</small></div><button class="pbtn" data-action="bk-import">Impor</button></div>
      <div class="setrow"><div><b>Muat data contoh</b><small>180 hari transaksi contoh</small></div><button class="pbtn" data-action="sample">Muat</button></div>
@@ -3209,6 +3234,9 @@ const A={
   sigdemo(){askSign(S.settings.sigMin,null,true)},
   sigcancel(){closeSign()},
   nav(el,arg){const ch=ui.view!==arg;ui.view=arg;if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
+  'bk-file'(){bkFile();render()},
+  'bk-snooze'(){S.settings.bkSnooze=Date.now()+3*864e5;persist();render()},
+  csv(){csvExport()},
   'gestun-tog'(){S.settings.gestun=!gestOn();if(!S.settings.gestun&&ui.mutF==='gest')ui.mutF='all';persist();render();if(ui.sheet)renderSheet()},
   privacy(){S.settings.privacy=!S.settings.privacy;persist();render();if(ui.sheet)renderSheet()},
   range(el,arg){ui.range=+arg;render()},
