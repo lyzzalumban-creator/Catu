@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Kebijakan Privasi · penniq</title>
+<style>
+:root{--bg:#000;--s2:#131316;--line:rgba(255,255,255,.09);--tx:#F4F4F6;--tx2:#C6C6CE;--mute:#9A9AA5;--acc:#A8F552}
+@media (prefers-color-scheme:light){:root{--bg:#fff;--s2:#F4F5F2;--line:rgba(0,0,0,.1);--tx:#0B1400;--tx2:#2E3326;--mute:#5C6350;--acc:#3F7A00}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:28px 18px 64px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(#B8F86C,#97E53B);display:grid;place-items:center;flex:none}
+.logo i{display:block;width:7px;height:12px;border-radius:4px;background:#0B1400;margin:0 3px;transform:translateY(-1px)}
+.logo span{display:flex}
+h1{font-size:1.6rem;line-height:1.2;margin:0}
+.meta{color:var(--mute);font-size:.9rem;margin:2px 0 22px}
+h2{font-size:1.15rem;margin:30px 0 8px}
+p,li{color:var(--tx2)}
+ul{padding-left:1.2rem}li{margin:4px 0}
+.box{background:var(--s2);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:14px 0}
+a{color:var(--acc)}
+hr{border:0;border-top:1px solid var(--line);margin:36px 0}
+code{background:var(--s2);border-radius:6px;padding:1px 6px;font-size:.9em}
+.back{display:inline-block;margin-top:18px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="logo" aria-hidden="true"><span><i></i><i></i></span></div>
+  <h1>Kebijakan Privasi penniq</h1>
+</header>
+<p class="meta">Berlaku sejak 16 November 2026 · <a href="#english">Read in English</a></p>
+
+<div class="box">
+  <b>Ringkasnya:</b> penniq adalah aplikasi pencatat keuangan pribadi. Data keuangan Anda disimpan <b>di perangkat Anda sendiri</b>. Kami tidak memiliki server, tidak memasang iklan, dan tidak memakai alat pelacak. Cadangan ke Google Drive bersifat <b>opsional</b> dan hanya disimpan di Drive milik Anda sendiri.
+</div>
+
+<h2>1. Data yang Anda catat</h2>
+<p>Dompet, kartu kredit, kategori, anggaran, dan transaksi yang Anda masukkan disimpan di penyimpanan browser perangkat Anda (<code>localStorage</code>). Data ini <b>tidak dikirim ke server pengembang</b>, karena pengembang tidak mengoperasikan server apa pun untuk aplikasi ini. Pengembang tidak dapat melihat, mengakses, atau memulihkan data Anda.</p>
+
+<h2>2. Cadangan Google Drive (opsional)</h2>
+<p>Jika Anda memilih masuk dengan Google untuk mencadangkan data:</p>
+<ul>
+  <li>Aplikasi meminta satu izin saja: <code>https://www.googleapis.com/auth/drive.appdata</code>, yaitu akses ke <b>folder tersembunyi milik aplikasi</b> di Google Drive Anda. Aplikasi tidak dapat melihat atau mengubah file Drive Anda yang lain.</li>
+  <li>Satu berkas bernama <code>penniq-cadangan.json</code> berisi salinan data Anda ditulis ke folder itu, dan dibaca kembali hanya saat Anda menekan <b>Pulihkan</b>.</li>
+  <li>Berkas itu berada di Drive Anda sendiri. Pengembang tidak menerima salinannya dan tidak dapat mengaksesnya.</li>
+  <li>Token akses Google hanya disimpan sementara di memori aplikasi (berlaku sekitar satu jam) dan tidak ditulis ke penyimpanan maupun ke berkas cadangan.</li>
+  <li>Penggunaan dan pengalihan informasi yang diterima dari Google API oleh penniq mematuhi <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Kebijakan Data Pengguna Layanan API Google</a>, termasuk persyaratan Penggunaan Terbatas (Limited Use). Data tersebut tidak dibagikan, dijual, dipakai untuk iklan, atau dibaca oleh manusia.</li>
+</ul>
+
+<h2>3. Layanan pihak ketiga yang berinteraksi dengan aplikasi</h2>
+<ul>
+  <li><b>GitHub Pages</b> menyajikan halaman aplikasi ini. Seperti server web pada umumnya, GitHub dapat mencatat alamat IP dan data teknis saat halaman dimuat. Lihat kebijakan privasi GitHub.</li>
+  <li><b>Google Fonts</b> menyajikan huruf (Plus Jakarta Sans). Saat halaman dimuat, browser Anda meminta berkas huruf dari server Google, sehingga Google dapat menerima alamat IP Anda.</li>
+  <li><b>Google (Masuk dan Drive)</b> hanya dihubungi jika Anda menggunakan fitur cadangan Google Drive.</li>
+</ul>
+<p>Aplikasi tidak memuat iklan, analitik, atau pelacak pihak ketiga, dan tidak menggunakan cookie pelacakan.</p>
+
+<h2>4. Data yang disimpan di perangkat</h2>
+<p>Selain data keuangan, aplikasi menyimpan pengaturan tampilan, status cadangan (misalnya waktu cadangan terakhir), dan catatan teknis singkat untuk diagnosa login (tanpa token). Semuanya hanya ada di browser Anda.</p>
+
+<h2>5. Menghapus data dan mencabut akses</h2>
+<ul>
+  <li><b>Menghapus data di perangkat:</b> gunakan Atur → Data → Hapus semua data di aplikasi, atau hapus data situs ini lewat pengaturan browser.</li>
+  <li><b>Menghapus cadangan di Drive:</b> buka Google Drive → Setelan → Kelola aplikasi → penniq → Hapus data aplikasi tersembunyi.</li>
+  <li><b>Mencabut akses Google:</b> buka akun Google Anda → Keamanan → Aplikasi dan layanan pihak ketiga dengan akses ke akun → penniq → Hapus akses.</li>
+</ul>
+
+<h2>6. Anak-anak</h2>
+<p>penniq tidak ditujukan untuk anak di bawah 13 tahun, dan kami tidak dengan sengaja mengumpulkan data dari mereka.</p>
+
+<h2>7. Perubahan kebijakan</h2>
+<p>Jika kebijakan ini berubah, versi terbaru akan dipublikasikan di halaman ini dengan tanggal berlaku yang diperbarui.</p>
+
+<h2>8. Kontak</h2>
+<p>Pertanyaan tentang privasi dapat disampaikan lewat halaman <a href="https://github.com/lyzzalumban-creator/Catu/issues" rel="noopener">Issues di GitHub</a> proyek ini.</p>
+
+<p class="back"><a href="./">← Kembali ke aplikasi</a></p>
+
+<hr>
+
+<section id="english" lang="en">
+<h1 style="font-size:1.35rem">Privacy Policy (English)</h1>
+<p class="meta">Effective November 16, 2026</p>
+<div class="box">
+  <b>Summary:</b> penniq is a personal finance tracker. Your financial data stays <b>on your own device</b>. We operate no server, show no ads, and use no trackers. Google Drive backup is <b>optional</b> and is stored only in your own Drive.
+</div>
+<h2>Data you enter</h2>
+<p>Wallets, credit cards, categories, budgets and transactions are stored in your browser's local storage on your device. This data is <b>not sent to the developer</b>; the developer runs no backend for this app and cannot see, access or recover your data.</p>
+<h2>Google Drive backup (optional)</h2>
+<ul>
+  <li>The app requests a single scope: <code>https://www.googleapis.com/auth/drive.appdata</code>, which gives access only to the app's own hidden application-data folder in your Google Drive. It cannot see or modify your other Drive files.</li>
+  <li>One file, <code>penniq-cadangan.json</code>, containing a copy of your data is written to that folder and read back only when you tap <b>Restore</b>.</li>
+  <li>The file lives in your own Drive. The developer does not receive it and cannot access it.</li>
+  <li>The Google access token is kept in memory only (about one hour) and is never written to storage or to the backup file.</li>
+  <li>penniq's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy" rel="noopener">Google API Services User Data Policy</a>, including the Limited Use requirements. Such data is not shared, sold, used for advertising, or read by humans.</li>
+</ul>
+<h2>Third parties</h2>
+<p>The page is served by GitHub Pages and fonts are loaded from Google Fonts, so those providers may receive your IP address and technical request data. Google is contacted for sign-in and Drive only if you use the backup feature. The app includes no advertising, analytics or third-party trackers.</p>
+<h2>Deleting data and revoking access</h2>
+<p>Use Settings → Data → Delete all data in the app, or clear this site's data in your browser. To remove the Drive backup, open Google Drive → Settings → Manage apps → penniq → Delete hidden app data. To revoke access, use your Google Account → Security → Third-party apps &amp; services → penniq → Remove access.</p>
+<h2>Children</h2>
+<p>The app is not directed to children under 13.</p>
+<h2>Changes and contact</h2>
+<p>Updates will be published on this page with a new effective date. Questions: <a href="https://github.com/lyzzalumban-creator/Catu/issues" rel="noopener">GitHub Issues</a> of this project.</p>
+</section>
+</main>
+</body>
+</html>
