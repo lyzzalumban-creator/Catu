@@ -49,3 +49,5 @@ Atur → Data → Cadangan Google Drive. Perlu OAuth Client ID tipe Web (Google 
 - Token Google hanya di memori (berlaku ±1 jam) dan tidak pernah masuk ke data atau cadangan. Saat dibuka, aplikasi mencoba masuk diam-diam; kalau gagal, pil di kanan atas menjadi "Masuk Drive" dan mengetuknya membuka login.
 - Perubahan data dikirim otomatis 6 detik setelah perubahan terakhir. Pil menampilkan Drive / Drive… / Masuk Drive / Gagal Drive.
 - Data di HP selalu menang: tidak ada pemulihan otomatis. Kalau cadangan di Drive lebih baru saat aplikasi dibuka, muncul pengingat; **Pulihkan** meminta ketukan kedua sebagai konfirmasi, dan pengaturan Drive di perangkat tetap dipertahankan.
+
+Catatan status Drive: pil **Masuk Drive** (kuning) berarti sesi Google habis atau login diam-diam gagal; ketuk pil untuk masuk lagi. **Gagal Drive** (merah) berarti pengiriman gagal setelah login, dan alasan lengkapnya tampil di Atur → Data → Cadangan Google Drive (`settings.gd.err`), misalnya Drive API belum aktif (403).
