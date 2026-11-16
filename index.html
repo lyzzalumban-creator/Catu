@@ -1318,7 +1318,7 @@ function normalize(s){
   s.recur=s.recur.filter(r=>r&&r.id&&(r.t==='exp'||r.t==='inc')&&+r.amt>0);s.recur.forEach(r=>{r.day=Math.min(31,Math.max(1,Math.round(+r.day)||1));r.amt=Math.round(+r.amt);r.last=/^\d{4}-\d{2}$/.test(r.last||'')?r.last:today().slice(0,7)});
   s.cats.forEach(c=>{if(c.budget!=null)c.budget=+c.budget>0?Math.round(+c.budget):0});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
-  {const g=st.gd&&typeof st.gd==='object'?st.gd:{};st.gd={cid:String(g.cid||'').trim().slice(0,200),on:!!g.on,ok:!!g.ok,last:+g.last>0?+g.last:0,fileId:String(g.fileId||'')}}
+  {const g=st.gd&&typeof st.gd==='object'?st.gd:{};st.gd={cid:String(g.cid||GD_CID).trim().slice(0,200),on:!!g.on,ok:!!g.ok,last:+g.last>0?+g.last:0,fileId:String(g.fileId||'')}}
   st.bkBase=+st.bkBase>0?+st.bkBase:Date.now();st.lastBackup=+st.lastBackup>0?+st.lastBackup:0;st.bkSnooze=+st.bkSnooze>0?+st.bkSnooze:0;
   st.gestun=st.gestun===undefined?true:!!st.gestun;st.calendar=st.calendar===undefined?true:!!st.calendar;st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
   s.updated=s.updated||0;return s;
@@ -2229,7 +2229,8 @@ function dueNudge(){
    Token hanya di memori. Data lokal selalu menang: tidak ada pemulihan otomatis yang menimpa data. */
 const GD={tok:'',exp:0,t:0,busy:false,newer:false,msg:''};
 const authErr=m=>Object.assign(new Error(m),{auth:true});
-const GD_FILE='kocekly-cadangan.json',GD_SCOPE='https://www.googleapis.com/auth/drive.appdata';
+const GD_CID='243479656515-c8a6tp0mhmhvc6erm9ga0054asrsv1n5.apps.googleusercontent.com';   /* Client ID bukan rahasia; bisa diganti di Atur */
+const GD_FILE='penniq-cadangan.json',GD_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 const gdAuto=()=>{const g=S&&S.settings&&S.settings.gd;return!!(g&&g.on&&g.cid)};
 const gdSave=()=>{try{safeStorage.set(LS_KEY,JSON.stringify(S))}catch(e){}};
 function gdLoad(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();
@@ -2287,7 +2288,7 @@ async function gdBoot(){
 }
 async function gdLogin(){
   const g=S.settings.gd;if(!g.cid)return toast('Isi Client ID dulu');
-  try{await gdToken(true);g.on=true;setSync('gdsave');await gdUpload(true);setSync('gdok');GD.msg='';persist();render();toast('Terhubung ke Google Drive')}
+  try{await gdToken(true);g.on=true;setSync('gdsave');await gdUpload(true);setSync('gdok');GD.msg='';gdSave();render();toast('Terhubung ke Google Drive')}
   catch(e){GD.msg=e.message;setSync('gdneed');toast(e.message);render()}
 }
 async function gdRestore(){
@@ -3395,7 +3396,7 @@ const A={
   nav(el,arg){const ch=ui.view!==arg;ui.view=arg;if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
   'sync-tap'(){if(gdAuto())gdLogin();else if(S.settings.gd.cid)toast('Aktifkan cadangan Drive di Atur');else{ui.view='set';render();window.scrollTo(0,0)}},
   'gd-login'(){gdLogin()},
-  'gd-now'(){setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');GD.msg='';persist();render();toast('Tercadangkan ke Drive')}).catch(e=>{GD.msg=e.message;setSync('gderr');toast(e.message);render()})},
+  'gd-now'(){setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');GD.msg='';gdSave();render();toast('Tercadangkan ke Drive')}).catch(e=>{GD.msg=e.message;setSync('gderr');toast(e.message);render()})},
   'gd-restore-btn'(el){if(!confirmTap(el,'gdr')){toast('Ketuk lagi untuk memulihkan: data di HP akan diganti');return}gdRestore()},
   'gd-restore'(el){if(!confirmTap(el,'gdr2')){toast('Ketuk lagi untuk memulihkan: data di HP akan diganti');return}gdRestore()},
   'gd-skip'(){GD.newer=false;render()},
