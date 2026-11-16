@@ -34,3 +34,6 @@ Gerak di kalender dan riwayat mengikuti bahasa gerak bagian kartu kredit: easing
 
 ## Analitik (donat)
 Donat memakai cincin tipis bertepi bulat. Kategori di bawah 3% (atau di luar 6 teratas) digabung menjadi satu segmen "Lainnya" di donat dan legenda, sedangkan daftar Per kategori tetap menampilkan semuanya. Ketuk segmen donat atau chip legenda untuk menyorot satu kategori: segmen lain meredup, tengah donat berganti ke kategori itu, dan barisnya di bawah ikut menyala; ketuk lagi untuk batal. Pilihan Pengeluaran/Pemasukan memakai tuas geser. Donat dan bar kategori tergambar sekali saat masuk tab atau ganti bulan/jenis, tidak berulang saat baris dilipat atau dibuka. Warna bar tiap kategori sama dengan warna segmennya. Gerak mengikuti bahasa gerak kartu (pegas saat membuka, mulus tanpa bounce saat menutup) dan menghormati `prefers-reduced-motion`.
+
+## Kalkulator nominal
+Papan angka berupa grid 4×4 yang sejajar: angka dan tombol = di kiri, operator ÷ × − + di satu kolom di kanan dengan tinggi baris yang sama. Tombol hapus (⌫) ada di sebelah kanan tampilan nominal; ketuk menghapus satu karakter, tahan untuk mengosongkan. Tinggi tombol menyesuaikan tinggi layar (52/46/42 px) supaya tombol Simpan tidak menutup baris bawah.
