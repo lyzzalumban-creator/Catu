@@ -63,3 +63,5 @@ Tampilan Drive di Atur dibuat ringkas: judul, status (Aktif · Terakhir: hari in
 
 ## Kebijakan privasi
 `privasi.html` (bahasa Indonesia dengan ringkasan bahasa Inggris) dilayani GitHub Pages di `/Catu/privasi.html` dan ditautkan dari Atur → Data → Kebijakan privasi. Halaman ini tidak memuat sumber daya dari luar. Isinya harus selalu sesuai dengan perilaku aplikasi (data lokal, cadangan Drive opsional dengan scope `drive.appdata`, token hanya di memori, Google Fonts dan GitHub Pages sebagai pihak ketiga); perbarui bila fitur berubah. Kontak lewat GitHub Issues, bukan email.
+
+`syarat.html` (Syarat Layanan, bahasa Indonesia dengan ringkasan bahasa Inggris) dilayani di `/Catu/syarat.html`, saling ditautkan dengan `privasi.html` dan ditautkan dari Atur → Data → Syarat layanan. Isinya templat sederhana (bukan nasihat hukum); sesuaikan bila pengembang ingin klausul yang berbeda, misalnya hukum yang berlaku.
