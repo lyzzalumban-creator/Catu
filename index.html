@@ -3349,6 +3349,9 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
   ['pointerup','pointercancel','scroll'].forEach(n=>addEventListener(n,hide,true));
   document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.ws3-bar'))e.preventDefault()});
 })();
+/* ganti hari: kalau halaman dibiarkan terbuka melewati tengah malam, tampilan (kalender 7 hari, label Hari ini) ikut maju */
+{let day=today();const tick=()=>{const t=today();if(t===day)return;day=t;if(!ui.sheet)render()};
+  setInterval(tick,30000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick()})}
 /* pembaruan otomatis: saat dibuka (atau kembali ke aplikasi), cek versi terbaru di server; kalau beda, muat ulang.
    Hanya menyimpan sidik jari versi di kunci 'catu.ver'; data keuangan ('kantong.v1') tidak disentuh. */
 (function(){
