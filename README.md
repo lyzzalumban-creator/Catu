@@ -21,3 +21,6 @@ Menu Gestun bisa dinyalakan atau dimatikan di Atur (`settings.gestun`, bawaan ak
 
 ## Riwayat transaksi per hari
 Di tab Transaksi, hari ini terbuka dan hari sebelumnya tertutup. Header tiap hari tetap menampilkan jumlah transaksi, total masuk, total keluar, dan selisih. Ketuk header untuk membuka atau menutup. Saat mencari atau memakai filter, semua hari terbuka. Status buka-tutup tidak disimpan, jadi kembali ke bawaan setiap halaman dimuat ulang.
+
+## Kalender di Riwayat
+Di bawah ringkasan Keluar/Masuk/Selisih, tab Transaksi menampilkan kalender bulan. Tiap tanggal menampilkan selisih harian (masuk dikurangi keluar) dalam bentuk ringkas (misalnya `+10jt`, `−192rb`), hijau untuk plus dan merah untuk minus. Tanggal yang hanya berisi transfer atau bayar kartu bertanda titik. Ketuk tanggal untuk membuka dan menggulir ke hari itu di daftar. Kalender ikut filter dan pencarian, dan memakai titik saat mode privasi aktif.
