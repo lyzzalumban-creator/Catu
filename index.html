@@ -853,13 +853,20 @@ input:disabled{opacity:.6}
 .kg-e{font-size:12.5px;color:var(--acc);font-weight:650}
 .hp-pv{height:76px;border-radius:15px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .12s}
 .hp-pv b{position:absolute;left:13px;bottom:10px;font-size:12.5px;font-weight:650;letter-spacing:.3px}
-.hp-hue{position:relative;height:14px;margin:22px 11px 4px;border-radius:8px;background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00);touch-action:none;cursor:pointer}
-.hp-hue::before{content:'';position:absolute;inset:-16px -12px}
+.hp{--hh:120;--ss:80%;--ll:56%}
+.hp-row{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:10px;margin-top:16px}
+.hp-row>label{font-size:11.5px;color:var(--mute);font-weight:600}
+.hp-sl{position:relative;height:14px;margin-right:11px;border-radius:8px;touch-action:none;cursor:pointer}
+.hp-sl::before{content:'';position:absolute;inset:-16px -12px}
+.hp-sl.hue{background:linear-gradient(90deg,#f00,#ff0,#0f0,#0ff,#00f,#f0f,#f00)}
+.hp-sl.sat{background:linear-gradient(90deg,hsl(var(--hh) 0% var(--ll)),hsl(var(--hh) 100% var(--ll)))}
+.hp-sl.lig{background:linear-gradient(90deg,hsl(var(--hh) var(--ss) 8%),hsl(var(--hh) var(--ss) 50%),hsl(var(--hh) var(--ss) 94%))}
 .hp-th{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.4);transform:translate(-50%,-50%);pointer-events:none}
-.hp-pre{display:flex;flex-wrap:wrap;gap:11px;margin-top:20px}
-.hp-s{width:32px;height:32px;border-radius:10px;transition:box-shadow .2s,transform .2s var(--spring)}
+.hp-hx{font:inherit;font-size:14px;letter-spacing:.04em;text-transform:uppercase;padding:9px 12px}
+.hp-pre{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;margin-top:20px}
+.hp-s{aspect-ratio:1;width:100%;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:box-shadow .2s,transform .2s var(--spring)}
 .hp-s:active{transform:scale(.9)}
-.hp-s.on{box-shadow:0 0 0 2.5px var(--s1),0 0 0 4.5px #fff}
+.hp-s.on{box-shadow:0 0 0 2px var(--s1),0 0 0 4px #fff}
 .sw-row{display:flex;flex-wrap:wrap;gap:8px}
 .sw{width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);transition:border-radius .4s var(--spring),transform .3s var(--spring)}
 .sw.on{border-radius:12px;box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--acc)}
@@ -1218,26 +1225,43 @@ const COLS=['#A8F552','#5BE49B','#2DD4BF','#38BDF8','#3B82F6','#818CF8','#A78BFA
 const hsl2hex=(h,sa,l)=>{sa/=100;l/=100;const k=n=>(n+h/30)%12,a=sa*Math.min(l,1-l),f=n=>l-a*Math.max(-1,Math.min(k(n)-3,9-k(n),1));return'#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('').toUpperCase()};
 const hexHue=h=>{const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;if(!d)return 0;const x=mx===r?((g-b)/d)%6:mx===g?(b-r)/d+2:(r-g)/d+4;return(x*60+360)%360};
 const hexInk=h=>{const n=parseInt(h.slice(1),16);return((n>>16&255)*.299+(n>>8&255)*.587+(n&255)*.114)>150?'#141416':'#fff'};
-/* pemilih warna: pratinjau + slider rona + warna siap pakai */
+/* pemilih warna: pratinjau + tiga slider (rona, kejenuhan, kecerahan) + kode hex + 50 warna siap pakai */
+const hex2hsl=h=>{const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
+  const sa=d===0?0:d/(1-Math.abs(2*l-1));return[Math.round(hexHue(h)),Math.round(sa*100),Math.round(l*100)]};
+const HP_HUES=[2,25,46,75,140,172,200,228,265,325];
+const HP_TONES=[[75,82],[85,60],[78,47],[65,32]];
+const HP_NEUTRAL=['#FAFAFA','#D4D4D8','#A1A1AA','#71717A','#3F3F46','#D6B88A','#A16207','#78350F','#4D7C0F','#1E3A8A'];
+const HP_GRID=HP_TONES.reduce((a,t)=>a.concat(HP_HUES.map(h=>hsl2hex(h,t[0],t[1]))),[]).concat(HP_NEUTRAL);
+const HP_LMIN=8,HP_LMAX=94;
 function colorField(cur){
-  const hex=hexOk(cur)?cur.toUpperCase():COLS[0],hue=hexHue(hex);
-  return`<div class="f"><span>Warna</span><div class="hp" data-hex="${hex}">
+  const hex=hexOk(cur)?cur.toUpperCase():COLS[0],hsl=hex2hsl(hex);
+  const pos={h:hsl[0]/360,s:hsl[1]/100,l:(hsl[2]-HP_LMIN)/(HP_LMAX-HP_LMIN)},nowv={h:hsl[0],s:hsl[1],l:hsl[2]},mx={h:360,s:100,l:HP_LMAX},mn={h:0,s:0,l:HP_LMIN};
+  const sl=(k,lab,cls)=>`<div class="hp-row"><label>${lab}</label><div class="hp-sl ${cls}" data-sk="${k}" role="slider" aria-label="${lab}" aria-valuemin="${mn[k]}" aria-valuemax="${mx[k]}" aria-valuenow="${nowv[k]}"><i class="hp-th" style="left:${(clamp(pos[k],0,1)*100).toFixed(2)}%;background:${hex}"></i></div></div>`;
+  return`<div class="f"><span>Warna</span><div class="hp" data-hex="${hex}" data-h="${hsl[0]}" data-s="${hsl[1]}" data-l="${hsl[2]}" style="--hh:${hsl[0]};--ss:${hsl[1]}%;--ll:${hsl[2]}%">
     <div class="hp-pv" style="background:${hex}"><b style="color:${hexInk(hex)}">${hex}</b></div>
-    <div class="hp-hue" role="slider" aria-label="Pilih rona warna" aria-valuemin="0" aria-valuemax="360" aria-valuenow="${Math.round(hue)}"><i class="hp-th" style="left:${(hue/360*100).toFixed(2)}%;background:${hex}"></i></div>
-    <div class="hp-pre">${COLS.map(c=>`<button type="button" class="hp-s ${hex===c?'on':''}" style="background:${c}" data-action="pcol" data-arg="${c}" aria-label="Warna ${c}"></button>`).join('')}</div>
+    ${sl('h','Rona','hue')}${sl('s','Kejenuhan','sat')}${sl('l','Kecerahan','lig')}
+    <div class="hp-row"><label>Kode hex</label><input class="hp-hx" value="${hex}" maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Kode hex warna" data-input="hphex"></div>
+    <div class="hp-pre">${HP_GRID.map(c=>`<button type="button" class="hp-s ${hex===c?'on':''}" style="background:${c}" data-action="pcol" data-arg="${c}" aria-label="Warna ${c}"></button>`).join('')}</div>
   </div><input type="hidden" name="color" value="${esc(cur||'')}"></div>`;
 }
-function hpSet(root,hex,keepThumb){
-  root.dataset.hex=hex;const pv=root.querySelector('.hp-pv'),th=root.querySelector('.hp-th');
-  pv.style.background=hex;const b=pv.querySelector('b');b.textContent=hex;b.style.color=hexInk(hex);th.style.background=hex;
-  if(!keepThumb)th.style.left=(hexHue(hex)/360*100).toFixed(2)+'%';
+/* terapkan keadaan HSL di dataset ke semua bagian pemilih */
+function hpApply(root,from){
+  const h=+root.dataset.h,sa=+root.dataset.s,l=+root.dataset.l,hex=root.dataset.xh||hsl2hex(h,sa,l);
+  root.dataset.hex=hex;root.style.setProperty('--hh',h);root.style.setProperty('--ss',sa+'%');root.style.setProperty('--ll',l+'%');
+  const pv=root.querySelector('.hp-pv'),b=pv.querySelector('b');pv.style.background=hex;b.textContent=hex;b.style.color=hexInk(hex);
+  const pos={h:h/360,s:sa/100,l:(l-HP_LMIN)/(HP_LMAX-HP_LMIN)};
+  root.querySelectorAll('.hp-sl').forEach(el=>{const k=el.dataset.sk,t=el.querySelector('.hp-th');t.style.left=(clamp(pos[k],0,1)*100).toFixed(2)+'%';t.style.background=hex;
+    el.setAttribute('aria-valuenow',k==='h'?h:k==='s'?sa:l);el.setAttribute('aria-valuemin',k==='l'?HP_LMIN:0);el.setAttribute('aria-valuemax',k==='h'?360:k==='s'?100:HP_LMAX)});
+  const hx=root.querySelector('.hp-hx');if(hx&&from!=='hex')hx.value=hex;
   root.querySelectorAll('.hp-s').forEach(x=>x.classList.toggle('on',x.dataset.arg===hex));
-  const h=root.parentElement.querySelector('[name=color]');if(h)h.value=hex;
+  const hid=root.parentElement.querySelector('[name=color]');if(hid)hid.value=hex;
   if($('#catPrev'))updateCatPrev();
 }
+function hpSet(root,hex,from){hex=hex.toUpperCase();const v=hex2hsl(hex);root.dataset.h=v[0];root.dataset.s=v[1];root.dataset.l=v[2];root.dataset.xh=hex;hpApply(root,from)}
 let HPD=null;
-const hpMove=e=>{if(!HPD)return;const r=HPD.getBoundingClientRect(),p=clamp((e.clientX-r.left)/r.width,0,1);HPD.querySelector('.hp-th').style.left=(p*100).toFixed(2)+'%';HPD.setAttribute('aria-valuenow',Math.round(p*360));hpSet(HPD.closest('.hp'),hsl2hex(p*360,82,56),true)};
-document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest('.hp-hue');if(!t)return;HPD=t;e.preventDefault();hpMove(e)});
+const hpMove=e=>{if(!HPD)return;const r=HPD.getBoundingClientRect(),p=clamp((e.clientX-r.left)/r.width,0,1),k=HPD.dataset.sk,root=HPD.closest('.hp');
+  delete root.dataset.xh;root.dataset[k]=k==='h'?Math.round(p*360):k==='s'?Math.round(p*100):Math.round(HP_LMIN+p*(HP_LMAX-HP_LMIN));hpApply(root)};
+document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest('.hp-sl');if(!t)return;HPD=t;e.preventDefault();hpMove(e)});
 document.addEventListener('pointermove',e=>{if(HPD){e.preventDefault();hpMove(e)}},{passive:false});
 document.addEventListener('pointerup',()=>{HPD=null});document.addEventListener('pointercancel',()=>{HPD=null});
 /* dompet: hanya garis menyala berwarna (tanpa huruf/foto) */
@@ -3910,7 +3934,8 @@ document.addEventListener('click',e=>{
 });
 function onInput(e){
   const el=e.target,h=el.dataset&&el.dataset.input;if(!h)return;
-  if(h==='pusel'){const n=$('#f_pun');if(n){n.hidden=el.value!=='__new';if(!n.hidden)n.focus()}}
+  if(h==='hphex'){let v=el.value.trim().toUpperCase();if(v&&v[0]!=='#')v='#'+v;const root=el.closest('.hp');if(hexOk(v))hpSet(root,v,'hex');else if(e.type==='change')el.value=root.dataset.hex}
+  else if(h==='pusel'){const n=$('#f_pun');if(n){n.hidden=el.value!=='__new';if(!n.hidden)n.focus()}}
   else if(h==='money'){const n=num(el.value);el.value=n?nf.format(n):''}
   else if(h==='mutq'){ui.mutQ=el.value;ui.mutDay={};const b=$('#mutBody');if(b)b.innerHTML=mutBody()}
   else if(h==='sigmin'){const n=num(el.value);el.value=n?nf.format(n):'';if(n>0){S.settings.sigMin=n;persist();document.querySelectorAll('.sigpre button').forEach(b=>b.classList.toggle('on',+b.dataset.arg===n))}}
