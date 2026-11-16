@@ -162,10 +162,6 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .wanim{animation:wv 1.6s linear infinite}
 .apz,.hid .wanim,.hid .car-float,.hid .holo{animation-play-state:paused!important}
 @keyframes wv{to{transform:translateX(18px)}}
-.lim-t{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);gap:8px}
-.lim-k{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--mute);margin-top:6px}
-.lim-k span{white-space:nowrap;font-variant-numeric:tabular-nums}
-.lim-k b{display:inline-block;width:8px;height:8px;border-radius:3px;margin-right:4px}
 
 .lg-top{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
 .lg-pct{display:flex;align-items:baseline;gap:2px;line-height:1}
@@ -185,9 +181,6 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .lg-ticks i.on.o{opacity:.4}
 @keyframes lgt{from{transform:scaleY(.25);opacity:0}}
 .lg-mk{position:absolute;top:0;width:0;height:0;margin-left:-5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:8px solid var(--acc)}
-.lg-ax{display:flex;justify-content:space-between;font-size:11.5px;color:var(--mute);margin-top:6px}
-.lg-ln{border-top:1px dashed var(--line2);margin:12px 0 10px}
-.lg .lim-t{margin-top:0}
 @media (prefers-reduced-motion:reduce){.lg-ticks i.on{animation:none}}
 .due{display:inline-flex;align-items:center;gap:6px;margin:10px 6px 0;font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;background:var(--s3);color:var(--tx2)}
 .due.soon{background:var(--warnC);color:var(--warn)}
@@ -602,6 +595,29 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 .fab:active{border-radius:30px;transform:scale(.94)}
 
 /* bottom sheet */
+
+
+/* kartu kredit: rincian lapang tapi tetap satu layar */
+.csw{aspect-ratio:100/57;margin-top:2px}
+.csw-stage{width:60%}
+.wl-detail{margin-top:6px;padding:14px 14px 14px}
+.wl-detail .lim{padding:12px 0 0}
+.wl-detail .lg-pct span{font-size:36px}.wl-detail .lg-pct small{font-size:17px}.wl-detail .lg-pct em{font-size:12px;margin-left:6px}
+.wl-detail .lg-rem{padding-bottom:3px}
+.wl-detail .lg-st{margin-top:8px}
+.wl-detail .lg-g{margin-top:12px;padding-top:10px}
+.wl-detail .lg-ticks{height:22px}
+.lg-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.lg-stats>div{background:var(--s3);border-radius:14px;padding:9px 8px 9px 10px;min-width:0}
+.lg-stats span{display:block;font-size:11.5px;color:var(--mute);white-space:nowrap}
+.lg-stats b{display:block;font-size:clamp(11.5px,3.2vw,14px);font-weight:700;margin-top:2px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.lg-stats b.soon{color:var(--warn)}
+.lg-stats b.num{white-space:normal}
+.lg-stats small{display:block;font-size:11px;color:var(--mute);margin-top:1px}
+.wl-dh .lm small{display:block;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip}
+.lg-ds{display:none}.lg-ds.soon{color:var(--warn)}
+@media (max-height:780px){.wl-detail .lg-stats{display:none}.wl-detail .lg-g{margin-top:10px}.lg-amt.hd .lg-df{display:none}.lg-amt.hd .lg-ds{display:inline}}
+.wl-detail .bgroup{margin-top:12px}
 
 /* kartu anggaran: air naik seiring pengeluaran */
 .bgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -1919,7 +1935,7 @@ function blkActions(){
 }
 /* Pengukur limit: garis-garis tegak berwarna hijau→merah, penanda ideal 30% (terinspirasi kartu "Opt-In Rate"). */
 function limitBlock(c){
-  const ci=cardInfo(c),lim=ci.limit||0,N=56,IDEAL=30;
+  const ci=cardInfo(c),lim=ci.limit||0,N=48,IDEAL=30;
   const pm=lim?clamp(ci.mine/lim*100,0,100):0,pt=lim?clamp(ci.used/lim*100,0,100):0;
   const raw=lim?ci.used/lim*100:0,pct=raw>0&&raw<10?(Math.round(raw*10)/10).toString().replace('.',','):Math.round(raw);
   const tone=raw<=IDEAL?'ok':raw<=70?'mid':'hi';
@@ -1930,14 +1946,14 @@ function limitBlock(c){
     const hue=Math.round(130-130*(i/(N-1)));
     ticks+=`<i class="${on?(mine?'on':'on o'):''}" style="--i:${i};--h:${hue}"></i>`;
   }
+  const due=c.due?nextOcc(c.due):null,dn=due?daysTo(due):null,hasDue=due&&ci.mine>0;
   return`<div class="lim lg"><div class="lg-top"><div class="lg-pct ${tone}"><span>${lim?pct:0}</span><small>%</small><em>terpakai</em></div>
     <div class="lg-rem"><span>Sisa limit</span><b class="num ${ci.remain<0?'neg':''}" ${mv('cr:'+c.id,ci.remain)}>${money(ci.remain)}</b></div></div>
-    <div class="lg-st"><span class="lg-pill ${tone}">${msg}</span><span class="lg-amt num">Terpakai ${money(ci.used)}</span></div>
+    <div class="lg-st"><span class="lg-pill ${tone}">${msg}</span>${lim?`<span class="lg-amt num ${hasDue?'hd':''}"><span class="lg-df">dari ${money(lim)}</span>${hasDue?`<span class="lg-ds ${dn<=3?'soon':''}">Jatuh tempo ${due.getDate()+' '+MONS[due.getMonth()]} · ${dn===0?'hari ini':dn+' hari'}</span>`:''}</span>`:''}</div>
     <div class="lg-g" role="img" aria-label="Limit terpakai ${pct} persen"><div class="lg-ticks">${ticks}</div><b class="lg-mk" style="left:${IDEAL}%"></b></div>
-    <div class="lg-ax"><span>Kosong</span><span>Penuh</span></div>
-    <div class="lg-ln"></div>
-    <div class="lim-t"><span>${ci.pool?esc(ci.pool.name):'Limit sendiri'}</span><span class="num">${money(ci.limit)}</span></div>
-    ${ci.pool?`<div class="lim-k"><span><b style="background:var(--acc)"></b>Kartu ini ${money(ci.mine)}</span><span><b style="background:#6A6A76"></b>Kartu segrup ${money(ci.other)}</span></div>`:''}</div>`;
+    <div class="lg-stats"><div><span>Tagihan</span><b class="num">${money(ci.mine)}</b></div>
+      <div><span>Jatuh tempo</span><b class="${hasDue&&dn<=3?'soon':''}">${hasDue?due.getDate()+' '+MONS[due.getMonth()]:'–'}</b>${hasDue?`<small>${dn===0?'hari ini':dn+' hari lagi'}</small>`:''}</div>
+      ${ci.pool?`<div><span>Kartu segrup</span><b class="num">${money(ci.other)}</b><small>${esc(ci.pool.name)}</small></div>`:`<div><span>Limit sendiri</span><b class="num">${money(ci.limit)}</b></div>`}</div></div>`;
 }
 const WL_COLORS={neon:'Hijau neon',blue:'Biru',graphite:'Grafit',rose:'Mawar',leather:'Kulit'};
 function totalRemain(){
@@ -1948,14 +1964,13 @@ function totalRemain(){
 }
 function wlDetailHTML(id){
   const c=S.cards.find(x=>x.id===id);if(!c)return'';
-  const ci=cardInfo(c),due=c.due?nextOcc(c.due):null,dn=due?daysTo(due):null;
-  const dueTxt=due&&ci.mine>0?`<span class="due ${dn<=3?'soon':''}">Jatuh tempo ${dn===0?'hari ini':dn+' hari lagi'}</span>`:'';
-  return`<div class="wl-dh"><span class="lm"><b>${esc(c.name)} ••${esc(c.last4)}</b><small>${esc(c.bank||'')} · Tagihan ${money(ci.mine)}</small></span><button class="tbtn" data-action="open-accd" data-id="${c.id}">Riwayat</button></div>
-    ${limitBlock(c)}${dueTxt}
+  const ci=cardInfo(c);
+  return`<div class="wl-dh"><span class="lm"><b>${esc(c.name)} ••${esc(c.last4)}</b><small>${esc(c.bank||'')}${ci.pool?' · '+esc(ci.pool.name):''}</small></span><button class="tbtn" data-action="open-accd" data-id="${c.id}">Riwayat</button></div>
+    ${limitBlock(c)}
     <div class="bgroup"><button class="fill" data-action="swipe" data-id="${c.id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${c.id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${c.id}">Gestun</button>`:''}</div>
-    ${S.cards.length>1?`<div class="chips" style="margin-top:12px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
+    ${S.cards.length>1&&S.settings.cardView==='wallet'?`<div class="chips" style="margin-top:10px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
 }
-const cswSlot=k=>{k=Math.min(k,3);return`translate3d(${k*14}%,${-k*16}%,${-k*45}px) skewY(5deg)`};
+const cswSlot=k=>{k=Math.min(k,3);return`translate3d(${k*14}%,${-k*14}%,${-k*45}px) skewY(5deg)`};
 function cswOrder(){
   const ids=S.cards.map(c=>c.id);let o=(ui.cswO||[]).filter(i=>ids.includes(i));
   ids.forEach(i=>{if(!o.includes(i))o.push(i)});ui.cswO=o;return o;
@@ -2084,7 +2099,7 @@ function cswFront(id){const o=cswOrder();ui.cswO=[id,...o.filter(x=>x!==id)];csw
     if(!root)return;
     const l=list(),N=l.length;if(N<2)return;
     const wrap=$('#colw'),w=wrap.clientWidth||340;
-    const CW=clp(w-64,200,290),CH=CW*208.1/330,H=Math.round(CH*1.95);
+    const CW=clp(w-72,200,262),CH=CW*208.1/330,H=Math.round(CH*1.5);
     root.style.width=w+'px';root.style.height=H+'px';
     const els=[...root.querySelectorAll('.col-card')];
     els.forEach(el=>{
