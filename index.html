@@ -895,8 +895,8 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 /* gerak kalender: sama dengan grup dompet di kartu (pegas .5s, grid-rows) dan tanpa animasi ulang tiap render */
 .mcal.cm-swap .cg,.mcal.cm-swap .cw{animation:cpfade .32s var(--emph) both}
 @keyframes cpfade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-.cpw{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}
-.cpw.open{grid-template-rows:1fr}
+.cpw{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.cpw.open{grid-template-rows:1fr;transition:grid-template-rows .5s var(--spring)}
 .cpi{min-height:0;overflow:hidden;padding-top:10px}
 .cpw{scroll-margin-bottom:110px}
 .cm-s .cd{min-height:66px;padding-top:6px}
@@ -917,10 +917,13 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .dh3 .dtn{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--mute);white-space:nowrap}
 .dh3 .dt small{display:flex;flex-wrap:wrap;gap:1px 10px}
 .dh3 .dsp{white-space:nowrap}
-.md-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}
+.md-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.md.open .md-b{transition:grid-template-rows .5s var(--spring)}
+.dh3 .chev,.chd .chev{transition:transform .4s var(--emph)}
+.dh3 .chev.o,.chd .chev.o{transition:transform .5s var(--spring)}
 .md.open .md-b{grid-template-rows:1fr}
 .md-in{min-height:0;overflow:hidden}
-@media (prefers-reduced-motion:reduce){.md-b,.cpw,.cd.has{transition-duration:1ms}.cpanel,.mcal.cm-swap .cg,.mcal.cm-swap .cw{animation:none}}
+@media (prefers-reduced-motion:reduce){.md-b,.md.open .md-b,.cpw,.cpw.open,.cd.has,.dh3 .chev,.chd .chev,.dh3 .chev.o,.chd .chev.o{transition-duration:1ms}.cpanel,.mcal.cm-swap .cg,.mcal.cm-swap .cw{animation:none}}
 .dh2{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px;font-size:12px;color:var(--mute);font-weight:600}
 .dh2 b{font-weight:600;font-variant-numeric:tabular-nums}
 .tr2 .lm b{white-space:nowrap}
@@ -3150,7 +3153,7 @@ const A={
     old.style.transition='none';old.style.height='';old.style.overflow='hidden';
     old.className=neu.className+' cm-swap';old.innerHTML=neu.innerHTML;
     const h1=old.offsetHeight;old.style.height=h0+'px';void old.offsetHeight;
-    old.style.transition='height .5s var(--spring)';old.style.height=h1+'px';
+    old.style.transition=h1<h0?'height .4s var(--emph)':'height .5s var(--spring)';old.style.height=h1+'px';
     clearTimeout(old._t);old._t=setTimeout(()=>{old.style.transition=old.style.height=old.style.overflow='';old.classList.remove('cm-swap')},560);
   },
   mutcalx(){ui.mutSel='';calSync()},
