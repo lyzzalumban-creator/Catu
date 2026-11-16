@@ -51,3 +51,8 @@ Atur → Data → Cadangan Google Drive. Perlu OAuth Client ID tipe Web (Google 
 - Data di HP selalu menang: tidak ada pemulihan otomatis. Kalau cadangan di Drive lebih baru saat aplikasi dibuka, muncul pengingat; **Pulihkan** meminta ketukan kedua sebagai konfirmasi, dan pengaturan Drive di perangkat tetap dipertahankan.
 
 Catatan status Drive: pil **Masuk Drive** (kuning) berarti sesi Google habis atau login diam-diam gagal; ketuk pil untuk masuk lagi. **Gagal Drive** (merah) berarti pengiriman gagal setelah login, dan alasan lengkapnya tampil di Atur → Data → Cadangan Google Drive (`settings.gd.err`), misalnya Drive API belum aktif (403).
+
+### Login Drive lewat pengalihan halaman penuh
+Login interaktif memakai pengalihan halaman penuh (OAuth implicit, `response_type=token`), karena jendela pop-up tidak andal di browser HP. Aplikasi mengarahkan ke Google, dan Google mengembalikan izin ke alamat halaman (`#access_token=...`). Parameter `state` acak dicek supaya hanya balasan dari permintaan sendiri yang diterima, alamat dibersihkan segera, dan token hanya disimpan di memori. Tindakan yang tertunda (masuk, cadangkan sekarang, pulihkan) diingat lewat `sessionStorage` dan dilanjutkan setelah kembali; untuk pulihkan, pengguna tetap diminta mengetuk konfirmasi sekali lagi. Jendela pop-up hanya dipakai untuk percobaan masuk diam-diam saat aplikasi dibuka (`prompt=none`).
+
+Syarat di Google Cloud: **Authorized redirect URIs** harus berisi alamat halaman persis, mis. `https://lyzzalumban-creator.github.io/Catu/` (dengan garis miring di akhir), selain Authorized JavaScript origin `https://lyzzalumban-creator.github.io`.
