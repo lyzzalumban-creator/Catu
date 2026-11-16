@@ -466,6 +466,8 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 /* chips */
 .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 28px 2px 0;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}
 .chips::-webkit-scrollbar{display:none}
+.chips.fit{flex-wrap:wrap;overflow:visible;padding:0;-webkit-mask-image:none;mask-image:none}
+.chips.fit .chip{flex:1 1 auto;justify-content:center;text-align:center}
 .chip{flex:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--s2);color:var(--tx2);box-shadow:inset 0 0 0 1px var(--line2);transition:border-radius .4s var(--spring),background .2s,color .2s}
 .chip.on{background:var(--accC);color:var(--onAccC);box-shadow:none;border-radius:99px}
 .chip small{display:block;font-size:11.5px;font-weight:500;color:var(--mute);margin-top:2px}
@@ -2948,7 +2950,7 @@ VIEWS.manage=function(){
     rows=`<div class="dh">Pengeluaran</div>${sec('exp')}<div class="dh">Pemasukan</div>${sec('inc')}`}
   const lbl=MG.find(x=>x[0]===k)[1];
   return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></div>
-    <div class="chips" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
+    <div class="chips fit" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
     ${k==='wallet'?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}<div class="surface">${rows||'<p class="empty">Belum ada. Ketuk tombol tambah di atas.</p>'}</div></section>`;
 };
 
