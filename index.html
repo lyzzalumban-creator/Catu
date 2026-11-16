@@ -609,15 +609,19 @@ input:focus,select:focus{box-shadow:inset 0 0 0 2px var(--acc);outline:0}
 input[type=range]{padding:0;box-shadow:none;background:none;accent-color:var(--acc);height:30px}
 input[type=file]{padding:10px}
 input:disabled{opacity:.6}
-.pad{display:grid;grid-template-columns:3fr 1fr;background:var(--s2);border-radius:22px;padding:4px 6px;margin-bottom:10px}
-.pad-n{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:50px}
-.pad-o{display:flex;flex-direction:column;justify-content:space-between}
-.pad-o .k{height:auto;flex:1}
-.k{height:50px;border-radius:16px;background:transparent;font-size:23px;font-weight:600;transition:background .15s,transform .2s var(--spring)}
+.pad{--kh:52px;display:grid;grid-template-columns:3fr 1fr;gap:6px;background:var(--s2);border-radius:24px;padding:6px 8px;margin-bottom:14px}
+.pad-n{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:var(--kh)}
+.pad-o{display:grid;grid-template-rows:repeat(4,var(--kh));background:color-mix(in srgb,var(--acc) 8%,transparent);border-radius:18px}
+.k.eq{background:var(--accC);color:var(--onAccC);margin:5px 7px;height:auto;font-size:24px}
+.k.eq:active{background:color-mix(in srgb,var(--accC) 70%,var(--acc))}
+.disp .bsb{margin-left:auto;align-self:center;width:46px;height:46px;border-radius:50%;background:var(--s2);color:var(--tx);display:grid;place-items:center;flex:none;transition:background .15s,transform .2s var(--spring)}
+.disp .bsb:active{background:var(--s3);transform:scale(.92)}
+.k{height:var(--kh,50px);border-radius:16px;background:transparent;font-size:23px;font-weight:600;transition:background .15s,transform .2s var(--spring)}
 .k:active{background:var(--s3);transform:scale(.94)}
 .k.op{color:var(--acc);font-size:25px}
 .k.bs{color:var(--tx)}
-.svb{display:block;width:100%;height:54px;border-radius:27px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:3;box-shadow:0 0 0 6px var(--s1);background:var(--acc);color:var(--acc-ink);font-size:16px;font-weight:700;transition:transform .2s var(--spring)}
+.panel{scroll-padding-bottom:90px}
+.svb{display:block;width:100%;height:54px;margin-top:8px;border-radius:27px;position:sticky;bottom:max(8px,env(safe-area-inset-bottom));z-index:3;box-shadow:0 0 0 6px var(--s1);background:var(--acc);color:var(--acc-ink);font-size:16px;font-weight:700;transition:transform .2s var(--spring)}
 .svb:active{transform:scale(.98);background:#bdfb74}
 .f{display:block;margin-bottom:14px}
 .f>span{display:block;font-size:12.5px;color:var(--mute);margin:0 4px 6px;font-weight:600}
@@ -886,7 +890,8 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .mk-c.lock{opacity:.6}
 @keyframes pet-caret {
   50% { opacity: 0; }}
-@media (max-height:760px){.k{height:44px}.pad-n{grid-auto-rows:44px}.disp .expr{font-size:34px}.disp{min-height:46px}}
+@media (max-height:760px){.pad{--kh:46px}.disp .expr{font-size:34px}.disp{min-height:46px}}
+@media (max-height:640px){.pad{--kh:42px}.disp .expr{font-size:30px}.disp{min-height:42px}.disp .bsb{width:40px;height:40px}}
 .mtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -16px 12px;padding:0 calc(50% - 44px);scroll-snap-type:x proximity;border-bottom:1px solid var(--line2)}
 .mtabs::-webkit-scrollbar{display:none}
 .mm{position:relative;flex:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:76px;padding:6px 8px 11px;color:var(--mute);font-weight:650;font-size:15px;line-height:1.1;scroll-snap-align:center;transition:color .3s ease,font-size .3s var(--spring)}
@@ -2702,11 +2707,11 @@ const backBtn=`<button class="ibtn sm" data-action="fback" aria-label="Kembali">
 
 /* ---- numpad bersama ---- */
 const KEYROWS=[['7','8','9','÷'],['4','5','6','×'],['1','2','3','-'],['000','0','bs','+']];
-const amtDisp=()=>`<div class="disp"><span class="cur">Rp</span><span class="expr num" id="dExpr">0</span><span class="res num" id="dRes"></span></div><div class="warn" id="dWarn"></div>`;
+const amtDisp=()=>`<div class="disp"><span class="cur">Rp</span><span class="expr num" id="dExpr">0</span><button class="bsb" data-action="key" data-arg="bs" aria-label="Hapus (tahan untuk kosongkan)"><svg width="26" height="20" viewBox="0 0 26 20" fill="none" aria-hidden="true"><path d="M8.6 1.5h13.4a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8.6a2 2 0 0 1-1.5-.7L1.4 11a2 2 0 0 1 0-2.6L7.1 2.2a2 2 0 0 1 1.5-.7Z" fill="currentColor"/><path d="m12.5 7 5 5m0-5-5 5" stroke="var(--s1)" stroke-width="2" stroke-linecap="round"/></svg></button><span class="res num" id="dRes"></span></div><div class="warn" id="dWarn"></div>`;
 function numpad(saveAct,label){
-  const kb=(k,t,c)=>`<button class="k ${c||''}" data-action="key" data-arg="${k}" aria-label="${k==='bs'?'Hapus (tahan untuk kosongkan)':k}">${t||k}</button>`;
-  const nums=['1','2','3','4','5','6','7','8','9','=','0','000'].map(k=>k==='='?kb('=','=','op'):kb(k)).join('');
-  const ops=kb('÷','÷','op')+kb('×','×','op')+kb('-','−','op')+kb('+','+','op')+kb('bs','<svg width="26" height="20" viewBox="0 0 26 20" fill="none"><path d="M8.6 1.5h13.4a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8.6a2 2 0 0 1-1.5-.7L1.4 11a2 2 0 0 1 0-2.6L7.100 2.200a2 2 0 0 1 1.500-.7Z" fill="currentColor"/><path d="m12.500 7 5 5m0-5-5 5" stroke="var(--s1)" stroke-width="2" stroke-linecap="round"/></svg>','bs');
+  const kb=(k,t,c)=>`<button class="k ${c||''}" data-action="key" data-arg="${k}" aria-label="${k==='-'?'kurang':k==='='?'sama dengan':k}">${t||k}</button>`;
+  const nums=['1','2','3','4','5','6','7','8','9','=','0','000'].map(k=>k==='='?kb('=','=','eq'):kb(k)).join('');
+  const ops=kb('÷','÷','op')+kb('×','×','op')+kb('-','−','op')+kb('+','+','op');
   return`<div class="pad"><div class="pad-n">${nums}</div><div class="pad-o">${ops}</div></div><button class="svb" data-action="${saveAct}">${label||'Simpan'}</button>`;
 }
 function evalExpr(e){
@@ -3390,9 +3395,9 @@ const A={
   }
 };
 (function(){let t=null,fired=false;
-  document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('.k[data-arg="bs"]');if(!b)return;fired=false;t=setTimeout(()=>{fired=true;pressKey(ui.amt,'c');updateAmt()},550)});
+  document.addEventListener('pointerdown',e=>{const b=e.target.closest&&e.target.closest('button[data-arg="bs"]');if(!b)return;fired=false;t=setTimeout(()=>{fired=true;pressKey(ui.amt,'c');updateAmt()},550)});
   const off=()=>{clearTimeout(t)};['pointerup','pointercancel','pointerleave'].forEach(n=>document.addEventListener(n,off,true));
-  document.addEventListener('click',e=>{if(fired&&e.target.closest&&e.target.closest('.k[data-arg="bs"]')){e.stopImmediatePropagation();e.preventDefault();fired=false}},true);
+  document.addEventListener('click',e=>{if(fired&&e.target.closest&&e.target.closest('button[data-arg="bs"]')){e.stopImmediatePropagation();e.preventDefault();fired=false}},true);
 })();
 document.addEventListener('click',e=>{
   const el=e.target.closest('[data-action]');if(!el)return;
