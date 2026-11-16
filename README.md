@@ -18,3 +18,6 @@ Setiap kartu punya satu dompet terhubung (field `wallet` pada kartu). Bayar kart
 
 ## Menu Gestun
 Menu Gestun bisa dinyalakan atau dimatikan di Atur (`settings.gestun`, bawaan aktif). Saat nonaktif, tombol Gestun di Beranda, kartu, dan filter Transaksi disembunyikan. Riwayat gestun yang sudah ada tetap tersimpan dan terlihat di daftar transaksi.
+
+## Riwayat transaksi per hari
+Di tab Transaksi, hari ini terbuka dan hari sebelumnya tertutup. Header tiap hari tetap menampilkan jumlah transaksi, total masuk, total keluar, dan selisih. Ketuk header untuk membuka atau menutup. Saat mencari atau memakai filter, semua hari terbuka. Status buka-tutup tidak disimpan, jadi kembali ke bawaan setiap halaman dimuat ulang.

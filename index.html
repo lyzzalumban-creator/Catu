@@ -874,6 +874,18 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .msum small{display:block;font-size:12px;color:var(--mute);margin-bottom:3px}
 .msum b{display:block;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;white-space:nowrap}
 .mid{color:var(--tx)}
+.md+.md{border-top:1px solid var(--line)}
+.dh3{width:100%;display:flex;align-items:center;gap:10px;padding:12px 2px;text-align:left}
+.dh3 .dt{flex:1;min-width:0}
+.dh3 .dt b{display:block;font-size:13.5px;font-weight:700;color:var(--tx2)}
+.dh3 .dt small{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.35}
+.dh3 .dtn{font-size:12.5px;font-weight:650;font-variant-numeric:tabular-nums;color:var(--mute);white-space:nowrap}
+.dh3 .dt small{display:flex;flex-wrap:wrap;gap:1px 10px}
+.dh3 .dsp{white-space:nowrap}
+.md-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.md.open .md-b{grid-template-rows:1fr}
+.md-in{min-height:0;overflow:hidden}
+@media (prefers-reduced-motion:reduce){.md-b{transition-duration:1ms}}
 .dh2{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 2px;font-size:12px;color:var(--mute);font-weight:600}
 .dh2 b{font-weight:600;font-variant-numeric:tabular-nums}
 .tr2 .lm b{white-space:nowrap}
@@ -1039,7 +1051,7 @@ const IC={
 /* ============ data & akuntansi ============ */
 let S=null,D={bal:{},debt:{}};
 const ui={view:'home',wlSel:'',range:30,sheet:null,flow:null,pay:null,gest:null,xfer:null,form:null,backup:null,accd:null,amt:{expr:''},
-  mutN:40,mutF:'all',mg:'wallet',sync:'local',an:{y:new Date().getFullYear(),m:new Date().getMonth(),type:'exp'}};
+  mutN:40,mutF:'all',mutDay:{},mg:'wallet',sync:'local',an:{y:new Date().getFullYear(),m:new Date().getMonth(),type:'exp'}};
 
 function effect(t,bal,debt,sg){
   const a=t.amt*sg;
@@ -2111,9 +2123,13 @@ function mutBody(){
   let out=0,inn=0;mon.forEach(t=>{if(t.t==='exp'||t.t==='gfee')out+=t.amt;else if(t.t==='inc')inn+=t.amt});
   const l=mon.filter(mutFilter).filter(t=>mutMatch(t,q));
   const sum=`<div class="msum"><div><small>Keluar</small><b class="neg">${money(out)}</b></div><div><small>Masuk</small><b class="pos">${money(inn)}</b></div><div><small>Selisih</small><b class="${inn-out<0?'neg':'pos'}">${inn-out<0?'−':'+'}${money(Math.abs(inn-out))}</b></div></div>`;
-  let h='',last='',buf='',net=0;
-  const flush=()=>{if(!last)return;h+=`<div class="dh2"><span>${esc(relDate(last))}</span><b>${net<0?'−':net>0?'+':''}${money(Math.abs(net))}</b></div>`+buf;buf='';net=0};
-  l.forEach(t=>{if(t.d!==last){flush();last=t.d}buf+=txRow2(t);if(t.t==='exp'||t.t==='gfee')net-=t.amt;else if(t.t==='inc')net+=t.amt});flush();
+  /* hari ini terbuka, hari sebelumnya tertutup; saat mencari/memfilter semua terbuka. Ringkasan hari tetap terlihat di header. */
+  const filtering=!!q||ui.mutF!=='all',td=today();
+  let h='',last='',buf='',net=0,cnt=0,di=0,dout=0;
+  const flush=()=>{if(!last)return;const ov=ui.mutDay[last],open=ov!==undefined?ov:(filtering||last===td);
+    const parts=[`<span class="dsp">${cnt} transaksi</span>`];if(di>0)parts.push(`<span class="dsp">Masuk <span class="pos">${money(di)}</span></span>`);if(dout>0)parts.push(`<span class="dsp">Keluar <span class="neg">${money(dout)}</span></span>`);
+    h+=`<div class="md ${open?'open':''}"><button class="dh3" data-action="mutday" data-arg="${last}" aria-expanded="${open}"><span class="dt"><b>${esc(relDate(last))}</b><small>${parts.join('')}</small></span><span class="dtn">${net<0?'−':net>0?'+':''}${money(Math.abs(net))}</span>${chev(open)}</button><div class="md-b"><div class="md-in">${buf}</div></div></div>`;buf='';net=0;cnt=0;di=0;dout=0};
+  l.forEach(t=>{if(t.d!==last){flush();last=t.d}buf+=txRow2(t);cnt++;if(t.t==='exp'||t.t==='gfee'){net-=t.amt;dout+=t.amt}else if(t.t==='inc'){net+=t.amt;di+=t.amt}});flush();
   const empty=`<p class="empty">${q?'Tidak ada transaksi yang cocok.':'Belum ada transaksi di '+MONF[+m.slice(5)-1]+'.'}</p>`;
   return sum+`<div class="surface">${h||empty}</div>`;
 }
@@ -3048,7 +3064,8 @@ const A={
   annext(){const a=ui.an;a.m++;if(a.m>11){a.m=0;a.y++}render()},
   antype(el,arg){ui.an.type=arg;render()},
   mutmore(){ui.mutN+=40;render()},
-  mutf(el,arg){ui.mutF=arg;ui.mutN=40;render()},
+  mutf(el,arg){ui.mutF=arg;ui.mutN=40;ui.mutDay={};render()},
+  mutday(el,arg){const m=el.closest('.md');if(!m)return;const o=!m.classList.contains('open');m.classList.toggle('open',o);el.setAttribute('aria-expanded',o);const c=el.querySelector('.chev');if(c)c.classList.toggle('o',o);ui.mutDay[arg]=o},
   mutm(el,arg){
     const old=mutMonth();if(old===arg)return;
     const tb0=$('#mtabs'),sl=tb0?tb0.scrollLeft:0;
@@ -3227,7 +3244,7 @@ document.addEventListener('click',e=>{
 function onInput(e){
   const el=e.target,h=el.dataset&&el.dataset.input;if(!h)return;
   if(h==='money'){const n=num(el.value);el.value=n?nf.format(n):''}
-  else if(h==='mutq'){ui.mutQ=el.value;const b=$('#mutBody');if(b)b.innerHTML=mutBody()}
+  else if(h==='mutq'){ui.mutQ=el.value;ui.mutDay={};const b=$('#mutBody');if(b)b.innerHTML=mutBody()}
   else if(h==='sigmin'){const n=num(el.value);el.value=n?nf.format(n):'';if(n>0){S.settings.sigMin=n;persist();document.querySelectorAll('.sigpre button').forEach(b=>b.classList.toggle('on',+b.dataset.arg===n))}}
   else if(h==='fnote')ui.flow.note=el.value;
   else if(h==='fdate')ui.flow.date=el.value;
