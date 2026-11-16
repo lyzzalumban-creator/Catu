@@ -43,3 +43,9 @@ Papan angka berupa grid 4×4 yang sejajar: angka dan tombol = di kiri, operator 
 - **Jatuh tempo kartu**: kartu dengan tagihan dan tanggal jatuh tempo ≤5 hari lagi muncul di atas Beranda dengan tombol Bayar. Tanggal jatuh tempo berikutnya juga tampil sebagai "Tempo" di kalender Riwayat.
 - **Anggaran per kategori** (`cat.budget`): atur di Kelola → Kategori (atau tombol "Atur anggaran bulanan" di Analitik). Meter di Analitik hijau di bawah 80%, kuning 80–99%, merah mulai 100%.
 - **Transaksi berulang** (`S.recur`): nyalakan "Ulangi tiap bulan" saat mencatat, atau kelola di Kelola → Berulang. Transaksi dibuat otomatis saat aplikasi dibuka pada atau setelah tanggalnya (`runRecur`), dan rencana berikutnya tampil di kalender dengan garis kuning.
+
+## Cadangan Google Drive
+Atur → Data → Cadangan Google Drive. Perlu OAuth Client ID tipe Web (Google Cloud Console, Drive API aktif, Authorized JavaScript origin = alamat situs). Cadangan disimpan di `appDataFolder` (folder tersembunyi milik aplikasi, izin `drive.appdata`) dengan nama `kocekly-cadangan.json`. Pengaturan di `settings.gd` (`cid`, `on`, `ok`, `last`, `fileId`).
+- Token Google hanya di memori (berlaku ±1 jam) dan tidak pernah masuk ke data atau cadangan. Saat dibuka, aplikasi mencoba masuk diam-diam; kalau gagal, pil di kanan atas menjadi "Masuk Drive" dan mengetuknya membuka login.
+- Perubahan data dikirim otomatis 6 detik setelah perubahan terakhir. Pil menampilkan Drive / Drive… / Masuk Drive / Gagal Drive.
+- Data di HP selalu menang: tidak ada pemulihan otomatis. Kalau cadangan di Drive lebih baru saat aplikasi dibuka, muncul pengingat; **Pulihkan** meminta ketukan kedua sebagai konfirmasi, dan pengaturan Drive di perangkat tetap dipertahankan.
