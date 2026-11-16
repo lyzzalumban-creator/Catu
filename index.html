@@ -516,6 +516,8 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .bud-set{margin:2px 0 0 38px}
 .rep-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 4px 10px}.rep-row b{display:block;font-size:14px}.rep-row small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
 .gd-err{color:var(--warn)}
+.gd-log{margin:10px 4px 0;font-size:12px;color:var(--mute)}.gd-log summary{cursor:pointer;padding:6px 0}
+.gd-lines{background:var(--s3);border-radius:12px;padding:8px 10px;max-height:180px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5;color:var(--tx2)}.gd-lines span{color:var(--mute)}
 .gd-in{margin-top:10px}.gd-help{display:block;color:var(--mute);font-size:12px;margin:6px 4px 0;line-height:1.4}
 .gd-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .nudge.due{flex-direction:column;align-items:stretch;gap:10px;background:var(--accC)}
@@ -2229,12 +2231,15 @@ function dueNudge(){
 /* ---- Google Drive: cadangan otomatis ke folder tersembunyi milik aplikasi (appDataFolder) ----
    Token hanya di memori. Data lokal selalu menang: tidak ada pemulihan otomatis yang menimpa data. */
 const GD={tok:'',exp:0,t:0,busy:false,newer:false,msg:'',act:''};
+const GD_BUILD='gd-redirect-2';
+const gdLogGet=()=>{try{return JSON.parse(safeStorage.get('penniq.gdlog')||'[]')}catch(e){return[]}};
+function gdLog(m){const a=gdLogGet();a.push({t:Date.now(),m:String(m).slice(0,140)});try{safeStorage.set('penniq.gdlog',JSON.stringify(a.slice(-25)))}catch(e){}}
 const authErr=m=>Object.assign(new Error(m),{auth:true});
 const GD_CID='243479656515-c8a6tp0mhmhvc6erm9ga0054asrsv1n5.apps.googleusercontent.com';   /* Client ID bukan rahasia; bisa diganti di Atur */
 const GD_FILE='penniq-cadangan.json',GD_SCOPE='https://www.googleapis.com/auth/drive.appdata';
 const gdAuto=()=>{const g=S&&S.settings&&S.settings.gd;return!!(g&&g.on&&g.cid)};
 const gdSave=()=>{try{safeStorage.set(LS_KEY,JSON.stringify(S))}catch(e){}};
-const gdFail=e=>{GD.msg=e.message;S.settings.gd.err=e.message;gdSave();setSync(e.auth?'gdneed':'gderr')};
+const gdFail=e=>{gdLog('GALAT: '+e.message);GD.msg=e.message;S.settings.gd.err=e.message;gdSave();setSync(e.auth?'gdneed':'gderr')};
 const gdClear=()=>{GD.msg='';S.settings.gd.err='';gdSave()};
 function gdLoad(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();
   const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=()=>res();sc.onerror=()=>rej(new Error('Tidak bisa memuat Google. Cek koneksi.'));document.head.appendChild(sc)})}
@@ -2259,7 +2264,8 @@ function gdToken(interactive){
 function gdRedirectUri(){return location.origin+location.pathname.replace(/index\.html$/,'')}
 function gdRedirect(){
   const g=S.settings.gd,st=uid()+Math.random().toString(36).slice(2,10);
-  try{sessionStorage.setItem('pq.gds',st);sessionStorage.setItem('pq.gda',GD.act||'login')}catch(e){}
+  try{safeStorage.set('pq.gds',JSON.stringify({st,act:GD.act||'login',t:Date.now()}))}catch(e){}
+  gdLog('mengalihkan ke Google (tindakan: '+(GD.act||'login')+')');
   const q={client_id:g.cid,redirect_uri:gdRedirectUri(),response_type:'token',scope:GD_SCOPE,include_granted_scopes:'true',state:st};
   if(!g.ok)q.prompt='consent';
   toast('Mengalihkan ke Google…');
@@ -2270,12 +2276,14 @@ function gdHandleReturn(){
   const h=location.hash;if(!/[#&](access_token|error)=/.test(h)||!/state=/.test(h))return'';
   const pr=new URLSearchParams(h.replace(/^#/,''));
   try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
-  let st='',act='login';try{st=sessionStorage.getItem('pq.gds')||'';act=sessionStorage.getItem('pq.gda')||'login';sessionStorage.removeItem('pq.gds');sessionStorage.removeItem('pq.gda')}catch(e){}
-  if(!st||pr.get('state')!==st)return'';   /* bukan balasan dari permintaan kita */
-  const g=S.settings.gd;
-  if(pr.get('error')){gdFail(authErr((pr.get('error')==='access_denied'?'Izin ditolak oleh Google':'Google menolak login')+' ('+pr.get('error')+')'));return'err'}
-  if(!(pr.get('scope')||'').includes('drive.appdata')){gdFail(authErr('Akses ke Google Drive belum diizinkan. Ulangi login dan centang kotak akses Drive di layar izin.'));return'err'}
-  GD.tok=pr.get('access_token');GD.exp=Date.now()+(+pr.get('expires_in')||3600)*1000;g.ok=true;g.on=true;gdSave();
+  let sv=null;try{sv=JSON.parse(safeStorage.get('pq.gds')||'null');safeStorage.set('pq.gds','')}catch(e){}
+  if(!sv||!sv.st){gdFail(authErr('Balasan Google diterima, tetapi catatan permintaan login hilang (mungkin halaman dibuka di tab lain). Coba masuk lagi.'));return'err'}
+  if(Date.now()-(sv.t||0)>15*60*1000){gdFail(authErr('Login Google berlangsung terlalu lama (lebih dari 15 menit). Coba masuk lagi.'));return'err'}
+  if(pr.get('state')!==sv.st){gdFail(authErr('Balasan Google tidak cocok dengan permintaan login (state berbeda). Coba masuk lagi.'));return'err'}
+  const g=S.settings.gd,act=sv.act||'login';
+  if(pr.get('error')){gdLog('kembali dari Google: error='+pr.get('error'));gdFail(authErr((pr.get('error')==='access_denied'?'Izin ditolak oleh Google':'Google menolak login')+' ('+pr.get('error')+')'));return'err'}
+  if(!(pr.get('scope')||'').includes('drive.appdata')){gdLog('kembali dari Google: scope tidak memuat drive.appdata');gdFail(authErr('Akses ke Google Drive belum diizinkan. Ulangi login dan centang kotak akses Drive di layar izin.'));return'err'}
+  GD.tok=pr.get('access_token');GD.exp=Date.now()+(+pr.get('expires_in')||3600)*1000;g.ok=true;g.on=true;gdSave();gdLog('kembali dari Google: izin diterima (berlaku '+Math.round((+pr.get('expires_in')||3600)/60)+' menit)');
   return act;
 }
 /* setelah kembali dari Google: tampilkan Atur dan lanjutkan tindakan yang tertunda */
@@ -2306,7 +2314,7 @@ async function gdUpload(interactive){
   else{const b='kcl'+Date.now().toString(36);
     const body='--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:GD_FILE,parents:['appDataFolder']})+'\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+json+'\r\n--'+b+'--';
     const r=await gdFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body},interactive);id=(await r.json()).id}
-  g.fileId=id;GD.newer=false;gdSave();
+  g.fileId=id;GD.newer=false;gdSave();gdLog('unggah berhasil');
 }
 async function gdRun(){
   if(!gdAuto()||GD.busy)return;GD.busy=true;setSync('gdsave');
@@ -2317,9 +2325,9 @@ async function gdRun(){
 function gdSchedule(){if(!gdAuto())return;clearTimeout(GD.t);setSync('gdsave');GD.t=setTimeout(gdRun,6000)}
 /* saat aplikasi dibuka: coba masuk diam-diam, beri tahu bila cadangan Drive lebih baru, kirim bila data lokal lebih baru */
 async function gdBoot(){
-  if(!gdAuto())return;setSync('gdneed');
+  if(!gdAuto())return;setSync('gdneed');gdLog('aplikasi dibuka, mencoba masuk diam-diam');
   try{
-    const f=await gdFind(false);setSync('gdok');
+    const f=await gdFind(false);setSync('gdok');gdLog('masuk diam-diam berhasil');
     if(f&&Date.parse(f.modifiedTime)>(S.settings.gd.last||0)+60000&&Date.parse(f.modifiedTime)>(S.updated||0)+60000){GD.newer=true;if(ui.view==='home')render()}
     else if(!f||(S.updated||0)>(S.settings.gd.last||0)+1000)gdSchedule();
   }catch(e){gdFail(e)}
@@ -2874,6 +2882,7 @@ VIEWS.set=function(){
      <div class="setrow" style="display:block"><div><b>Cadangan Google Drive</b><small>Otomatis ke folder tersembunyi di Drive Anda. ${(GD.msg||S.settings.gd.err)?'<span class="gd-err">'+esc(GD.msg||S.settings.gd.err)+'</span>':(S.settings.gd.last?'Terakhir: '+esc(bkAgo(S.settings.gd.last)):'Belum tersambung')}</small></div>
        <input class="gd-in" data-input="gd-cid" value="${esc(S.settings.gd.cid)}" placeholder="Google Client ID (…apps.googleusercontent.com)" aria-label="Google Client ID" autocomplete="off" spellcheck="false">
        <small class="gd-help">Buat OAuth Client ID tipe Web di Google Cloud Console, aktifkan Drive API, dan isi Authorized JavaScript origin dengan alamat situs ini (${esc(location.origin||'')}).</small>
+       <details class="gd-log"><summary>Riwayat Drive untuk diagnosa · versi ${GD_BUILD}</summary><div class="gd-lines">${gdLogGet().slice().reverse().map(x=>`<div><span>${new Date(x.t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span> ${esc(x.m)}</div>`).join('')||'<div>Belum ada catatan.</div>'}</div></details>
        <div class="gd-btns"><button class="pbtn" data-action="gd-login">${S.settings.gd.on?'Masuk lagi':'Masuk dengan Google'}</button>${S.settings.gd.on?`<button class="pbtn" data-action="gd-now">Cadangkan sekarang</button><button class="pbtn" data-action="gd-restore-btn">Pulihkan</button>`:''}</div>
        ${S.settings.gd.on?`<div class="setrow" style="padding:10px 0 0"><div><b>Cadangan otomatis</b><small>Kirim setelah ada perubahan</small></div><button class="sw-t on" data-action="gd-off" role="switch" aria-checked="true" aria-label="Matikan cadangan otomatis"></button></div>`:''}</div>
      <div class="setrow"><div><b>Cadangkan sekarang</b><small>Unduh file cadangan · ${esc(bkAgo(S.settings.lastBackup))}</small></div><button class="pbtn" data-action="bk-file">Unduh</button></div>
