@@ -2228,7 +2228,7 @@ function dueNudge(){
 }
 /* ---- Google Drive: cadangan otomatis ke folder tersembunyi milik aplikasi (appDataFolder) ----
    Token hanya di memori. Data lokal selalu menang: tidak ada pemulihan otomatis yang menimpa data. */
-const GD={tok:'',exp:0,t:0,busy:false,newer:false,msg:''};
+const GD={tok:'',exp:0,t:0,busy:false,newer:false,msg:'',act:''};
 const authErr=m=>Object.assign(new Error(m),{auth:true});
 const GD_CID='243479656515-c8a6tp0mhmhvc6erm9ga0054asrsv1n5.apps.googleusercontent.com';   /* Client ID bukan rahasia; bisa diganti di Atur */
 const GD_FILE='penniq-cadangan.json',GD_SCOPE='https://www.googleapis.com/auth/drive.appdata';
@@ -2243,6 +2243,7 @@ function gdToken(interactive){
   return new Promise(async(res,rej)=>{
     if(GD.tok&&Date.now()<GD.exp-60000)return res(GD.tok);
     const g=S.settings.gd;if(!g.cid)return rej(new Error('Isi Client ID dulu'));
+    if(interactive){gdRedirect();return}   /* pindah halaman: promise ini sengaja tidak selesai */
     try{await gdLoad()}catch(e){return rej(e)}
     try{
       const tc=google.accounts.oauth2.initTokenClient({client_id:g.cid,scope:GD_SCOPE,
@@ -2250,9 +2251,41 @@ function gdToken(interactive){
           if(google.accounts.oauth2.hasGrantedAllScopes&&!google.accounts.oauth2.hasGrantedAllScopes(r,GD_SCOPE))return rej(authErr('Akses ke Google Drive belum diizinkan. Ulangi login dan centang kotak akses Drive di layar izin.'));
           GD.tok=r.access_token;GD.exp=Date.now()+(+r.expires_in||3600)*1000;if(!g.ok){g.ok=true;gdSave()}res(GD.tok)},
         error_callback:e=>rej(authErr(e&&e.type==='popup_closed'?'Jendela login tertutup sebelum selesai (popup_closed)':'Login Google gagal ('+((e&&e.type)||'tidak diketahui')+')'))});
-      tc.requestAccessToken({prompt:interactive?(g.ok?'':'consent'):'none'});
+      tc.requestAccessToken({prompt:'none'});
     }catch(e){rej(e)}
   });
+}
+/* Login pengalihan halaman penuh (lebih andal di browser HP daripada jendela pop-up). Alamat kembali harus terdaftar di Google Cloud. */
+function gdRedirectUri(){return location.origin+location.pathname.replace(/index\.html$/,'')}
+function gdRedirect(){
+  const g=S.settings.gd,st=uid()+Math.random().toString(36).slice(2,10);
+  try{sessionStorage.setItem('pq.gds',st);sessionStorage.setItem('pq.gda',GD.act||'login')}catch(e){}
+  const q={client_id:g.cid,redirect_uri:gdRedirectUri(),response_type:'token',scope:GD_SCOPE,include_granted_scopes:'true',state:st};
+  if(!g.ok)q.prompt='consent';
+  toast('Mengalihkan ke Google…');
+  setTimeout(()=>{location.href='https://accounts.google.com/o/oauth2/v2/auth?'+new URLSearchParams(q).toString()},180);
+}
+/* dipanggil saat boot: baca hasil login dari alamat (#access_token=...), cek state, bersihkan alamat. Mengembalikan tindakan yang harus dilanjutkan, atau ''. */
+function gdHandleReturn(){
+  const h=location.hash;if(!/[#&](access_token|error)=/.test(h)||!/state=/.test(h))return'';
+  const pr=new URLSearchParams(h.replace(/^#/,''));
+  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+  let st='',act='login';try{st=sessionStorage.getItem('pq.gds')||'';act=sessionStorage.getItem('pq.gda')||'login';sessionStorage.removeItem('pq.gds');sessionStorage.removeItem('pq.gda')}catch(e){}
+  if(!st||pr.get('state')!==st)return'';   /* bukan balasan dari permintaan kita */
+  const g=S.settings.gd;
+  if(pr.get('error')){gdFail(authErr((pr.get('error')==='access_denied'?'Izin ditolak oleh Google':'Google menolak login')+' ('+pr.get('error')+')'));return'err'}
+  if(!(pr.get('scope')||'').includes('drive.appdata')){gdFail(authErr('Akses ke Google Drive belum diizinkan. Ulangi login dan centang kotak akses Drive di layar izin.'));return'err'}
+  GD.tok=pr.get('access_token');GD.exp=Date.now()+(+pr.get('expires_in')||3600)*1000;g.ok=true;g.on=true;gdSave();
+  return act;
+}
+/* setelah kembali dari Google: tampilkan Atur dan lanjutkan tindakan yang tertunda */
+async function gdAfterReturn(act){
+  ui.view='set';render();window.scrollTo(0,0);
+  if(act==='err'){setSync('gdneed');toast(GD.msg||S.settings.gd.err||'Login Google gagal');return}
+  if(act==='restore'){setSync('gdok');toast('Masuk berhasil. Ketuk Pulihkan sekali lagi.');return}
+  setSync('gdsave');
+  try{await gdUpload(true);setSync('gdok');gdClear();render();toast(act==='now'?'Tercadangkan ke Drive':'Terhubung ke Google Drive')}
+  catch(e){gdFail(e);toast(e.message);render()}
 }
 async function gdFetch(url,opt,interactive){
   const t=await gdToken(interactive);
@@ -2293,10 +2326,10 @@ async function gdBoot(){
 }
 async function gdLogin(){
   const g=S.settings.gd;if(!g.cid)return toast('Isi Client ID dulu');
-  try{await gdToken(true);g.on=true;setSync('gdsave');await gdUpload(true);setSync('gdok');gdClear();render();toast('Terhubung ke Google Drive')}
-  catch(e){gdFail(e);toast(e.message);render()}
+  GD.act='login';gdRedirect();
 }
 async function gdRestore(){
+  GD.act='restore';
   try{
     const f=await gdFind(true);if(!f)return toast('Belum ada cadangan di Drive');
     const r=await gdFetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media',{},true);
@@ -3401,7 +3434,7 @@ const A={
   nav(el,arg){const ch=ui.view!==arg;ui.view=arg;if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
   'sync-tap'(){if(gdAuto())gdLogin();else if(S.settings.gd.cid)toast('Aktifkan cadangan Drive di Atur');else{ui.view='set';render();window.scrollTo(0,0)}},
   'gd-login'(){gdLogin()},
-  'gd-now'(){setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');gdClear();render();toast('Tercadangkan ke Drive')}).catch(e=>{gdFail(e);toast(e.message);render()})},
+  'gd-now'(){GD.act='now';setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');gdClear();render();toast('Tercadangkan ke Drive')}).catch(e=>{gdFail(e);toast(e.message);render()})},
   'gd-restore-btn'(el){if(!confirmTap(el,'gdr')){toast('Ketuk lagi untuk memulihkan: data di HP akan diganti');return}gdRestore()},
   'gd-restore'(el){if(!confirmTap(el,'gdr2')){toast('Ketuk lagi untuk memulihkan: data di HP akan diganti');return}gdRestore()},
   'gd-skip'(){GD.newer=false;render()},
@@ -3660,7 +3693,9 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
   try{const raw=safeStorage.get(LS_KEY);if(raw)loaded=JSON.parse(raw)}catch(e){}
   S=normalize(loaded&&Array.isArray(loaded.wallets)?loaded:makeSample());
   recalc();if(runRecur())persist();
-  render();setSync('local');initRemote();gdBoot();
+  const back=gdHandleReturn();
+  render();setSync('local');initRemote();
+  if(back)gdAfterReturn(back);else gdBoot();
 })();
 
 /* tahan lama pada batang Total saldo -> info persen & uang */
