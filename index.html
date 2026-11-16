@@ -516,10 +516,7 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .bud-set{margin:2px 0 0 38px}
 .rep-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 4px 10px}.rep-row b{display:block;font-size:14px}.rep-row small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
 .gd-err{color:var(--warn)}
-.gd-log{margin:10px 4px 0;font-size:12px;color:var(--mute)}.gd-log summary{cursor:pointer;padding:6px 0}
-.gd-lines{background:var(--s3);border-radius:12px;padding:8px 10px;max-height:180px;overflow:auto;font-family:ui-monospace,Menlo,monospace;font-size:11px;line-height:1.5;color:var(--tx2)}.gd-lines span{color:var(--mute)}
-.gd-in{margin-top:10px}.gd-help{display:block;color:var(--mute);font-size:12px;margin:6px 4px 0;line-height:1.4}
-.gd-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.gd-btns{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 14px}
 .nudge.due{flex-direction:column;align-items:stretch;gap:10px;background:var(--accC)}
 .nudge.due .nd-r{display:flex;align-items:center;gap:12px}.nudge.due b{color:var(--onAccC)}
 .grp{transition:background .3s var(--emph)}
@@ -2346,6 +2343,8 @@ async function gdRestore(){
     closeSheet();commit('Dipulihkan dari Google Drive');
   }catch(e){toast(e.message)}
 }
+const gdLastTxt=ts=>{const d=new Date(ts);return ymd(d)===today()?'hari ini '+d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}).replace(':','.'):bkAgo(ts).toLowerCase()};
+const gdStatusTxt=()=>{const g=S.settings.gd,e=GD.msg||g.err;if(e)return'<span class="gd-err">'+esc(e)+'</span>';if(!g.on)return'Otomatis ke Drive Anda. Belum tersambung';return'Aktif'+(g.last?' · Terakhir: '+gdLastTxt(g.last):'')};
 function gdNudge(){
   if(!GD.newer)return'';
   return`<section class="blk nudge" role="status"><div class="nd-t"><b>Cadangan di Drive lebih baru</b><small>Mungkin dari perangkat lain. Pulihkan untuk memakainya.</small></div><div class="nd-b"><button class="pbtn" data-action="gd-restore">Pulihkan</button><button class="tbtn" data-action="gd-skip">Abaikan</button></div></section>`;
@@ -2879,12 +2878,8 @@ VIEWS.set=function(){
    </div></section>
    <section class="blk"><div class="blk-h"><h2>Data</h2></div><div class="surface">
      <div class="setrow"><div><b>Penyimpanan</b><small>${st}</small></div></div>
-     <div class="setrow" style="display:block"><div><b>Cadangan Google Drive</b><small>Otomatis ke folder tersembunyi di Drive Anda. ${(GD.msg||S.settings.gd.err)?'<span class="gd-err">'+esc(GD.msg||S.settings.gd.err)+'</span>':(S.settings.gd.last?'Terakhir: '+esc(bkAgo(S.settings.gd.last)):'Belum tersambung')}</small></div>
-       <input class="gd-in" data-input="gd-cid" value="${esc(S.settings.gd.cid)}" placeholder="Google Client ID (…apps.googleusercontent.com)" aria-label="Google Client ID" autocomplete="off" spellcheck="false">
-       <small class="gd-help">Buat OAuth Client ID tipe Web di Google Cloud Console, aktifkan Drive API, dan isi Authorized JavaScript origin dengan alamat situs ini (${esc(location.origin||'')}).</small>
-       <details class="gd-log"><summary>Riwayat Drive untuk diagnosa · versi ${GD_BUILD}</summary><div class="gd-lines">${gdLogGet().slice().reverse().map(x=>`<div><span>${new Date(x.t).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span> ${esc(x.m)}</div>`).join('')||'<div>Belum ada catatan.</div>'}</div></details>
-       <div class="gd-btns"><button class="pbtn" data-action="gd-login">${S.settings.gd.on?'Masuk lagi':'Masuk dengan Google'}</button>${S.settings.gd.on?`<button class="pbtn" data-action="gd-now">Cadangkan sekarang</button><button class="pbtn" data-action="gd-restore-btn">Pulihkan</button>`:''}</div>
-       ${S.settings.gd.on?`<div class="setrow" style="padding:10px 0 0"><div><b>Cadangan otomatis</b><small>Kirim setelah ada perubahan</small></div><button class="sw-t on" data-action="gd-off" role="switch" aria-checked="true" aria-label="Matikan cadangan otomatis"></button></div>`:''}</div>
+     <div class="setrow"><div><b>Cadangan Google Drive</b><small>${gdStatusTxt()}</small></div>${S.settings.gd.on?`<button class="sw-t on" data-action="gd-off" role="switch" aria-checked="true" aria-label="Matikan cadangan otomatis"></button>`:`<button class="pbtn" data-action="gd-login" aria-label="Masuk dengan Google">Masuk</button>`}</div>
+     ${S.settings.gd.on?`<div class="gd-btns"><button class="pbtn" data-action="gd-now">Cadangkan</button><button class="pbtn" data-action="gd-restore-btn">Pulihkan</button>${ui.sync==='gdneed'?'<button class="pbtn" data-action="gd-login">Masuk lagi</button>':''}</div>`:''}
      <div class="setrow"><div><b>Cadangkan sekarang</b><small>Unduh file cadangan · ${esc(bkAgo(S.settings.lastBackup))}</small></div><button class="pbtn" data-action="bk-file">Unduh</button></div>
      <div class="setrow"><div><b>Ekspor CSV</b><small>Semua transaksi untuk Excel atau Sheets</small></div><button class="pbtn" data-action="csv">Ekspor</button></div>
      <div class="setrow"><div><b>Ekspor JSON</b><small>Salin seluruh data sebagai cadangan</small></div><button class="pbtn" data-action="bk-export">Ekspor</button></div>
@@ -3672,7 +3667,6 @@ document.addEventListener('click',e=>{
 function onInput(e){
   const el=e.target,h=el.dataset&&el.dataset.input;if(!h)return;
   if(h==='money'){const n=num(el.value);el.value=n?nf.format(n):''}
-  else if(h==='gd-cid'){const g=S.settings.gd,v=el.value.trim();if(v!==g.cid){g.cid=v;g.ok=false;g.fileId='';GD.tok='';gdSave()}}
   else if(h==='mutq'){ui.mutQ=el.value;ui.mutDay={};const b=$('#mutBody');if(b)b.innerHTML=mutBody()}
   else if(h==='sigmin'){const n=num(el.value);el.value=n?nf.format(n):'';if(n>0){S.settings.sigMin=n;persist();document.querySelectorAll('.sigpre button').forEach(b=>b.classList.toggle('on',+b.dataset.arg===n))}}
   else if(h==='fnote')ui.flow.note=el.value;
