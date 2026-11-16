@@ -604,23 +604,25 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 /* bottom sheet */
 
 
-/* kartu kredit Tumpukan: ringkas supaya satu layar cukup */
+/* kartu kredit: rincian lapang tapi tetap satu layar */
 .csw{aspect-ratio:100/57;margin-top:2px}
 .csw-stage{width:60%}
-.wl-detail{margin-top:4px;padding:10px 14px 12px}
-.wl-detail .lim{padding:8px 0 0}
-.wl-detail .lg-pct span{font-size:34px}.wl-detail .lg-pct small{font-size:16px}.wl-detail .lg-pct em{font-size:12px;margin-left:6px}
-.wl-detail .lg-rem{padding-bottom:2px}
-.wl-detail .lg-st{margin-top:6px}
-.wl-detail .lg-g{margin-top:8px;padding-top:9px}
-.wl-detail .lg-ticks{height:20px}
-.wl-detail .lg-ax{display:none}
-.wl-detail .lg-ln{margin:8px 0 6px}
-.wl-dh .lm small{display:block;line-height:1.35;white-space:normal;overflow:visible;text-overflow:clip}
-.duet{font-weight:650;color:var(--tx2)}.duet.soon{color:var(--warn)}
-.wl-detail .bgroup{margin-top:8px}
-.wl-detail .lim-k{margin-top:4px}
-.wl-detail .lg-ln{margin:6px 0 5px}
+.wl-detail{margin-top:6px;padding:14px 14px 14px}
+.wl-detail .lim{padding:12px 0 0}
+.wl-detail .lg-pct span{font-size:36px}.wl-detail .lg-pct small{font-size:17px}.wl-detail .lg-pct em{font-size:12px;margin-left:6px}
+.wl-detail .lg-rem{padding-bottom:3px}
+.wl-detail .lg-st{margin-top:8px}
+.wl-detail .lg-g{margin-top:12px;padding-top:10px}
+.wl-detail .lg-ticks{height:22px}
+.lg-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.lg-stats>div{background:var(--s3);border-radius:14px;padding:9px 10px;min-width:0}
+.lg-stats span{display:block;font-size:11.5px;color:var(--mute);white-space:nowrap}
+.lg-stats b{display:block;font-size:clamp(12px,3.5vw,14px);font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.lg-stats b.soon{color:var(--warn)}
+.lg-stats small{display:block;font-size:11px;color:var(--mute);margin-top:1px}
+.wl-dh .lm small{display:block;line-height:1.35}
+@media (max-height:780px){.lg-stats{display:none}.wl-detail .lg-g{margin-top:10px}}
+.wl-detail .bgroup{margin-top:12px}
 
 /* kartu anggaran: air naik seiring pengeluaran */
 .bgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -1938,7 +1940,7 @@ function blkActions(){
 }
 /* Pengukur limit: garis-garis tegak berwarna hijau→merah, penanda ideal 30% (terinspirasi kartu "Opt-In Rate"). */
 function limitBlock(c){
-  const ci=cardInfo(c),lim=ci.limit||0,N=56,IDEAL=30;
+  const ci=cardInfo(c),lim=ci.limit||0,N=48,IDEAL=30;
   const pm=lim?clamp(ci.mine/lim*100,0,100):0,pt=lim?clamp(ci.used/lim*100,0,100):0;
   const raw=lim?ci.used/lim*100:0,pct=raw>0&&raw<10?(Math.round(raw*10)/10).toString().replace('.',','):Math.round(raw);
   const tone=raw<=IDEAL?'ok':raw<=70?'mid':'hi';
@@ -1949,14 +1951,14 @@ function limitBlock(c){
     const hue=Math.round(130-130*(i/(N-1)));
     ticks+=`<i class="${on?(mine?'on':'on o'):''}" style="--i:${i};--h:${hue}"></i>`;
   }
+  const due=c.due?nextOcc(c.due):null,dn=due?daysTo(due):null,hasDue=due&&ci.mine>0;
   return`<div class="lim lg"><div class="lg-top"><div class="lg-pct ${tone}"><span>${lim?pct:0}</span><small>%</small><em>terpakai</em></div>
     <div class="lg-rem"><span>Sisa limit</span><b class="num ${ci.remain<0?'neg':''}" ${mv('cr:'+c.id,ci.remain)}>${money(ci.remain)}</b></div></div>
-    <div class="lg-st"><span class="lg-pill ${tone}">${msg}</span><span class="lg-amt num">Terpakai ${money(ci.used)}</span></div>
+    <div class="lg-st"><span class="lg-pill ${tone}">${msg}</span>${lim?`<span class="lg-amt num">dari ${money(lim)}</span>`:''}</div>
     <div class="lg-g" role="img" aria-label="Limit terpakai ${pct} persen"><div class="lg-ticks">${ticks}</div><b class="lg-mk" style="left:${IDEAL}%"></b></div>
-    <div class="lg-ax"><span>Kosong</span><span>Penuh</span></div>
-    <div class="lg-ln"></div>
-    <div class="lim-t"><span>${ci.pool?esc(ci.pool.name):'Limit sendiri'}</span><span class="num">${money(ci.limit)}</span></div>
-    ${ci.pool?`<div class="lim-k"><span><b style="background:var(--acc)"></b>Kartu ini ${money(ci.mine)}</span><span><b style="background:#6A6A76"></b>Kartu segrup ${money(ci.other)}</span></div>`:''}</div>`;
+    <div class="lg-stats"><div><span>Tagihan</span><b class="num">${money(ci.mine)}</b></div>
+      <div><span>Jatuh tempo</span><b class="${hasDue&&dn<=3?'soon':''}">${hasDue?due.getDate()+' '+MONS[due.getMonth()]:'–'}</b>${hasDue?`<small>${dn===0?'hari ini':dn+' hari lagi'}</small>`:''}</div>
+      ${ci.pool?`<div><span>Kartu segrup</span><b class="num">${money(ci.other)}</b></div>`:`<div><span>Terpakai</span><b class="num">${money(ci.used)}</b></div>`}</div></div>`;
 }
 const WL_COLORS={neon:'Hijau neon',blue:'Biru',graphite:'Grafit',rose:'Mawar',leather:'Kulit'};
 function totalRemain(){
@@ -1967,12 +1969,11 @@ function totalRemain(){
 }
 function wlDetailHTML(id){
   const c=S.cards.find(x=>x.id===id);if(!c)return'';
-  const ci=cardInfo(c),due=c.due?nextOcc(c.due):null,dn=due?daysTo(due):null;
-  const dueTxt=due&&ci.mine>0?` · <span class="duet ${dn<=3?'soon':''}">Jatuh tempo ${dn===0?'hari ini':dn+' hari'}</span>`:'';
-  return`<div class="wl-dh"><span class="lm"><b>${esc(c.name)} ••${esc(c.last4)}</b><small>${esc(c.bank||'')} · Tagihan ${money(ci.mine)}${dueTxt}</small></span><button class="tbtn" data-action="open-accd" data-id="${c.id}">Riwayat</button></div>
+  const ci=cardInfo(c);
+  return`<div class="wl-dh"><span class="lm"><b>${esc(c.name)} ••${esc(c.last4)}</b><small>${esc(c.bank||'')}${ci.pool?' · '+esc(ci.pool.name):''}</small></span><button class="tbtn" data-action="open-accd" data-id="${c.id}">Riwayat</button></div>
     ${limitBlock(c)}
     <div class="bgroup"><button class="fill" data-action="swipe" data-id="${c.id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${c.id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${c.id}">Gestun</button>`:''}</div>
-    ${S.cards.length>1?`<div class="chips" style="margin-top:8px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
+    ${S.cards.length>1&&S.settings.cardView==='wallet'?`<div class="chips" style="margin-top:10px">${S.cards.map(k=>`<button class="chip ${k.id===id?'on':''}" data-action="wl-pick" data-id="${k.id}">${esc(k.name)}</button>`).join('')}</div>`:''}`;
 }
 const cswSlot=k=>{k=Math.min(k,3);return`translate3d(${k*14}%,${-k*14}%,${-k*45}px) skewY(5deg)`};
 function cswOrder(){
@@ -2103,7 +2104,7 @@ function cswFront(id){const o=cswOrder();ui.cswO=[id,...o.filter(x=>x!==id)];csw
     if(!root)return;
     const l=list(),N=l.length;if(N<2)return;
     const wrap=$('#colw'),w=wrap.clientWidth||340;
-    const CW=clp(w-64,200,290),CH=CW*208.1/330,H=Math.round(CH*1.95);
+    const CW=clp(w-72,200,262),CH=CW*208.1/330,H=Math.round(CH*1.5);
     root.style.width=w+'px';root.style.height=H+'px';
     const els=[...root.querySelectorAll('.col-card')];
     els.forEach(el=>{
