@@ -43,6 +43,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .sync i{width:7px;height:7px;border-radius:50%;background:var(--mute)}
 .sync.s-online i{background:var(--acc);box-shadow:0 0 8px var(--acc)}
 .sync.s-saving i{background:var(--warn)}.sync.s-err i{background:var(--neg)}
+.sync.s-gdok i{background:var(--acc);box-shadow:0 0 8px var(--acc)}.sync.s-gdsave i,.sync.s-gdneed i{background:var(--warn)}.sync.s-gderr i{background:var(--neg)}
+#sync[data-action]{cursor:pointer}
 .ibtn{width:40px;height:40px;border-radius:50%;background:var(--s2);display:grid;place-items:center;transition:border-radius .35s var(--spring),background .2s}
 .ibtn:active{border-radius:12px;background:var(--s3)}
 .ibtn.sm{width:36px;height:36px}
@@ -513,6 +515,8 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .bud small{display:block;font-size:11.5px;color:var(--mute);margin-top:4px}
 .bud-set{margin:2px 0 0 38px}
 .rep-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 4px 10px}.rep-row b{display:block;font-size:14px}.rep-row small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
+.gd-in{margin-top:10px}.gd-help{display:block;color:var(--mute);font-size:12px;margin:6px 4px 0;line-height:1.4}
+.gd-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .nudge.due{flex-direction:column;align-items:stretch;gap:10px;background:var(--accC)}
 .nudge.due .nd-r{display:flex;align-items:center;gap:12px}.nudge.due b{color:var(--onAccC)}
 .grp{transition:background .3s var(--emph)}
@@ -1005,7 +1009,7 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
   <header class="top">
     <div class="brand"><span id="mascot"></span><div class="brand-t" id="brand"></div></div>
     <div class="top-r">
-      <span id="sync" class="sync s-local" title="Status penyimpanan"><i></i><em style="font-style:normal">Lokal</em></span>
+      <span id="sync" class="sync s-local" title="Status penyimpanan" data-action="sync-tap"><i></i><em style="font-style:normal">Lokal</em></span>
       <button class="ibtn" id="eyeBtn" data-action="privacy" aria-label="Mode privasi"></button>
     </div>
   </header>
@@ -1314,6 +1318,7 @@ function normalize(s){
   s.recur=s.recur.filter(r=>r&&r.id&&(r.t==='exp'||r.t==='inc')&&+r.amt>0);s.recur.forEach(r=>{r.day=Math.min(31,Math.max(1,Math.round(+r.day)||1));r.amt=Math.round(+r.amt);r.last=/^\d{4}-\d{2}$/.test(r.last||'')?r.last:today().slice(0,7)});
   s.cats.forEach(c=>{if(c.budget!=null)c.budget=+c.budget>0?Math.round(+c.budget):0});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
+  {const g=st.gd&&typeof st.gd==='object'?st.gd:{};st.gd={cid:String(g.cid||GD_CID).trim().slice(0,200),on:!!g.on,ok:!!g.ok,last:+g.last>0?+g.last:0,fileId:String(g.fileId||'')}}
   st.bkBase=+st.bkBase>0?+st.bkBase:Date.now();st.lastBackup=+st.lastBackup>0?+st.lastBackup:0;st.bkSnooze=+st.bkSnooze>0?+st.bkSnooze:0;
   st.gestun=st.gestun===undefined?true:!!st.gestun;st.calendar=st.calendar===undefined?true:!!st.calendar;st.sigOn=st.sigOn===undefined?true:!!st.sigOn;st.sigMin=+st.sigMin>0?Math.round(+st.sigMin):5000000;
   s.updated=s.updated||0;return s;
@@ -1369,13 +1374,15 @@ function makeSample(){
 /* ============ penyimpanan (lokal + online) ============ */
 const remote={doc:null,ready:false,timer:0};
 function setSync(k){
+  if(typeof gdAuto==='function'&&gdAuto()&&!/^gd/.test(k))return;   /* saat Drive aktif, pil hanya menampilkan status Drive */
   ui.sync=k;const el=$('#sync');if(!el)return;
   el.className='sync s-'+k;
-  el.querySelector('em').textContent={local:'Lokal',online:'Online',saving:'Menyimpan…',err:'Gagal sinkron'}[k]||k;
+  el.querySelector('em').textContent={local:'Lokal',online:'Online',saving:'Menyimpan…',err:'Gagal sinkron',gdok:'Drive',gdsave:'Drive…',gdneed:'Masuk Drive',gderr:'Gagal Drive'}[k]||k;
 }
 function persist(){
   S.updated=Date.now();
   try{safeStorage.set(LS_KEY,JSON.stringify(S))}catch(e){}
+  if(typeof gdSchedule==='function')gdSchedule();
   if(remote.ready){clearTimeout(remote.timer);setSync('saving');remote.timer=setTimeout(pushRemote,900)}
 }
 async function pushRemote(){try{await remote.doc.set({json:JSON.stringify(S),updated:S.updated});setSync('online')}catch(e){setSync('err')}}
@@ -2218,6 +2225,85 @@ function dueNudge(){
   if(!rows.length)return'';
   return`<section class="blk nudge due" role="status">${rows.map(x=>`<div class="nd-r"><div class="nd-t"><b>${esc(x.c.name)} jatuh tempo ${x.dn<=0?'hari ini':x.dn+' hari lagi'}</b><small>Tagihan ${money(x.debt)}</small></div><button class="pbtn" data-action="open-pay" data-id="${x.c.id}">Bayar</button></div>`).join('')}</section>`;
 }
+/* ---- Google Drive: cadangan otomatis ke folder tersembunyi milik aplikasi (appDataFolder) ----
+   Token hanya di memori. Data lokal selalu menang: tidak ada pemulihan otomatis yang menimpa data. */
+const GD={tok:'',exp:0,t:0,busy:false,newer:false,msg:''};
+const authErr=m=>Object.assign(new Error(m),{auth:true});
+const GD_CID='243479656515-c8a6tp0mhmhvc6erm9ga0054asrsv1n5.apps.googleusercontent.com';   /* Client ID bukan rahasia; bisa diganti di Atur */
+const GD_FILE='penniq-cadangan.json',GD_SCOPE='https://www.googleapis.com/auth/drive.appdata';
+const gdAuto=()=>{const g=S&&S.settings&&S.settings.gd;return!!(g&&g.on&&g.cid)};
+const gdSave=()=>{try{safeStorage.set(LS_KEY,JSON.stringify(S))}catch(e){}};
+function gdLoad(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();
+  const sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=()=>res();sc.onerror=()=>rej(new Error('Tidak bisa memuat Google. Cek koneksi.'));document.head.appendChild(sc)})}
+/* interactive=true: boleh membuka jendela login Google (hanya dari ketukan); false: coba diam-diam */
+function gdToken(interactive){
+  return new Promise(async(res,rej)=>{
+    if(GD.tok&&Date.now()<GD.exp-60000)return res(GD.tok);
+    const g=S.settings.gd;if(!g.cid)return rej(new Error('Isi Client ID dulu'));
+    try{await gdLoad()}catch(e){return rej(e)}
+    try{
+      const tc=google.accounts.oauth2.initTokenClient({client_id:g.cid,scope:GD_SCOPE,
+        callback:r=>{if(r.error)return rej(authErr(r.error==='access_denied'?'Izin ditolak':'Perlu masuk lagi'));GD.tok=r.access_token;GD.exp=Date.now()+(+r.expires_in||3600)*1000;if(!g.ok){g.ok=true;gdSave()}res(GD.tok)},
+        error_callback:e=>rej(authErr(e&&e.type==='popup_closed'?'Jendela login ditutup':'Perlu masuk lagi'))});
+      tc.requestAccessToken({prompt:interactive?(g.ok?'':'consent'):'none'});
+    }catch(e){rej(e)}
+  });
+}
+async function gdFetch(url,opt,interactive){
+  const t=await gdToken(interactive);
+  const r=await fetch(url,Object.assign({},opt,{headers:Object.assign({Authorization:'Bearer '+t},(opt&&opt.headers)||{})}));
+  if(r.status===401){GD.tok='';throw authErr('Sesi Google berakhir')}
+  if(!r.ok)throw new Error('Drive menolak ('+r.status+')');
+  return r;
+}
+async function gdFind(interactive){
+  const r=await gdFetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q='+encodeURIComponent("name='"+GD_FILE+"'")+'&fields=files(id,modifiedTime)&orderBy=modifiedTime%20desc',{},interactive);
+  return((await r.json()).files||[])[0]||null;
+}
+async function gdUpload(interactive){
+  const g=S.settings.gd;let id=g.fileId;
+  if(!id){const f=await gdFind(interactive);id=f?f.id:''}
+  g.last=Date.now();S.settings.lastBackup=g.last;const json=JSON.stringify(S);
+  if(id){await gdFetch('https://www.googleapis.com/upload/drive/v3/files/'+id+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body:json},interactive)}
+  else{const b='kcl'+Date.now().toString(36);
+    const body='--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:GD_FILE,parents:['appDataFolder']})+'\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+json+'\r\n--'+b+'--';
+    const r=await gdFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},body},interactive);id=(await r.json()).id}
+  g.fileId=id;GD.newer=false;gdSave();
+}
+async function gdRun(){
+  if(!gdAuto()||GD.busy)return;GD.busy=true;setSync('gdsave');
+  try{await gdUpload(false);setSync('gdok');GD.msg=''}catch(e){GD.msg=e.message;setSync(e.auth?'gdneed':'gderr')}
+  finally{GD.busy=false;if(ui.view==='set'&&!ui.sheet)render()}
+}
+/* dipanggil dari persist(): kirim setelah jeda supaya tidak tiap ketukan */
+function gdSchedule(){if(!gdAuto())return;clearTimeout(GD.t);setSync('gdsave');GD.t=setTimeout(gdRun,6000)}
+/* saat aplikasi dibuka: coba masuk diam-diam, beri tahu bila cadangan Drive lebih baru, kirim bila data lokal lebih baru */
+async function gdBoot(){
+  if(!gdAuto())return;setSync('gdneed');
+  try{
+    const f=await gdFind(false);setSync('gdok');
+    if(f&&Date.parse(f.modifiedTime)>(S.settings.gd.last||0)+60000&&Date.parse(f.modifiedTime)>(S.updated||0)+60000){GD.newer=true;if(ui.view==='home')render()}
+    else if(!f||(S.updated||0)>(S.settings.gd.last||0)+1000)gdSchedule();
+  }catch(e){GD.msg=e.message;setSync('gdneed')}
+}
+async function gdLogin(){
+  const g=S.settings.gd;if(!g.cid)return toast('Isi Client ID dulu');
+  try{await gdToken(true);g.on=true;setSync('gdsave');await gdUpload(true);setSync('gdok');GD.msg='';gdSave();render();toast('Terhubung ke Google Drive')}
+  catch(e){GD.msg=e.message;setSync('gdneed');toast(e.message);render()}
+}
+async function gdRestore(){
+  try{
+    const f=await gdFind(true);if(!f)return toast('Belum ada cadangan di Drive');
+    const r=await gdFetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media',{},true);
+    const o=await r.json();if(!o||!Array.isArray(o.wallets))return toast('File cadangan tidak valid');
+    const keep=S.settings.gd,priv=S.settings.privacy;S=normalize(o);S.settings.gd=Object.assign({},keep,{fileId:f.id,last:Date.now()});S.settings.privacy=priv;GD.newer=false;
+    closeSheet();commit('Dipulihkan dari Google Drive');
+  }catch(e){toast(e.message)}
+}
+function gdNudge(){
+  if(!GD.newer)return'';
+  return`<section class="blk nudge" role="status"><div class="nd-t"><b>Cadangan di Drive lebih baru</b><small>Mungkin dari perangkat lain. Pulihkan untuk memakainya.</small></div><div class="nd-b"><button class="pbtn" data-action="gd-restore">Pulihkan</button><button class="tbtn" data-action="gd-skip">Abaikan</button></div></section>`;
+}
 /* meter anggaran per kategori: normal <80%, kuning 80-99%, merah >=100% */
 function budMeter(r,type){
   const b=type==='exp'&&r.cat?+r.cat.budget||0:0;if(!(b>0))return'';
@@ -2245,7 +2331,7 @@ function bkNudge(){
 }
 VIEWS.home=function(){
   const b={chart:blkChart,actions:blkActions,cards:blkCards,wallets:blkWallets,tx:blkTx};
-  return dueNudge()+bkNudge()+S.settings.layout.filter(x=>x.on).map(x=>b[x.id]()).join('')||'<p class="empty">Semua blok disembunyikan. Atur di menu Atur, bagian Susunan Beranda.</p>';
+  return gdNudge()+dueNudge()+bkNudge()+S.settings.layout.filter(x=>x.on).map(x=>b[x.id]()).join('')||'<p class="empty">Semua blok disembunyikan. Atur di menu Atur, bagian Susunan Beranda.</p>';
 };
 const MUTF=[['all','Semua'],['exp','Keluar'],['inc','Masuk'],['card','Kartu'],['xfer','Transfer'],['gest','Gestun']];
 function mutFilter(t){const f=ui.mutF;if(f==='all')return true;if(f==='exp')return t.t==='exp'||t.t==='gfee';if(f==='inc')return t.t==='inc';
@@ -2747,6 +2833,11 @@ VIEWS.set=function(){
    </div></section>
    <section class="blk"><div class="blk-h"><h2>Data</h2></div><div class="surface">
      <div class="setrow"><div><b>Penyimpanan</b><small>${st}</small></div></div>
+     <div class="setrow" style="display:block"><div><b>Cadangan Google Drive</b><small>Otomatis ke folder tersembunyi di Drive Anda. ${GD.msg?esc(GD.msg):(S.settings.gd.last?'Terakhir: '+esc(bkAgo(S.settings.gd.last)):'Belum tersambung')}</small></div>
+       <input class="gd-in" data-input="gd-cid" value="${esc(S.settings.gd.cid)}" placeholder="Google Client ID (…apps.googleusercontent.com)" aria-label="Google Client ID" autocomplete="off" spellcheck="false">
+       <small class="gd-help">Buat OAuth Client ID tipe Web di Google Cloud Console, aktifkan Drive API, dan isi Authorized JavaScript origin dengan alamat situs ini (${esc(location.origin||'')}).</small>
+       <div class="gd-btns"><button class="pbtn" data-action="gd-login">${S.settings.gd.on?'Masuk lagi':'Masuk dengan Google'}</button>${S.settings.gd.on?`<button class="pbtn" data-action="gd-now">Cadangkan sekarang</button><button class="pbtn" data-action="gd-restore-btn">Pulihkan</button>`:''}</div>
+       ${S.settings.gd.on?`<div class="setrow" style="padding:10px 0 0"><div><b>Cadangan otomatis</b><small>Kirim setelah ada perubahan</small></div><button class="sw-t on" data-action="gd-off" role="switch" aria-checked="true" aria-label="Matikan cadangan otomatis"></button></div>`:''}</div>
      <div class="setrow"><div><b>Cadangkan sekarang</b><small>Unduh file cadangan · ${esc(bkAgo(S.settings.lastBackup))}</small></div><button class="pbtn" data-action="bk-file">Unduh</button></div>
      <div class="setrow"><div><b>Ekspor CSV</b><small>Semua transaksi untuk Excel atau Sheets</small></div><button class="pbtn" data-action="csv">Ekspor</button></div>
      <div class="setrow"><div><b>Ekspor JSON</b><small>Salin seluruh data sebagai cadangan</small></div><button class="pbtn" data-action="bk-export">Ekspor</button></div>
@@ -3303,6 +3394,13 @@ const A={
   sigdemo(){askSign(S.settings.sigMin,null,true)},
   sigcancel(){closeSign()},
   nav(el,arg){const ch=ui.view!==arg;ui.view=arg;if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
+  'sync-tap'(){if(gdAuto())gdLogin();else if(S.settings.gd.cid)toast('Aktifkan cadangan Drive di Atur');else{ui.view='set';render();window.scrollTo(0,0)}},
+  'gd-login'(){gdLogin()},
+  'gd-now'(){setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');GD.msg='';gdSave();render();toast('Tercadangkan ke Drive')}).catch(e=>{GD.msg=e.message;setSync('gderr');toast(e.message);render()})},
+  'gd-restore-btn'(el){if(!confirmTap(el,'gdr')){toast('Ketuk lagi untuk memulihkan: data di HP akan diganti');return}gdRestore()},
+  'gd-restore'(el){if(!confirmTap(el,'gdr2')){toast('Ketuk lagi untuk memulihkan: data di HP akan diganti');return}gdRestore()},
+  'gd-skip'(){GD.newer=false;render()},
+  'gd-off'(){S.settings.gd.on=false;clearTimeout(GD.t);persist();setSync('local');render();toast('Cadangan Drive dimatikan')},
   'bk-file'(){bkFile();render()},
   'bk-snooze'(){S.settings.bkSnooze=Date.now()+3*864e5;persist();render()},
   csv(){csvExport()},
@@ -3527,6 +3625,7 @@ document.addEventListener('click',e=>{
 function onInput(e){
   const el=e.target,h=el.dataset&&el.dataset.input;if(!h)return;
   if(h==='money'){const n=num(el.value);el.value=n?nf.format(n):''}
+  else if(h==='gd-cid'){const g=S.settings.gd,v=el.value.trim();if(v!==g.cid){g.cid=v;g.ok=false;g.fileId='';GD.tok='';gdSave()}}
   else if(h==='mutq'){ui.mutQ=el.value;ui.mutDay={};const b=$('#mutBody');if(b)b.innerHTML=mutBody()}
   else if(h==='sigmin'){const n=num(el.value);el.value=n?nf.format(n):'';if(n>0){S.settings.sigMin=n;persist();document.querySelectorAll('.sigpre button').forEach(b=>b.classList.toggle('on',+b.dataset.arg===n))}}
   else if(h==='fnote')ui.flow.note=el.value;
@@ -3556,7 +3655,7 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
   try{const raw=safeStorage.get(LS_KEY);if(raw)loaded=JSON.parse(raw)}catch(e){}
   S=normalize(loaded&&Array.isArray(loaded.wallets)?loaded:makeSample());
   recalc();if(runRecur())persist();
-  render();setSync('local');initRemote();
+  render();setSync('local');initRemote();gdBoot();
 })();
 
 /* tahan lama pada batang Total saldo -> info persen & uang */
