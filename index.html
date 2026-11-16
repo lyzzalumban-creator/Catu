@@ -2246,8 +2246,10 @@ function gdToken(interactive){
     try{await gdLoad()}catch(e){return rej(e)}
     try{
       const tc=google.accounts.oauth2.initTokenClient({client_id:g.cid,scope:GD_SCOPE,
-        callback:r=>{if(r.error)return rej(authErr(r.error==='access_denied'?'Izin ditolak':'Perlu masuk lagi'));GD.tok=r.access_token;GD.exp=Date.now()+(+r.expires_in||3600)*1000;if(!g.ok){g.ok=true;gdSave()}res(GD.tok)},
-        error_callback:e=>rej(authErr(e&&e.type==='popup_closed'?'Jendela login ditutup':'Perlu masuk lagi'))});
+        callback:r=>{if(r.error)return rej(authErr((r.error==='access_denied'?'Izin ditolak oleh Google':'Google menolak login')+' ('+r.error+(r.error_description?': '+String(r.error_description).slice(0,100):'')+')'));
+          if(google.accounts.oauth2.hasGrantedAllScopes&&!google.accounts.oauth2.hasGrantedAllScopes(r,GD_SCOPE))return rej(authErr('Akses ke Google Drive belum diizinkan. Ulangi login dan centang kotak akses Drive di layar izin.'));
+          GD.tok=r.access_token;GD.exp=Date.now()+(+r.expires_in||3600)*1000;if(!g.ok){g.ok=true;gdSave()}res(GD.tok)},
+        error_callback:e=>rej(authErr(e&&e.type==='popup_closed'?'Jendela login tertutup sebelum selesai (popup_closed)':'Login Google gagal ('+((e&&e.type)||'tidak diketahui')+')'))});
       tc.requestAccessToken({prompt:interactive?(g.ok?'':'consent'):'none'});
     }catch(e){rej(e)}
   });
