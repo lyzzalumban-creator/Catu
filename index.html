@@ -644,6 +644,16 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 .bt-sum{margin:10px 4px 0;font-size:12.5px;color:var(--mute)}.bt-sum b{color:var(--tx2);font-weight:650}
 .bt-empty{padding:18px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}.bt-empty small{color:var(--mute);font-size:12.5px;margin-bottom:8px}
 
+/* kategori ringkas */
+.dsh.cp .kd-rows{margin-top:10px}
+.dsh.cp .kd-r{padding:8px 0 7px}.dsh.cp .kd-rh{margin-bottom:6px}
+.xp-tg{display:flex;align-items:center;gap:6px;margin-top:10px;padding:6px 0;font-size:13px;font-weight:650;color:var(--acc)}
+.xp-tg svg{transition:transform .4s var(--spring)}.xp-tg.open svg{transform:rotate(180deg)}
+.xp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}.xp.open{grid-template-rows:1fr}
+.xp-in{min-height:0;overflow:hidden}.xp:not(.open) .xp-in{visibility:hidden}
+.cl .lrow{padding:6px 0;gap:11px}.cl .lrow small{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cf-r1{display:flex;align-items:flex-end;gap:12px}.cf-r1 .f{flex:1;min-width:0}.cf-r1 .catprev{flex:none;margin:0 0 14px}
+.cf-r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cf-r2 .f{min-width:0}
 /* pemilih buatan sendiri */
 .ps-b{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:left;font:inherit;color:var(--tx);background:var(--s2);box-shadow:inset 0 0 0 1px var(--line2);border-radius:var(--r-md);padding:12px 14px;transition:box-shadow .2s}
 .ps-b:focus-visible,.ps-b.open{box-shadow:inset 0 0 0 2px var(--acc);outline:0}
@@ -3038,17 +3048,17 @@ function catMonth(t){
   return{cats,subs,tot};
 }
 function catDash(){
-  const t=ui.ct||'exp',M=catMonth(t),col=t==='inc'?'var(--acc)':null,tn=S.cats.filter(c=>c.t===t).length;
-  const rows=Object.keys(M.cats).sort((a,b)=>M.cats[b]-M.cats[a]),subs=Object.keys(M.subs).sort((a,b)=>M.subs[b]-M.subs[a]).slice(0,6);
+  const t=ui.ct||'exp',M=catMonth(t),tn=S.cats.filter(c=>c.t===t).length,sn=S.cats.filter(c=>c.t===t).reduce((a,c)=>a+c.subs.length,0);
+  const rows=Object.keys(M.cats).sort((a,b)=>M.cats[b]-M.cats[a]),subs=Object.keys(M.subs).sort((a,b)=>M.subs[b]-M.subs[a]).slice(0,5);
   const bar=(v,c)=>`<div class="kd-rb"><i style="width:${Math.max(M.tot?v/M.tot*100:0,3).toFixed(1)}%;background:${c}"></i></div>`;
   const cc=id=>{const c=S.cats.find(x=>x.id===id);return{c,n:c?c.name:'Tanpa kategori',clr:ringFit(catHex(c))}};
+  const open=!!ui.cdSub;
   return`<div class="seg2 ${t==='inc'?'r':''}" role="group" aria-label="Jenis" style="margin-bottom:12px"><span class="seg2-t"></span><button class="${t==='exp'?'on':''}" data-action="cttype" data-arg="exp" data-t="exp">Pengeluaran</button><button class="${t==='inc'?'on':''}" data-action="cttype" data-arg="inc" data-t="inc">Pemasukan</button></div>
-  <div class="surface kd dsh"><span class="ws2-k">${t==='inc'?'Pemasukan':'Pengeluaran'} ${MON[new Date().getMonth()]}</span><b class="num ws2-v" style="font-size:26px">${money(M.tot)}</b>
+  <div class="surface kd dsh cp"><span class="ws2-k">${t==='inc'?'Pemasukan':'Pengeluaran'} ${MON[new Date().getMonth()]} · ${tn} kategori · ${sn} sub</span><b class="num ws2-v" style="font-size:24px">${money(M.tot)}</b>
     ${M.tot>0?`<div class="dsh-split" aria-hidden="true">${rows.map(k=>`<i style="width:${(M.cats[k]/M.tot*100).toFixed(1)}%;background:${cc(k).clr}"></i>`).join('')}</div>`:''}
-    <div class="dsh-s"><div><span class="ws2-k">Kategori</span><b>${tn}</b></div><div><span class="ws2-k">Sub-kategori</span><b>${S.cats.filter(c=>c.t===t).reduce((a,c)=>a+c.subs.length,0)}</b></div></div>
-    ${rows.length?`<div class="kd-rows">${rows.slice(0,6).map(k=>{const o=cc(k);return`<div class="kd-r"><div class="kd-rh"><b>${esc(o.n)}</b><span>${money(M.cats[k])} <em>/ ${Math.round(M.cats[k]/M.tot*100)}%</em></span></div>${bar(M.cats[k],o.clr)}</div>`}).join('')}</div>
-    <div class="blk-h" style="margin:16px 0 0"><h2 style="font-size:15px">Sub-kategori teratas</h2></div>
-    <div class="kd-rows" style="margin-top:6px">${subs.map(k=>{const[id,sn]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b><span class="dsh-ic">${o.c?catIconX(esc((o.c.si&&o.c.si[sn])||o.c.icon||'📦'),o.c,24):''}</span>${esc(o.n)} › ${sn?esc(sn):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div>`:'<p class="empty" style="margin:14px 0 8px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
+    ${rows.length?`<div class="kd-rows">${rows.slice(0,3).map(k=>{const o=cc(k);return`<div class="kd-r"><div class="kd-rh"><b>${esc(o.n)}</b><span>${money(M.cats[k])} <em>/ ${Math.round(M.cats[k]/M.tot*100)}%</em></span></div>${bar(M.cats[k],o.clr)}</div>`}).join('')}</div>
+    ${subs.length?`<button type="button" class="xp-tg ${open?'open':''}" data-action="xptog" aria-expanded="${open}">Sub-kategori teratas<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="xp ${open?'open':''}"><div class="xp-in"><div class="kd-rows" style="margin-top:2px">${subs.map(k=>{const[id,sb]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b><span class="dsh-ic">${o.c?catIconX(esc((o.c.si&&o.c.si[sb])||o.c.icon||'📦'),o.c,22):''}</span>${esc(o.n)} › ${sb?esc(sb):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div></div></div>`:''}`:'<p class="empty" style="margin:12px 0 4px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
 }
 
 /* ---- peruntukan: daftar bernama + warna, dipakai lintas bank ---- */
@@ -3079,12 +3089,12 @@ VIEWS.manage=function(){
   if(k==='card')rows=cardList();
   if(k==='pur')rows=purData().filter(r=>r.q).map(r=>mrow('pur',r.q.id,colIcon(esc(r.q.name.charAt(0).toUpperCase()),purCol(r.q),'squircle',40),esc(r.q.name),r.ws.length+' dompet'+(r.banks.size?' · '+[...r.banks].map(esc).join(', '):''),money(r.v))).join('');
   if(k==='rec')rows=S.recur.map(r=>{const c=S.cats.find(x=>x.id===r.cat);return mrow('rec',r.id,catIcon(c,40),esc((c?c.name:'Tanpa kategori')+(r.note?' · '+r.note:'')),'Tiap tanggal '+r.day+' · '+esc(accName(r.acc)),(r.t==='inc'?'+':'−')+money(r.amt))}).join('');
-  if(k==='cat'){const sec=t=>{const M=catMonth(t);return S.cats.filter(c=>c.t===t).map(c=>mrow('cat',c.id,catIcon(c,40),esc(c.name),c.subs.length?esc(c.subs.join(', ')):'Tanpa sub-kategori',M.cats[c.id]?money(M.cats[c.id]):'')).join('')};
+  if(k==='cat'){const sec=t=>{const M=catMonth(t);return S.cats.filter(c=>c.t===t).map(c=>mrow('cat',c.id,catIcon(c,34),esc(c.name),c.subs.length?esc(c.subs.join(', ')):'Tanpa sub-kategori',M.cats[c.id]?money(M.cats[c.id]):'')).join('')};
     rows=`<div class="dh">Pengeluaran</div>${sec('exp')}<div class="dh">Pemasukan</div>${sec('inc')}`}
   const lbl=MG.find(x=>x[0]===k)[1];
   return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></div>
     <div class="chips fit" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
-    ${k==='wallet'?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}<div class="surface">${rows||'<p class="empty">Belum ada. Ketuk tombol tambah di atas.</p>'}</div></section>`;
+    ${k==='wallet'?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}<div class="surface ${k==='cat'?'cl':''}">${rows||'<p class="empty">Belum ada. Ketuk tombol tambah di atas.</p>'}</div></section>`;
 };
 
 /* ---- atur ---- */
@@ -3451,11 +3461,10 @@ function formHTML(){
   if(k==='pool')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Plafon Bank"'))+fld('Limit bersama (Rp)',inp('limit',o?nf.format(o.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bersama oleh kartu-kartu dalam grup ini.');
   if(k==='cat'){
     const init=o||{id:'new',icon:'📦',t:'exp',color:COLS[S.cats.length%COLS.length]};
-    b=`<div class="catprev" id="catPrev">${catIcon(init,72)}</div>`+
-      fld('Jenis',o?`<input value="${o.t==='exp'?'Pengeluaran':'Pemasukan'}" disabled><input type="hidden" name="t" value="${o.t}">`:sel('t',[['exp','Pengeluaran'],['inc','Pemasukan']],'exp','data-input="catprev"'))+
-      fld('Ikon (emoji)',inp('icon',o?o.icon:'📦','maxlength="4" data-input="catprev"'))+fld('Nama',inp('name',o?o.name:''))+
+    b=`<div class="cf-r1"><div class="catprev" id="catPrev">${catIcon(init,56)}</div>${fld('Nama',inp('name',o?o.name:''))}</div>`+
+      `<div class="cf-r2">${fld('Jenis',o?`<input value="${o.t==='exp'?'Pengeluaran':'Pemasukan'}" disabled><input type="hidden" name="t" value="${o.t}">`:sel('t',[['exp','Pengeluaran'],['inc','Pemasukan']],'exp','data-input="catprev"'))}${fld('Ikon (emoji)',inp('icon',o?o.icon:'📦','maxlength="4" data-input="catprev"'))}</div>`+
       colorField(catHex(init))+
-      (!o||o.t==='exp'?fld('Anggaran bulanan (Rp)',inp('budget',o&&o.budget?nf.format(o.budget):'','data-input="money" inputmode="numeric" placeholder="Tanpa batas"'),'Batas pengeluaran per bulan. Bar di Analitik berubah kuning lalu merah saat mendekati batas.'):'')+
+      (!o||o.t==='exp'?fld('Anggaran bulanan (Rp)',inp('budget',o&&o.budget?nf.format(o.budget):'','data-input="money" inputmode="numeric" placeholder="Tanpa batas"'),'Batas pengeluaran per bulan.'):'')+
       subEditor(o);
   }
   if(k==='card'){
@@ -3480,7 +3489,7 @@ function cardFromForm(){
   return Object.assign({},o||{},{name:fv('name')||'Kartu',bank:fv('bank'),last4:(fv('last4')||'0000').replace(/\D/g,'').padStart(4,'0').slice(-4),net:fv('net')||'visa',theme:fv('theme')||'obsidian',pool:fv('pool'),wallet:fv('wallet'),limit:num(fv('limit')),cut:clamp(num(fv('cut'))||1,1,31),due:clamp(num(fv('due'))||1,1,31),minPct:clamp(num(fv('minPct')),0,100),bg:F.bg,contrast:+fv('contrast')});
 }
 function updateCardPrev(){const p=$('#cardPrev');if(p)p.innerHTML=cardHTML(cardFromForm(),ui.form.id?undefined:1250000)}
-function updateCatPrev(){const p=$('#catPrev');if(!p)return;const o=ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const t=o?o.t:(fv('t')||'exp'),cc={id:ui.form.id||'new',icon:fv('icon')||'📦',t,color:fv('color')};p.innerHTML=catIcon(cc,72);const e=$('#subEd');if(e){const v=stkVars(cc);e.style.setProperty('--sbg',v[0]);e.style.setProperty('--srg',v[1])}}
+function updateCatPrev(){const p=$('#catPrev');if(!p)return;const o=ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const t=o?o.t:(fv('t')||'exp'),cc={id:ui.form.id||'new',icon:fv('icon')||'📦',t,color:fv('color')};p.innerHTML=catIcon(cc,56);const e=$('#subEd');if(e){const v=stkVars(cc);e.style.setProperty('--sbg',v[0]);e.style.setProperty('--srg',v[1])}}
 function saveForm(){
   const F=ui.form,k=F.kind,col=S[FK[k]],o=F.id?col.find(x=>x.id===F.id):null;
   let rec;
@@ -3900,6 +3909,7 @@ const A={
   fsaveform(){saveForm()},
   fdelform(el){deleteForm(el)},
   ctheme(el,arg){const h=$('#panel [name=theme]');if(h)h.value=arg;el.parentElement.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b===el));updateCardPrev()},
+  xptog(el){ui.cdSub=!ui.cdSub;el.classList.toggle('open',ui.cdSub);el.setAttribute('aria-expanded',ui.cdSub);const b=el.nextElementSibling;if(b)b.classList.toggle('open',ui.cdSub)},
   hptog(el){const r=el.closest('.hp'),o=r.classList.toggle('open');el.setAttribute('aria-expanded',o)},
   pcol(el,arg){hpSet(el.closest('.hp'),arg)},
   kureset(el){const r=el.closest('.ku');kuSet(r,+r.dataset.f0,false)},
