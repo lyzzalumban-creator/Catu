@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<title>Kocekly</title>
+<title>Penniq</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1518,7 +1518,7 @@ function mountWatcher(host,o){
   const base=EYT_STYLES[o.eyes]||EYT_STYLES.Slant;
   let eye={w:base.w*o.eyeScale,h:base.h*o.eyeScale,r:base.r*o.eyeScale};
   const body=EYT_SHAPES[o.shape]||EYT_SHAPES.Ball;
-  host.innerHTML=`<div class="eyt" style="--eyt-size:${eytClamp(o.size,16,180)}px" role="img" aria-label="Maskot Kocekly, bisa dicolek">
+  host.innerHTML=`<div class="eyt" style="--eyt-size:${eytClamp(o.size,16,180)}px" role="img" aria-label="Maskot Penniq, bisa dicolek">
     <svg class="eyt-ball" viewBox="0 0 100 100" data-poke="true"><defs><linearGradient id="${clip}-g" x1="0" y1="0" x2="1" y2="1"></linearGradient><clipPath id="${clip}"><path d="${body}"/></clipPath></defs>
     <path class="eyt-body" d="${body}"/><g clip-path="url(#${clip})">${[0,1].map(()=>`<g><rect class="eyt-eye" x="${-eye.w/2}" y="${-eye.h/2}" width="${eye.w}" height="${eye.h}" rx="${eye.r}"/><path class="eyt-brow" d="M${(-eye.w*.5).toFixed(2)} 0 Q0 ${(-eye.h*.1).toFixed(2)} ${(eye.w*.5).toFixed(2)} 0"/><path class="eyt-hap" d="M${(-eye.w*.58).toFixed(2)} ${(eye.h*.16).toFixed(2)} Q0 ${(-eye.h*.4).toFixed(2)} ${(eye.w*.58).toFixed(2)} ${(eye.h*.16).toFixed(2)}"/></g>`).join('')}</g></svg>
     <span class="eyt-say" aria-live="polite"><span class="eyt-txt"></span><span class="eyt-caret"></span></span></div>`;
@@ -1732,7 +1732,7 @@ function render(){
   const d=new Date();
   if(!$('#mascot').firstChild)mountWatcher($('#mascot'),{size:44});
   applyMascot();
-  $('#brand').innerHTML=`<b>KOCEKLY</b><small>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}</small>`;
+  $('#brand').innerHTML=`<b>PENNIQ</b><small>${DAYS[d.getDay()]}, ${d.getDate()} ${MONS[d.getMonth()]}</small>`;
   $('#view').innerHTML=VIEWS[ui.view]();
   document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav===ui.view));
   {const dk=$('#dock');if(dk){const hide=!(ui.view==='home'||ui.view==='mut');dk.classList.toggle('nofab',hide);if(hide)dk.classList.remove('fab-open')}}
@@ -2226,14 +2226,14 @@ function budMeter(r,type){
 }
 /* ---- cadangan file, ekspor CSV, dan pengingat ---- */
 const dlFile=(name,text,mime)=>{const b=new Blob([text],{type:mime});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000)};
-function bkFile(){S.settings.lastBackup=Date.now();dlFile('kocekly-cadangan-'+today()+'.json',JSON.stringify(S),'application/json');persist();toast('Cadangan diunduh')}
+function bkFile(){S.settings.lastBackup=Date.now();dlFile('penniq-cadangan-'+today()+'.json',JSON.stringify(S),'application/json');persist();toast('Cadangan diunduh')}
 const TXLBL={exp:'Pengeluaran',inc:'Pemasukan',xfer:'Transfer',pay:'Bayar kartu',gcard:'Gestun: tarik limit',gin:'Gestun: dana masuk',gfee:'Gestun: biaya admin'};
 function csvExport(){
   const q=v=>{v=String(v==null?'':v);return/[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
   const rows=[['Tanggal','Jenis','Akun','Ke akun','Kategori','Subkategori','Jumlah','Catatan']];
   S.tx.slice().sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0).forEach(t=>{const c=S.cats.find(x=>x.id===t.cat);
     rows.push([t.d,TXLBL[t.t]||t.t,t.acc?accName(t.acc):'',t.to?accName(t.to):'',c?c.name:'',t.sub||'',Math.round(t.amt),t.note||''])});
-  dlFile('kocekly-transaksi-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
+  dlFile('penniq-transaksi-'+today()+'.csv','\ufeff'+rows.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv;charset=utf-8');
   toast(rows.length-1+' transaksi diekspor');
 }
 const bkAgo=ts=>{if(!ts)return'Belum pernah';const d=Math.floor((Date.now()-ts)/864e5);return d<1?'Hari ini':d+' hari lalu'};
