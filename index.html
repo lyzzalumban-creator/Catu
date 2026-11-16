@@ -1204,10 +1204,10 @@ const catHex=c=>c&&hexOk(c.color)?c.color:PAL[catCol(c)%PAL.length][1];
 const ringFit=h=>{const n=parseInt(h.slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255,L=(.2126*r+.7152*g+.0722*b)/255;if(L>=.38)return h;const m=Math.min(.6,(.38-L)*1.6+.15),f=x=>Math.round(x+(255-x)*m).toString(16).padStart(2,'0');return'#'+f(r)+f(g)+f(b)};
 const stkBadge=()=>!!(S&&S.settings&&S.settings.stk==='badge');
 /* warna latar + cincin untuk stiker (dua gaya: 'bg' = latar jenis + cincin pilihan, 'badge' = warna kategori + lencana panah) */
-const stkVars=c=>{const t=c&&c.t==='inc'?'inc':'exp';return stkBadge()?[darkTint(catHex(c)),'var(--line2)']:[TYPE_BG[t],ringFit(catHex(c))]};
+const stkVars=c=>{const t=c&&c.t==='inc'?'inc':'exp';return stkBadge()?[catHex(c),'transparent']:[TYPE_BG[t],ringFit(catHex(c))]};
 const BDG_UP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.5 20 18H4z"/></svg>',BDG_DN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18.5 4 6h16z"/></svg>';
 const catIconX=(content,c,size)=>{const t=c&&c.t==='inc'?'inc':'exp';
-  if(stkBadge())return`<span class="shi bd" style="--sz:${size}px;--c:${darkTint(catHex(c))};--oc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b><i class="bdg ${t}">${t==='inc'?BDG_UP:BDG_DN}</i></span>`;
+  if(stkBadge())return`<span class="shi bd" style="--sz:${size}px;--c:${catHex(c)};--oc:${hexInk(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b><i class="bdg ${t}">${t==='inc'?BDG_UP:BDG_DN}</i></span>`;
   return`<span class="shi rg" style="--sz:${size}px;--c:${TYPE_BG[t]};--oc:${TYPE_FG[t]};--rc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b></span>`};
 const catIcon=(c,size)=>catIconX(c?esc(c.icon):'📦',c,size);
 const txIcon=(c,t,size)=>c&&t.sub&&c.si&&c.si[t.sub]?catIconX(esc(c.si[t.sub]),c,size):catIcon(c,size);
