@@ -647,6 +647,9 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 /* kategori ringkas */
 .dsh.cp .kd-rows{margin-top:10px}
 .dsh.cp .kd-r{padding:8px 0 7px}.dsh.cp .kd-rh{margin-bottom:6px}
+.kd-b{display:block;width:100%;text-align:left;font:inherit;color:inherit;border-radius:12px;transition:background .2s}
+.kd-b:active{background:var(--s3)}.kd-b:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.kd-hint{margin:6px 2px 4px;font-size:11.5px;color:var(--mute)}
 .xp-tg{display:flex;align-items:center;gap:6px;margin-top:10px;padding:6px 0;font-size:13px;font-weight:650;color:var(--acc)}
 .xp-tg svg{transition:transform .4s var(--spring)}.xp-tg.open svg{transform:rotate(180deg)}
 .xp{display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s var(--spring)}.xp.open{grid-template-rows:1fr}
@@ -2891,6 +2894,7 @@ VIEWS.an=function(){
 };
 
 /* ---- kelola ---- */
+const EMPTY_MG={wallet:'Belum ada dompet. Buat dompet untuk rekening bank, e-wallet, atau tunai.',cat:'Belum ada kategori.',rec:'Belum ada transaksi berulang. Contohnya gaji, cicilan, atau langganan bulanan.',group:'Belum ada kelompok. Kelompokkan dompet per bank, misalnya BCA atau Jago.',pur:'Belum ada peruntukan. Buat satu, misalnya Darurat atau Tabungan, lalu pilih di formulir dompet.',card:'Belum ada kartu kredit. Tambah kartu untuk memantau limit dan tagihan.'};
 const MG=[['wallet','Dompet'],['cat','Kategori'],['rec','Berulang'],['group','Kelompok'],['pur','Peruntukan'],['card','Kartu & limit']];
 const mrow=(kind,id,ico,a,b,c)=>`<button class="lrow" data-action="fedit" data-arg="${kind}" data-id="${id}">${ico}<span class="lm"><b>${a}</b>${b?`<small>${b}</small>`:''}</span>${c?`<span class="lr"><b>${c}</b></span>`:''}</button>`;
 
@@ -2962,7 +2966,7 @@ function usageSlider(used,limit){
   if(!(limit>0))return`<div class="kd-leg"><span>Belum ada limit kartu</span></div>`;
   const f0=Math.max(0,Math.min(1,used/limit)),k=Math.round(f0*KU_N)/KU_N;
   const bars=Array.from({length:KU_N},(_,i)=>{const h=26+74*Math.pow((i+1)/KU_N,1.5),lit=(i+.5)/KU_N<=f0&&f0>0;return`<i class="${lit?'on ':''}${kuCls((i+1)/KU_N)}" style="height:${h.toFixed(0)}%"></i>`}).join('');
-  return`<div class="ku" data-limit="${limit}" data-f0="${f0.toFixed(4)}">
+  return`<div class="ku" data-limit="${limit}" data-f0="${f0.toFixed(9)}">
     <div class="ku-tr" role="slider" aria-label="Simulasi pemakaian limit" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(f0*100)}">
       <div class="ku-pill ${kuCls(f0)}" style="left:clamp(46px,${(k*100).toFixed(2)}%,calc(100% - 46px))"></div>
       <div class="ku-bars">${bars}</div>
@@ -2973,13 +2977,13 @@ function usageSlider(used,limit){
   </div>`;
 }
 function kuSet(root,f,moved){
-  const lim=+root.dataset.limit,k=Math.max(0,Math.min(1,Math.round(f*KU_N)/KU_N)),v=k*lim,c=kuCls(k);
+  const lim=+root.dataset.limit,k=Math.max(0,Math.min(1,Math.round(f*KU_N)/KU_N)),fx=moved?k:Math.max(0,Math.min(1,f)),v=fx*lim,c=kuCls(fx);
   root.querySelectorAll('.ku-bars i').forEach((b,i)=>b.classList.toggle('on',k>0&&(i+.5)/KU_N<=k));
   const pill=root.querySelector('.ku-pill'),dot=root.querySelector('.ku-dot');
   dot.style.left=(k*100).toFixed(2)+'%';pill.style.left='clamp(46px,'+(k*100).toFixed(2)+'%,calc(100% - 46px))';pill.className='ku-pill '+c;dot.className='ku-dot '+c;
   pill.textContent=v>0?cpRp(v):money(0);
   const sa=lim*KU_SAFE,d=v-sa,cap=root.querySelector('.ku-cap b');
-  cap.className=c;cap.textContent=v<=0?'Belum ada pemakaian':(d<=0?cpRp(-d)+' masih di bawah batas aman':cpRp(d)+' di atas batas aman')+' · '+Math.round(k*100)+'% limit';
+  cap.className=c;cap.textContent=v<=0?'Belum ada pemakaian':(d<=0?cpRp(-d)+' masih di bawah batas aman':cpRp(d)+' di atas batas aman')+' · '+(fx>0&&fx<.01?'<1':Math.round(fx*100))+'% limit';
   const rs=root.querySelector('.ku-rs');if(rs)rs.hidden=!moved;
   root.querySelector('.ku-tr').setAttribute('aria-valuenow',Math.round(k*100));
 }
@@ -3026,7 +3030,7 @@ function recDash(){
     <div class="dsh-s"><div><span class="ws2-k">Pemasukan</span><b class="in">${money(I)}</b></div><div><span class="ws2-k">Selisih</span><b class="${net<0?'out':'in'}">${net<0?'−':'+'}${money(Math.abs(net))}</b></div></div>
     ${left>0?`<div class="kd-leg" style="margin-top:12px"><span>Masih akan terpotong bulan ini</span><b>${money(left)}</b></div>`:''}
     <div class="dsh-next">${nxt.map(x=>{const c=S.cats.find(y=>y.id===x.r.cat);return`<div class="dsh-n"><span>${esc(c?c.name:'Tanpa kategori')}${x.r.note?' · '+esc(x.r.note):''}<em>${fmtDate(ymd(x.d)).slice(0,-5)} · ${when(x.n)}</em></span><b>${x.r.t==='inc'?'+':'−'}${money(x.r.amt)}</b></div>`}).join('')}</div>
-    ${cats.length?`<div class="kd-rows">${cats.map(k=>{const c=S.cats.find(y=>y.id===k),v=E?byCat[k]/E*100:0;return`<div class="kd-r"><div class="kd-rh"><b>${esc(c?c.name:'Tanpa kategori')}</b><span>${money(byCat[k])} <em>/ ${Math.round(v)}%</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,3).toFixed(1)}%;background:var(--acc)"></i></div></div>`}).join('')}</div>`:''}</div>`;
+    ${cats.length>=2?`<div class="kd-rows">${cats.map(k=>{const c=S.cats.find(y=>y.id===k),v=E?byCat[k]/E*100:0;return`<div class="kd-r"><div class="kd-rh"><b>${esc(c?c.name:'Tanpa kategori')}</b><span>${money(byCat[k])} <em>/ ${Math.round(v)}%</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,3).toFixed(1)}%;background:var(--acc)"></i></div></div>`}).join('')}</div>`:''}</div>`;
 }
 
 /* ---- kelola > kelompok: dasbor saldo per kelompok ---- */
@@ -3037,7 +3041,7 @@ function groupDash(){
   const tot=rows.reduce((a,r)=>a+r.v,0),pos=rows.reduce((a,r)=>a+Math.max(0,r.v),0);
   return`<div class="surface kd dsh"><span class="ws2-k">Total saldo semua kelompok</span><b class="num ws2-v" style="font-size:26px">${money(tot)}</b>
     ${pos>0?`<div class="dsh-split" aria-hidden="true">${rows.filter(r=>r.v>0).map(r=>`<i style="width:${(r.v/pos*100).toFixed(1)}%;background:${grpCol(r.g)}"></i>`).join('')}</div>`:''}
-    <div class="kd-rows">${rows.map(r=>{const v=pos>0?Math.max(0,r.v)/pos*100:0;return`<div class="kd-r"><div class="kd-rh"><b>${esc(r.g.name)}</b><span>${money(r.v)} <em>/ ${Math.round(v)}%</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${grpCol(r.g)}"></i></div><small class="lbl" style="display:block;margin-top:6px">${r.n} dompet</small></div>`}).join('')}</div></div>`;
+    <div class="kd-rows">${rows.map(r=>{const v=pos>0?Math.max(0,r.v)/pos*100:0;return`<button type="button" class="kd-r kd-b" data-action="fedit" data-arg="group" data-id="${esc(r.g.id)}"><div class="kd-rh"><b><i class="pu-dot" style="background:${grpCol(r.g)}"></i>${esc(r.g.name)}</b><span>${money(r.v)} <em>/ ${Math.round(v)}%</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${grpCol(r.g)}"></i></div><small class="lbl" style="display:block;margin-top:6px">${r.n} dompet</small></button>`}).join('')}</div><p class="kd-hint">Ketuk baris untuk mengubah</p></div>`;
 }
 
 /* ---- kelola > kategori: dasbor bulan ini per kategori dan sub-kategori ---- */
@@ -3078,8 +3082,8 @@ function purDash(){
   return`<div class="surface kd dsh" style="margin-bottom:12px"><span class="ws2-k">Saldo per peruntukan</span><b class="num ws2-v" style="font-size:26px">${money(tot)}</b>
     ${pos>0?`<div class="dsh-split" aria-hidden="true">${rows.map(r=>r.v>0?`<i style="width:${(r.v/pos*100).toFixed(1)}%;background:${clr(r)}"></i>`:'').join('')}</div>`:''}
     <div class="kd-rows">${rows.map(r=>{const hasT=r.tg>0,v=hasT?Math.min(100,Math.max(0,r.v)/r.tg*100):(pos>0?Math.max(0,r.v)/pos*100:0),done=hasT&&r.v>=r.tg;
-      return`<div class="kd-r"><div class="kd-rh"><b><i class="pu-dot" style="background:${clr(r)}"></i>${esc(r.n)}</b><span>${money(r.v)} <em>${hasT?'/ '+money(r.tg):'/ '+Math.round(v)+'%'}</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${clr(r)}"></i></div>
-      <small class="lbl" style="display:block;margin-top:6px">${hasT?(done?'Target tercapai · ':Math.round(v)+'% dari target · '):''}${r.ws.length?[...r.banks].map(esc).join(', ')+' · '+r.ws.length+' dompet':'Belum ada dompet'}</small></div>`}).join('')}</div></div>`;
+      return`<${r.q?'button type="button" class="kd-r kd-b" data-action="fedit" data-arg="pur" data-id="'+esc(r.q.id)+'"':'div class="kd-r"'}><div class="kd-rh"><b><i class="pu-dot" style="background:${clr(r)}"></i>${esc(r.n)}</b><span>${money(r.v)} <em>${hasT?'/ '+money(r.tg):'/ '+Math.round(v)+'%'}</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${clr(r)}"></i></div>
+      <small class="lbl" style="display:block;margin-top:6px">${hasT?(done?'Target tercapai · ':Math.round(v)+'% dari target · '):''}${r.ws.length?[...r.banks].map(esc).join(', ')+' · '+r.ws.length+' dompet':'Belum ada dompet'}</small></${r.q?'button':'div'}>`}).join('')}</div><p class="kd-hint">Ketuk baris untuk mengubah</p></div>`;
 }
 VIEWS.manage=function(){
   if(ui.mg==='pool')ui.mg='card';
@@ -3094,7 +3098,7 @@ VIEWS.manage=function(){
   const lbl=MG.find(x=>x[0]===k)[1];
   return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></div>
     <div class="chips fit" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
-    ${k==='wallet'?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}<div class="surface ${k==='cat'?'cl':''}">${rows||'<p class="empty">Belum ada. Ketuk tombol tambah di atas.</p>'}</div></section>`;
+    ${k==='wallet'?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}${(k==='group'&&S.groups.length)||(k==='pur'&&S.purs.length)?'':`<div class="surface ${k==='cat'?'cl':''}">${rows||`<p class="empty">${EMPTY_MG[k]||'Belum ada.'}</p>`}</div>`}</section>`;
 };
 
 /* ---- atur ---- */
