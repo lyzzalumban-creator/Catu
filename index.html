@@ -3801,12 +3801,11 @@ function xCheer(fw,tw,amt){
   const base=EYT_STYLES[c.eyes]||EYT_STYLES.Slant,sc=c.eyeScale||1.4,w=base.w*sc,h=base.h*sc,g=EYT_GAP*Math.max(1,sc*.8)*EYT_R;
   const defs=c.grad?`<linearGradient id="${n}" x1="0" y1="0" x2="1" y2="1">${c.grad.map((col,i)=>`<stop offset="${Math.round(i/(c.grad.length-1)*100)}%" stop-color="${col}"/>`).join('')}</linearGradient>`:'';
   const hap=x=>`<path d="M${(x-w*.58).toFixed(1)} ${(50+h*.16).toFixed(1)} Q${x} ${(50-h*.4).toFixed(1)} ${(x+w*.58).toFixed(1)} ${(50+h*.16).toFixed(1)}" fill="none" stroke="${c.ink}" stroke-width="5" stroke-linecap="round"/>`;
-  const arm=c.fill||c.grad[Math.min(1,c.grad.length-1)],fc=walCol(fw),tc=walCol(tw),bar=(x,col,cls)=>`<g class="${cls}"><rect x="${x}" y="8" width="14" height="62" rx="7" fill="${col}" style="filter:drop-shadow(0 0 8px ${col})"/></g>`;
+  const fc=walCol(fw),tc=walCol(tw),bar=(x,col,cls)=>`<g class="${cls}"><rect x="${x}" y="42" width="14" height="64" rx="7" fill="${col}" style="filter:drop-shadow(0 0 8px ${col})"/></g>`;
   const el=document.createElement('div');el.className='xch';el.setAttribute('role','status');
   el.innerHTML=`<div class="xch-in"><svg viewBox="0 0 176 132" aria-hidden="true"><defs>${defs}</defs>
     <g class="mk"><g transform="translate(48 34) scale(.8)"><path d="${d}" fill="${c.grad?`url(#${n})`:c.fill}"/>${hap(50-g)}${hap(50+g)}</g>
-    <path d="M52 84 Q30 78 22 62" fill="none" stroke="${arm}" stroke-width="5.5" stroke-linecap="round"/><path d="M124 84 Q146 78 154 62" fill="none" stroke="${arm}" stroke-width="5.5" stroke-linecap="round"/></g>
-    ${bar(15,fc,'bl')}${bar(147,tc,'br')}</svg>
+    ${bar(28,fc,'bl')}${bar(134,tc,'br')}</svg>
     <b>Transfer berhasil!</b><small>${esc(wLbl(fw))} → ${esc(wLbl(tw))} · ${money(amt)}</small></div>`;
   document.body.appendChild(el);
   setTimeout(()=>el.classList.add('out'),2300);setTimeout(()=>el.remove(),2800);
