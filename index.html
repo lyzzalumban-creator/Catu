@@ -441,7 +441,6 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .ws3-bar i:last-child:not(:only-child){border-radius:13px}
 .ws3-bar i{box-shadow:0 0 16px -2px color-mix(in srgb,var(--c) 55%,transparent),0 0 30px -8px color-mix(in srgb,var(--c) 35%,transparent)}
 .ws3-bar.lp i:not(.hot){box-shadow:none}
-.ws3-ls{display:grid;grid-template-columns:1fr 1fr;gap:10px 22px;margin-top:18px}
 .ws3 .ws2-l{font-size:13px}.ws3 .ws2-l b{font-variant-numeric:tabular-nums;color:var(--mute);font-weight:600}
 .ws3 .ws2-l i{width:10px;height:10px;border-radius:50%}
 .wg-ring{width:40px;height:40px;flex:none;display:block}.wg-ring svg{display:block;width:100%;height:100%}
@@ -2354,13 +2353,12 @@ function blkWallets(){
   const gs=S.groups.map(g=>{const ws=S.wallets.filter(w=>w.g===g.id);return{g,ws,tot:ws.reduce((a,w)=>a+(D.bal[w.id]||0),0)}});
   const pos=gs.reduce((a,x)=>a+Math.max(0,x.tot),0)||1;
   const seg=gs.filter(x=>x.tot>0).sort((a,b)=>b.tot-a.tot).map(x=>`<i style="flex:${x.tot};background:${grpCol(x.g)};--c:${grpCol(x.g)}" data-n="${esc(x.g.name)}" data-p="${(Math.round(x.tot/pos*1000)/10).toString().replace('.',',')}%" data-v="${esc(money(x.tot))}"></i>`).join('');
-  const leg=gs.filter(x=>x.tot>0).sort((a,b)=>b.tot-a.tot).map(x=>`<div class="ws2-l"><i style="background:${grpCol(x.g)}"></i><span>${esc(x.g.name)}</span><b>${Math.round(x.tot/pos*100)}%</b></div>`).join('');
   const body=gs.map(({g,ws,tot})=>{const open=!S.settings.collapsed[g.id];
     return`<div class="wg ${open?'open':''}" style="--gc:${grpCol(g)}" id="wg-${g.id}"><button class="wg-h" data-action="tg" data-id="${g.id}" aria-expanded="${open}">${ring(Math.max(0,tot)/pos,grpCol(g))}<span class="wg-n">${esc(g.name)}<small>${ws.length} dompet · ${Math.round(Math.max(0,tot)/pos*100)}%</small></span><b class="wg-t" ${mv('gt:'+g.id,tot)}>${money(tot)}</b>${chev(open)}</button>
       <div class="wg-b"><div class="wg-in">${ws.map(wgRow).join('')||`<button class="wg-empty" data-action="fnew" data-arg="wallet">+ Tambah dompet</button>`}</div></div></div>`}).join('');
   return`<section class="blk"><div class="blk-h"><h2>Dompet & akun</h2><button class="tbtn" data-action="tgall">${anyOpen?'Tutup semua':'Buka semua'}</button></div>
     <div class="wsum ws3"><span class="ws2-k">Total saldo</span><b class="num ws2-v" ${mv('wt',total)}>${money(total)}</b>
-      ${seg?`<div class="ws3-bar">${seg}</div><div class="ws3-ls">${leg}</div>`:''}</div>
+      ${seg?`<div class="ws3-bar">${seg}</div>`:''}</div>
     ${body||'<p class="empty">Belum ada kelompok akun.</p>'}</section>`;
 }
 function sortedTx(){return S.tx.slice().reverse().sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0)}
