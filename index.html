@@ -2994,8 +2994,8 @@ function drawPareto(){
   const bwid=Math.min(bw*.62,46);
   W.forEach((b,i)=>{const y=Math.min(yb(b.v),top+ph-4),on=b.pre<.8;
     const col=b.c||'#9AA0A6';
-    g.save();g.globalAlpha=on?1:.5;g.shadowColor=col;g.shadowBlur=on?18:9;
-    g.fillStyle=col;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();g.fill();g.restore()});
+    g.save();g.globalAlpha=on?1:.5;g.shadowColor=col+'73';g.shadowBlur=10;
+    g.fillStyle=col;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();g.restore()});
   /* garis kumulatif */
   g.strokeStyle='#fff';g.lineWidth=1.6;g.lineJoin='round';g.beginPath();W.forEach((b,i)=>{i?g.lineTo(cx(i),yp(b.cum)):g.moveTo(cx(i),yp(b.cum))});g.stroke();
   const dot=(i,r)=>{g.fillStyle='#0B0B0D';g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=1.8;g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.stroke()};
