@@ -2975,12 +2975,13 @@ function paretoBlk(){
 function drawPareto(){
   const cv=$('#pchart');if(!cv)return;
   const {w:W,tot}=parData(),n=W.length,priv=S.settings.privacy;
-  const w=cv.parentElement.clientWidth||340,h=170,dpr=Math.min(window.devicePixelRatio||1,2);
-  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';
-  const L=priv?16:46,R=40,top=12,bot=44,pw=w-L-R,ph=h-top-bot,bw=pw/n;
+  const w=cv.parentElement.clientWidth||340,dpr=Math.min(window.devicePixelRatio||1,2);
+  const L=priv?16:46,R=40,top=12,pw=w-L-R,bw=pw/n,ff='500 10.5px '+getComputedStyle(document.body).fontFamily;
+  const h=150,bot=14,ph=h-top-bot;
+  cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';cv.parentElement.style.height=(h-10)+'px';
   let mx=W[0].v*1.12;const raw=mx/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),nz=[1,2,2.5,5,10].find(k=>raw<=k*mag)*mag;mx=nz*4;
   const layer=document.createElement('canvas');layer.width=Math.round(w*dpr);layer.height=Math.round(h*dpr);
-  const g=layer.getContext('2d');g.scale(dpr,dpr);g.font='500 10.5px '+getComputedStyle(document.body).fontFamily;
+  const g=layer.getContext('2d');g.scale(dpr,dpr);g.font=ff;
   const GREEN='#A8F552',DIM='#3E5A25',cx=i=>L+bw*(i+.5),yb=v=>top+(1-v/mx)*ph,yp=f=>top+(1-f)*ph;
   for(let k=0;k<=4;k++){const y=top+ph*k/4+.5;g.strokeStyle='rgba(255,255,255,.09)';g.lineWidth=1;g.beginPath();g.moveTo(L,y);g.lineTo(w-R,y);g.stroke();
     g.fillStyle='rgba(255,255,255,.4)';g.textBaseline='middle';
@@ -2991,11 +2992,9 @@ function drawPareto(){
   g.fillStyle='rgba(255,255,255,.6)';g.textAlign='right';g.textBaseline='bottom';g.fillText('80%',w-R-2,y80-3);
   const rr=(x,y,bwid,bh,r)=>{r=Math.min(r,bwid/2,bh);g.beginPath();g.moveTo(x,y+bh);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.lineTo(x+bwid-r,y);g.quadraticCurveTo(x+bwid,y,x+bwid,y+r);g.lineTo(x+bwid,y+bh);g.closePath()};
   const bwid=Math.min(bw*.62,46);
-  W.forEach((b,i)=>{const y=Math.min(yb(b.v),top+ph-4);g.fillStyle=b.pre<.8?GREEN:DIM;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();
-    g.fillStyle='rgba(255,255,255,.5)';g.textAlign='center';g.textBaseline='alphabetic';
-    const lim=Math.max(4,Math.floor(bw/5.6)),fit=x=>x.length>lim?x.slice(0,lim-1)+'…':x,wd=b.n.split(' ');let l1=b.n,l2='';
-    if(b.n.length>lim){l1=wd[0];l2=wd.slice(1).join(' ');if(!l2){l1=b.n.slice(0,lim);l2=b.n.slice(lim)}}
-    g.fillText(fit(l1),cx(i),h-24);if(l2)g.fillText(fit(l2),cx(i),h-11)});
+  W.forEach((b,i)=>{const y=Math.min(yb(b.v),top+ph-4),on=b.pre<.8;
+    g.save();g.shadowColor=on?'rgba(168,245,82,.85)':'rgba(168,245,82,.35)';g.shadowBlur=on?18:9;
+    g.fillStyle=on?GREEN:DIM;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();g.fill();g.restore()});
   /* garis kumulatif */
   g.strokeStyle='#fff';g.lineWidth=1.6;g.lineJoin='round';g.beginPath();W.forEach((b,i)=>{i?g.lineTo(cx(i),yp(b.cum)):g.moveTo(cx(i),yp(b.cum))});g.stroke();
   const dot=(i,r)=>{g.fillStyle='#0B0B0D';g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=1.8;g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.stroke()};
