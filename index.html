@@ -352,19 +352,29 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .xs-list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
 /* sorak transfer: maskot memegang batang dompet asal & tujuan */
 .xch{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:300}
-.xch-in{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 26px 16px;border-radius:26px;background:color-mix(in srgb,var(--s2) 94%,transparent);box-shadow:0 18px 50px rgba(0,0,0,.55);animation:xch-in .6s var(--spring) both}
+.xch-in{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 26px 16px;border-radius:26px;background:var(--s2);box-shadow:0 18px 50px rgba(0,0,0,.55);animation:xch-in .6s var(--spring) both}
 .xch.out .xch-in{animation:xch-out .45s var(--emph) forwards}
-.xch svg{width:176px;height:132px;overflow:visible}
+.xch svg.mkv{overflow:visible}
 .xch .mk{animation:xch-hop .5s ease-in-out infinite alternate}
 .xch .bl,.xch .br{transform-box:fill-box;transform-origin:50% 50%}
 .xch .bl{animation:xch-swl .55s ease-in-out infinite alternate}.xch .br{animation:xch-swr .55s ease-in-out infinite alternate}
-.xch b{font-size:16px}.xch small{color:var(--tx2);font-size:12.5px}
+.xch-in{width:min(256px,calc(100vw - 48px));box-sizing:border-box;position:relative;overflow:hidden;gap:0;padding:10px 12px 13px;border-radius:22px;box-shadow:0 0 0 1px rgba(168,245,82,.16),0 0 40px rgba(168,245,82,.12),0 18px 50px rgba(0,0,0,.55)}
+.xch svg.mkv{width:104px;height:78px}
+.xch-h{font-size:12px;font-weight:700;color:var(--tx2);margin-top:0}
+.xch-a{font-size:25px;font-weight:800;line-height:1.15;color:var(--acc);text-shadow:0 0 18px rgba(168,245,82,.35);margin:0 0 8px}
+.xch-c{position:relative;width:100%;display:flex;flex-direction:column;gap:4px}
+.xch-k{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:14px;background:var(--s1);min-width:0}
+.xch-k span{display:flex;flex-direction:column;min-width:0;text-align:left}.xch-k small{font-size:10.5px;line-height:1.2;color:var(--tx2)}
+.xch-k b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xch-ar{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;display:grid;place-items:center;border-radius:99px;background:var(--s2);color:var(--tx);box-shadow:0 0 0 2px var(--s2)}
+.xch-t{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--acc);box-shadow:0 0 10px var(--acc);transform-origin:left;animation:xch-t 2.3s linear forwards}
+@keyframes xch-t{to{transform:scaleX(0)}}
 @keyframes xch-in{from{opacity:0;transform:translateY(18px) scale(.8)}to{opacity:1;transform:none}}
 @keyframes xch-out{to{opacity:0;transform:translateY(8px) scale(.96)}}
 @keyframes xch-hop{to{transform:translateY(-7px)}}
 @keyframes xch-swl{from{transform:translateX(-6px) rotate(-6deg)}to{transform:translateX(34px) rotate(6deg)}}
 @keyframes xch-swr{from{transform:translateX(6px) rotate(6deg)}to{transform:translateX(-34px) rotate(-6deg)}}
-@media(prefers-reduced-motion:reduce){.xch .mk,.xch .bl,.xch .br{animation:none}.xch-in{animation-duration:.01s}}
+@media(prefers-reduced-motion:reduce){.xch .mk,.xch .bl,.xch .br,.xch-t{animation:none}.xch-in{animation-duration:.01s}}
 .xs-gs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 10px 8px}.xs-g{min-height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--bd,rgba(255,255,255,.12));font-size:12.5px;font-weight:650;color:var(--tx2);transition:background .3s var(--emph),color .3s var(--emph)}.xs-g.on{background:var(--acc);color:#0B0B0D;border-color:transparent}
 .xs-row{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:12px;text-align:left}
 .xs-row:active{background:var(--s3)}
@@ -3805,10 +3815,14 @@ function xCheer(fw,tw,amt){
   const hap=x=>`<path d="M${(x-w*.58).toFixed(1)} ${(50+h*.16).toFixed(1)} Q${x} ${(50-h*.4).toFixed(1)} ${(x+w*.58).toFixed(1)} ${(50+h*.16).toFixed(1)}" fill="none" stroke="${c.ink}" stroke-width="5" stroke-linecap="round"/>`;
   const fc=walCol(fw),tc=walCol(tw),bar=(x,col,cls)=>`<g class="${cls}"><rect x="${x}" y="42" width="14" height="64" rx="7" fill="${col}" style="filter:drop-shadow(0 0 8px ${col})"/></g>`;
   const el=document.createElement('div');el.className='xch';el.setAttribute('role','status');
-  el.innerHTML=`<div class="xch-in"><svg viewBox="0 0 176 132" aria-hidden="true"><defs>${defs}</defs>
+  el.innerHTML=`<div class="xch-in"><svg class="mkv" viewBox="0 0 176 132" aria-hidden="true"><defs>${defs}</defs>
     <g class="mk"><g transform="translate(48 34) scale(.8)"><path d="${d}" fill="${c.grad?`url(#${n})`:c.fill}"/>${hap(50-g)}${hap(50+g)}</g>
     ${bar(28,fc,'bl')}${bar(134,tc,'br')}</svg>
-    <b>Transfer berhasil!</b><small>${esc(wLbl(fw))} → ${esc(wLbl(tw))} · ${money(amt)}</small></div>`;
+    <b class="xch-h">Transfer berhasil!</b><div class="xch-a num">${money(amt)}</div>
+    <div class="xch-c"><div class="xch-k"><span><small>Dari</small><b>${esc(wLbl(fw))}</b></span>${accIcon(fw,22)}</div>
+    <i class="xch-ar" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></svg></i>
+    <div class="xch-k"><span><small>Ke</small><b>${esc(wLbl(tw))}</b></span>${accIcon(tw,22)}</div></div>
+    <i class="xch-t" aria-hidden="true"></i></div>`;
   document.body.appendChild(el);
   setTimeout(()=>el.classList.add('out'),2300);setTimeout(()=>el.remove(),2800);
 }
@@ -4001,7 +4015,7 @@ const A={
     const fw=S.wallets.find(w=>w.id===X.from),tw=S.wallets.find(w=>w.id===X.to);
     closeSheet();commit(window.mascot&&S.settings.mascot!=='off'?'':'Transfer tersimpan');
     if(window.mascot&&S.settings.mascot!=='off'){
-      mascot.happy(2500);
+      mascot.happy(2500,'Beres!');
       if(fw&&tw)xCheer(fw,tw,amt);
     }
   },
