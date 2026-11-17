@@ -2976,13 +2976,9 @@ function drawPareto(){
   const cv=$('#pchart');if(!cv)return;
   const {w:W,tot}=parData(),n=W.length,priv=S.settings.privacy;
   const w=cv.parentElement.clientWidth||340,dpr=Math.min(window.devicePixelRatio||1,2);
-  const L=priv?30:46,R=40,top=12,pw=w-L-R,bw=pw/n,ff='500 10.5px '+getComputedStyle(document.body).fontFamily;
-  /* label: dua baris hanya dipecah di spasi; bila ada satu kata yang tak muat, semua label dimiringkan agar nama tidak terpotong */
-  const mg=document.createElement('canvas').getContext('2d');mg.font=ff;const maxW=bw-4;
-  const rot=W.some(b=>b.n.split(' ').some(x=>mg.measureText(x).width>maxW));
-  const h=rot?196:170,bot=rot?70:44,ph=h-top-bot;
+  const L=priv?16:46,R=40,top=12,pw=w-L-R,bw=pw/n,ff='500 10.5px '+getComputedStyle(document.body).fontFamily;
+  const h=150,bot=14,ph=h-top-bot;
   cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);cv.style.width=w+'px';cv.style.height=h+'px';cv.parentElement.style.height=(h-10)+'px';
-  const ell=(t,mw)=>{if(mg.measureText(t).width<=mw)return t;while(t.length>1&&mg.measureText(t+'…').width>mw)t=t.slice(0,-1);return t+'…'};
   let mx=W[0].v*1.12;const raw=mx/4,mag=Math.pow(10,Math.floor(Math.log10(raw))),nz=[1,2,2.5,5,10].find(k=>raw<=k*mag)*mag;mx=nz*4;
   const layer=document.createElement('canvas');layer.width=Math.round(w*dpr);layer.height=Math.round(h*dpr);
   const g=layer.getContext('2d');g.scale(dpr,dpr);g.font=ff;
@@ -2996,12 +2992,9 @@ function drawPareto(){
   g.fillStyle='rgba(255,255,255,.6)';g.textAlign='right';g.textBaseline='bottom';g.fillText('80%',w-R-2,y80-3);
   const rr=(x,y,bwid,bh,r)=>{r=Math.min(r,bwid/2,bh);g.beginPath();g.moveTo(x,y+bh);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.lineTo(x+bwid-r,y);g.quadraticCurveTo(x+bwid,y,x+bwid,y+r);g.lineTo(x+bwid,y+bh);g.closePath()};
   const bwid=Math.min(bw*.62,46);
-  W.forEach((b,i)=>{const y=Math.min(yb(b.v),top+ph-4);g.fillStyle=b.pre<.8?GREEN:DIM;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();
-    g.fillStyle='rgba(255,255,255,.62)';
-    if(rot){g.save();g.translate(cx(i)+3,top+ph+9);g.rotate(-Math.PI/4);g.textAlign='right';g.textBaseline='middle';g.fillText(ell(b.n,Math.min(86,(cx(i)+1)*1.41)),0,0);g.restore();return}
-    g.textAlign='center';g.textBaseline='alphabetic';
-    const wd=b.n.split(' ');let l1=wd[0],k=1;while(k<wd.length&&mg.measureText(l1+' '+wd[k]).width<=maxW){l1+=' '+wd[k];k++}
-    const l2=wd.slice(k).join(' ');g.fillText(ell(l1,maxW),cx(i),top+ph+17);if(l2)g.fillText(ell(l2,maxW),cx(i),top+ph+30)});
+  W.forEach((b,i)=>{const y=Math.min(yb(b.v),top+ph-4),on=b.pre<.8;
+    g.save();g.shadowColor=on?'rgba(168,245,82,.85)':'rgba(168,245,82,.35)';g.shadowBlur=on?18:9;
+    g.fillStyle=on?GREEN:DIM;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();g.fill();g.restore()});
   /* garis kumulatif */
   g.strokeStyle='#fff';g.lineWidth=1.6;g.lineJoin='round';g.beginPath();W.forEach((b,i)=>{i?g.lineTo(cx(i),yp(b.cum)):g.moveTo(cx(i),yp(b.cum))});g.stroke();
   const dot=(i,r)=>{g.fillStyle='#0B0B0D';g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=1.8;g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.stroke()};
