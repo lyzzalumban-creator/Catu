@@ -10,6 +10,23 @@ Aplikasi pencatat keuangan pribadi (dompet, kartu kredit, transaksi, laporan) da
 - Balasan dan teks aplikasi dalam bahasa Indonesia.
 - Beberapa komponen (tanda tangan, animasi kartu, maskot) diadaptasi dari komponen berlisensi MIT; catatan kredit ada di komentar kode dan harus dipertahankan.
 
+## Uji otomatis
+Folder `tests/` berisi uji yang memuat `index.html` di Chromium (tanggal dikunci ke 17 Nov 2026) dan menjalankan fungsi hitungan aplikasi langsung. Tidak ada yang diubah di `index.html`.
+
+```
+NODE_PATH=$(npm root -g) node tests/run.js          # semua uji
+NODE_PATH=$(npm root -g) node tests/run.js gestun   # hanya uji yang namanya memuat "gestun"
+```
+
+Butuh Node dan paket `playwright` (Chromium). Yang diuji:
+- Kalkulator (`evalExpr`, `pressKey`) dan format uang.
+- Saldo dan tagihan (`effect`, `recalc`): pengeluaran, pemasukan, transfer, bayar kartu, gestun.
+- Gestun skema A/B, limit kartu dan plafon bersama, tagihan berulang, `nextOcc`/`recDate`, ringkasan bulanan, `series`.
+- `normalize` (data lama/impor yang rusak) dan data contoh.
+- Uji asap: semua halaman dan sheet terbuka tanpa galat JavaScript.
+
+Setelah mengubah logika hitungan, jalankan uji ini sebelum menggabungkan. Kalau menambah fungsi hitungan baru, tambahkan ujinya di `tests/cases.js`.
+
 ## Pembaruan otomatis
 Saat halaman dibuka (atau saat kembali ke aplikasi), `index.html` mengecek versi terbaru di server dan memuat ulang sendiri kalau ada yang berubah. Sidik jari versi disimpan di kunci `catu.ver`; data keuangan (`kantong.v1`) tidak diubah. Syaratnya, perubahan sudah digabung ke branch yang dipublikasikan GitHub Pages.
 
