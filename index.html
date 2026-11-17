@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="assets/logo/penniq-ikon-192.png">
+<link rel="apple-touch-icon" href="assets/logo/penniq-ikon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="penniq">
 <title>penniq</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,7 +29,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;line-height:1.35;-webkit-font-smoothing:antialiased}
+html,body{margin:0;overscroll-behavior-y:none;background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;line-height:1.35;-webkit-font-smoothing:antialiased}
 body.lock{overflow:hidden}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
@@ -55,6 +63,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .shi .bdg{position:absolute;right:calc(var(--sz)*-.06);bottom:calc(var(--sz)*-.06);width:max(13px,calc(var(--sz)*.4));height:max(13px,calc(var(--sz)*.4));border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 max(1.5px,calc(var(--sz)*.04)) var(--bdgbg,#0b0b0d)}
 .shi .bdg svg{width:68%;height:68%}
 .shi .bdg.inc{background:#A8F552;fill:#14240A}.shi .bdg.exp{background:#FF6B6B;fill:#2A0D0D}
+.pwa-ok{font-size:13px;font-weight:650;color:var(--acc)}.pwa-h{display:block;font-size:12.5px;line-height:1.45;color:var(--mute)}.pwa-h b{color:var(--tx2);font-weight:650}
 .stk-prev{display:flex;gap:14px;align-items:center;margin-top:12px}.stk-prev span.t{font-size:12.5px;color:var(--mute)}
 .shi.rg svg.shp{overflow:visible;stroke:var(--rc);stroke-width:1.8px;vector-effect:non-scaling-stroke}
 .shi.rg svg.shp path{vector-effect:non-scaling-stroke}
@@ -3116,6 +3125,7 @@ VIEWS.set=function(){
   const st={local:'Tersimpan di perangkat ini.',online:'Tersimpan online ke akun kamu.',saving:'Sedang menyimpan…',err:'Sinkron gagal. Data tetap aman di perangkat.',gdok:'Tersimpan di perangkat dan tercadangkan ke Google Drive.',gdsave:'Tersimpan di perangkat. Cadangan Drive sedang dikirim…',gdneed:'Tersimpan di perangkat. Cadangan Drive menunggu Anda masuk lagi.',gderr:'Tersimpan di perangkat. Cadangan Drive gagal, data tetap aman.'}[ui.sync]||'Tersimpan di perangkat ini.';
   return`<section class="blk"><div class="blk-h"><h2>Susunan Beranda</h2></div><div class="surface">${lay}</div></section>
    <section class="blk"><div class="blk-h"><h2>Tampilan</h2></div><div class="surface">
+     ${pwaRow()}
      <div class="setrow"><div><b>Menu Gestun</b><small>Tampilkan tombol Gestun di Beranda dan kartu</small></div><button class="sw-t ${gestOn()?'on':''}" data-action="gestun-tog" role="switch" aria-checked="${gestOn()}" aria-label="Menu Gestun"></button></div>
      <div class="setrow"><div><b>Kalender di Riwayat</b><small>Kalender per tanggal di tab Transaksi, ketuk tanggal untuk lihat riwayatnya</small></div><button class="sw-t ${calOn()?'on':''}" data-action="cal-tog" role="switch" aria-checked="${calOn()}" aria-label="Kalender di Riwayat"></button></div>
      <div class="setrow"><div><b>Mode privasi</b><small>Sembunyikan semua nominal</small></div><button class="sw-t ${S.settings.privacy?'on':''}" data-action="privacy" role="switch" aria-checked="${S.settings.privacy}" aria-label="Mode privasi"></button></div>
@@ -3803,6 +3813,7 @@ const A={
     if(c&&c.bg){const t=(c.net==='mc'?'Mastercard':'Visa')+' •• '+(c.last4||'0000');
       if(window.mascot&&S.settings.mascot!=='off')mascot.say(t);else toast(t)}},
   'wl-pick'(el,arg,id){if(S.settings.cardView==='car'&&window.carGo&&$('#car')){carGo(id);return}if(S.settings.cardView==='col'&&window.colGo&&$('#col')){colGo(id);return}if(S.settings.cardView==='stack'){cswFront(id);return}ui.wlSel=id;applyWl()},
+  pwainst(){if(!PWA_EV)return;const e=PWA_EV;e.prompt();e.userChoice.then(r=>{PWA_EV=null;if(r&&r.outcome==='accepted')toast('Memasang aplikasi…');render()}).catch(()=>{})},
   stkstyle(el,arg){S.settings.stk=arg==='badge'?'badge':'bg';persist();render()},
   cardview(el,arg){S.settings.cardView=['stack','col','car'].includes(arg)?arg:'wallet';ui.wlSel='';persist();render()},
   'wl-mode'(){S.settings.wlMode=S.settings.wlMode==='debt'?'remain':'debt';persist();render()},
@@ -4037,6 +4048,19 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
   check();
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
 })();
+
+/* ---- pasang sebagai aplikasi layar penuh (PWA) ---- */
+let PWA_EV=null;
+const pwaApp=()=>{try{return matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();PWA_EV=e;if(ui.view==='set')render()});
+window.addEventListener('appinstalled',()=>{PWA_EV=null;toast('Aplikasi terpasang');if(ui.view==='set')render()});
+function pwaRow(){
+  const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span>`
+    :PWA_EV?`<button class="pbtn" data-action="pwainst">Pasang aplikasi</button>`
+    :`<small class="pwa-h">Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
+  return`<div class="setrow" style="display:block"><div><b>Aplikasi layar penuh</b><small>Tanpa bilah alamat dan bilah sistem, seperti aplikasi biasa</small></div><div style="margin-top:10px">${inner}</div></div>`;
+}
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
 </body>
 </html>
