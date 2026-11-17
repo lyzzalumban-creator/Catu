@@ -358,15 +358,15 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .xch .mk{animation:xch-hop .5s ease-in-out infinite alternate}
 .xch .bl,.xch .br{transform-box:fill-box;transform-origin:50% 50%}
 .xch .bl{animation:xch-swl .55s ease-in-out infinite alternate}.xch .br{animation:xch-swr .55s ease-in-out infinite alternate}
-.xch-in{width:min(320px,calc(100vw - 32px));box-sizing:border-box;position:relative;overflow:hidden;gap:0;padding:16px 16px 18px;box-shadow:0 0 0 1px rgba(168,245,82,.16),0 0 40px rgba(168,245,82,.12),0 18px 50px rgba(0,0,0,.55)}
-.xch svg.mkv{width:150px;height:112px}
-.xch-h{font-size:14px;font-weight:700;color:var(--tx2);margin-top:2px}
-.xch-a{font-size:34px;font-weight:800;line-height:1.15;color:var(--acc);text-shadow:0 0 22px rgba(168,245,82,.35);margin:2px 0 12px}
-.xch-c{position:relative;width:100%;display:flex;flex-direction:column;gap:6px}
-.xch-k{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:18px;background:var(--s1);min-width:0}
-.xch-k span{display:flex;flex-direction:column;min-width:0;text-align:left}.xch-k small{font-size:12px;color:var(--tx2)}
-.xch-k b{font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.xch-ar{position:absolute;left:50%;top:50%;width:30px;height:30px;margin:-15px 0 0 -15px;display:grid;place-items:center;border-radius:99px;background:var(--s2);color:var(--tx);box-shadow:0 0 0 3px var(--s2)}
+.xch-in{width:min(256px,calc(100vw - 48px));box-sizing:border-box;position:relative;overflow:hidden;gap:0;padding:10px 12px 13px;border-radius:22px;box-shadow:0 0 0 1px rgba(168,245,82,.16),0 0 40px rgba(168,245,82,.12),0 18px 50px rgba(0,0,0,.55)}
+.xch svg.mkv{width:104px;height:78px}
+.xch-h{font-size:12px;font-weight:700;color:var(--tx2);margin-top:0}
+.xch-a{font-size:25px;font-weight:800;line-height:1.15;color:var(--acc);text-shadow:0 0 18px rgba(168,245,82,.35);margin:0 0 8px}
+.xch-c{position:relative;width:100%;display:flex;flex-direction:column;gap:4px}
+.xch-k{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:14px;background:var(--s1);min-width:0}
+.xch-k span{display:flex;flex-direction:column;min-width:0;text-align:left}.xch-k small{font-size:10.5px;line-height:1.2;color:var(--tx2)}
+.xch-k b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xch-ar{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;display:grid;place-items:center;border-radius:99px;background:var(--s2);color:var(--tx);box-shadow:0 0 0 2px var(--s2)}
 .xch-t{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--acc);box-shadow:0 0 10px var(--acc);transform-origin:left;animation:xch-t 2.3s linear forwards}
 @keyframes xch-t{to{transform:scaleX(0)}}
 @keyframes xch-in{from{opacity:0;transform:translateY(18px) scale(.8)}to{opacity:1;transform:none}}
@@ -3819,9 +3819,9 @@ function xCheer(fw,tw,amt){
     <g class="mk"><g transform="translate(48 34) scale(.8)"><path d="${d}" fill="${c.grad?`url(#${n})`:c.fill}"/>${hap(50-g)}${hap(50+g)}</g>
     ${bar(28,fc,'bl')}${bar(134,tc,'br')}</svg>
     <b class="xch-h">Transfer berhasil!</b><div class="xch-a num">${money(amt)}</div>
-    <div class="xch-c"><div class="xch-k"><span><small>Dari</small><b>${esc(wLbl(fw))}</b></span>${accIcon(fw,28)}</div>
-    <i class="xch-ar" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></svg></i>
-    <div class="xch-k"><span><small>Ke</small><b>${esc(wLbl(tw))}</b></span>${accIcon(tw,28)}</div></div>
+    <div class="xch-c"><div class="xch-k"><span><small>Dari</small><b>${esc(wLbl(fw))}</b></span>${accIcon(fw,22)}</div>
+    <i class="xch-ar" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m0 0 6-6m-6 6-6-6"/></svg></i>
+    <div class="xch-k"><span><small>Ke</small><b>${esc(wLbl(tw))}</b></span>${accIcon(tw,22)}</div></div>
     <i class="xch-t" aria-hidden="true"></i></div>`;
   document.body.appendChild(el);
   setTimeout(()=>el.classList.add('out'),2300);setTimeout(()=>el.remove(),2800);
