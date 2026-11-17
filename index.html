@@ -62,7 +62,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .shi svg.shp{position:absolute;inset:0;width:100%;height:100%;fill:var(--c);transition:transform .6s var(--spring)}
 .shi .bdg{position:absolute;right:calc(var(--sz)*-.06);bottom:calc(var(--sz)*-.06);width:max(13px,calc(var(--sz)*.4));height:max(13px,calc(var(--sz)*.4));border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 max(1.5px,calc(var(--sz)*.04)) var(--bdgbg,#0b0b0d)}
 .shi .bdg svg{width:68%;height:68%}
-.shi .bdg.inc{background:#A8F552;fill:#14240A}.shi .bdg.exp{background:#FF6B6B;fill:#2A0D0D}
+.shi .bdg.inc{background:#1F3310;fill:#A8F552}.shi .bdg.exp{background:#3A1818;fill:#FF8A8A}
+.shi.bd.rg svg.shp{stroke-opacity:.5}
 .pwa-ok{font-size:13px;font-weight:650;color:var(--acc)}.pwa-h{display:block;font-size:12.5px;line-height:1.45;color:var(--mute)}.pwa-h b{color:var(--tx2);font-weight:650}
 .stk-prev{display:flex;gap:14px;align-items:center;margin-top:12px}.stk-prev span.t{font-size:12.5px;color:var(--mute)}
 .shi.rg svg.shp{overflow:visible;stroke:var(--rc);stroke-width:1.8px;vector-effect:non-scaling-stroke}
@@ -452,9 +453,9 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .ws2-l{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--tx2)}
 .ws2-l i{width:9px;height:9px;border-radius:3px;flex:none}.ws2-l span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ws2-l b{font-weight:650;color:var(--tx)}
 
-.ws3{display:block;padding:20px 20px 24px}
-.ws3 .ws2-v{font-size:26px;margin:4px 0 16px}
-.ws3-bar{display:flex;gap:6px;height:40px}
+.ws3{display:block;padding:20px 20px 14px}
+.ws3 .ws2-v{font-size:26px;margin:4px 0 6px}
+.ws3-bar{display:flex;gap:3px;height:10px;padding:8px 0;box-sizing:content-box}
 .ws3-bar{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;touch-action:pan-y}
 .ws3-bar.lp i{opacity:.35;transition:opacity .15s}.ws3-bar.lp i.hot{opacity:1}
 .seg-tip{position:fixed;z-index:80;pointer-events:none;transform:translate(-50%,-100%);padding:10px 14px;border-radius:16px;background:var(--s3);box-shadow:0 0 0 1px var(--line2),0 10px 30px rgba(0,0,0,.55);text-align:center;white-space:nowrap;animation:tipin .16s var(--spring) both}
@@ -463,9 +464,9 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .seg-tip em{font-style:normal;color:var(--acc);font-weight:700;margin-left:6px}
 @keyframes tipin{from{opacity:0;transform:translate(-50%,-90%) scale(.92)}to{opacity:1;transform:translate(-50%,-100%) scale(1)}}
 
-.ws3-bar i{display:block;height:100%;min-width:14px;border-radius:13px;transform-origin:left;animation:wsg .8s var(--spring) both}
-.ws3-bar i:last-child:not(:only-child){border-radius:13px}
-.ws3-bar i{box-shadow:0 0 16px -2px color-mix(in srgb,var(--c) 55%,transparent),0 0 30px -8px color-mix(in srgb,var(--c) 35%,transparent)}
+.ws3-bar i{display:block;height:100%;min-width:6px;border-radius:99px;transform-origin:left;animation:wsg .8s var(--spring) both}
+.ws3-bar i:last-child:not(:only-child){border-radius:99px}
+.ws3-bar i{box-shadow:0 0 10px -3px color-mix(in srgb,var(--c) 50%,transparent)}
 .ws3-bar.lp i:not(.hot){box-shadow:none}
 .ws3 .ws2-l{font-size:13px}.ws3 .ws2-l b{font-variant-numeric:tabular-nums;color:var(--mute);font-weight:600}
 .ws3 .ws2-l i{width:10px;height:10px;border-radius:50%}
@@ -501,10 +502,13 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .privacy .wsum-l b{filter:none}
 
 /* chips */
-.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 28px 2px 0;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 28px),transparent)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px 40px 2px 0;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 44px),transparent)}
 .chips::-webkit-scrollbar{display:none}
+.chips.qa{margin:-2px 0 12px}
 .chips.fit{flex-wrap:wrap;overflow:visible;padding:0;-webkit-mask-image:none;mask-image:none}
 .chips.fit .chip{flex:1 1 auto;justify-content:center;text-align:center}
+.chips.fit.g3{display:grid;grid-template-columns:repeat(3,1fr)}
+.chips.fit.g3 .chip{padding:9px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chip{flex:none;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;background:var(--s2);color:var(--tx2);box-shadow:inset 0 0 0 1px var(--line2);transition:border-radius .4s var(--spring),background .2s,color .2s}
 .chip.on{background:var(--accC);color:var(--onAccC);box-shadow:none;border-radius:99px}
 .chip small{display:block;font-size:11.5px;font-weight:500;color:var(--mute);margin-top:2px}
@@ -555,7 +559,7 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .bud.ok .bud-b i{background:var(--acc)}.bud.warn .bud-b i{background:var(--warn)}.bud.over .bud-b i{background:var(--neg)}
 .bud.warn .bud-t span:last-child{color:var(--warn)}.bud.over .bud-t span:last-child{color:var(--neg)}
 .bud small{display:block;font-size:11.5px;color:var(--mute);margin-top:4px}
-.bud-set{margin:2px 0 0 38px}
+.bud-set{margin:2px 0 0 38px;font-size:12px;font-weight:600;color:var(--mute)}
 .rep-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 4px 10px}.rep-row b{display:block;font-size:14px}.rep-row small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
 .gd-err{color:var(--warn)}
 .gd-btns{display:flex;flex-wrap:wrap;gap:8px;padding:2px 0 14px}
@@ -790,7 +794,9 @@ input:disabled{opacity:.6}
 .svb:active{transform:scale(.98);background:#bdfb74}
 .f{display:block;margin-bottom:14px}
 .f>span{display:block;font-size:12.5px;color:var(--mute);margin:0 4px 6px;font-weight:600}
-.f small{display:block;color:var(--mute);font-size:12px;margin:5px 4px 0}
+.f small{display:block;color:var(--mute);font-size:12px;line-height:1.45;margin:6px 4px 0}
+.mini-w{display:flex;align-items:center;gap:4px;flex:1;min-width:0}
+.mini-w .acc-bar{margin-left:0}
 .mini{display:flex;justify-content:space-between;align-items:center;gap:12px;background:var(--s2);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:10px}
 .opt{display:block;width:100%;text-align:left;background:var(--s2);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:6px;transition:border-radius .4s var(--spring),background .2s}
 .opt.on{background:var(--accC);border-radius:var(--r-2xl)}
@@ -910,7 +916,7 @@ input:disabled{opacity:.6}
 .kg-h b{display:block;font-size:14px}.kg-h small{display:block;color:var(--mute);font-size:12px;margin-top:2px;line-height:1.35}
 .kg-e{font-size:12.5px;color:var(--acc);font-weight:650}
 .hp-pv{display:block;width:100%;border:0;text-align:left;cursor:pointer;font:inherit;height:46px;border-radius:15px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .12s}
-.hp-pv b{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:650;letter-spacing:.3px}
+.hp-pv b{display:none;position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:650;letter-spacing:.3px}
 .hp{--hh:120;--ss:80%;--ll:56%}
 .hp-row{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:10px;margin-top:14px}
 .hp-row>label{font-size:11.5px;color:var(--mute);font-weight:600}
@@ -964,10 +970,13 @@ input:disabled{opacity:.6}
 .sub-x:active{background:#3a1c20;color:#FF9A9A}
 .sub-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;margin-top:2px;border-radius:99px;background:var(--s2);box-shadow:inset 0 0 0 1px var(--line2);font-weight:650;font-size:14px;color:var(--acc)}
 .sub-add:active{background:var(--s3)}
-.sub-hint{display:block;margin-top:8px;font-size:12px;color:var(--tx3)}
+.sub-hint{display:block;margin-top:8px;font-size:12px;line-height:1.45;color:var(--mute)}
 
-.accd-h{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;margin:4px 0 16px}
-.accd-h .big{font-size:34px;font-weight:750;letter-spacing:-.03em}
+.accd-h{position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin:4px 0 12px;padding:20px 16px 18px;border-radius:var(--r-xl);background:var(--s2);box-shadow:inset 0 0 0 1px var(--line)}
+.accd-h::before{content:'';position:absolute;z-index:-1;left:50%;top:-60%;width:120%;aspect-ratio:1;transform:translateX(-50%);background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 22%,transparent),transparent 72%);pointer-events:none}
+.accd-t b{display:block;font-size:17px;font-weight:700}
+.accd-t small{display:block;margin-top:2px;color:var(--mute);font-size:12.5px}
+.accd-h .big{font-size:34px;font-weight:750;letter-spacing:-.03em;line-height:1.1}
 textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);background:var(--s2);border:0;box-shadow:inset 0 0 0 1px var(--line2);border-radius:var(--r-md);padding:12px;width:100%;height:200px;resize:vertical}
 .snack{position:fixed;left:50%;bottom:104px;transform:translate(-50%,20px);background:#E9E9EE;color:#111;padding:12px 18px;border-radius:14px;font-size:13.5px;font-weight:600;z-index:80;opacity:0;pointer-events:none;transition:opacity .2s,transform .45s var(--spring);max-width:90%;text-align:center}
 .snack.show{opacity:1;transform:translate(-50%,0)}
@@ -1174,8 +1183,8 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .cn{display:grid;place-items:center;min-width:22px;height:22px;border-radius:99px;font-size:12.5px;font-weight:600;color:var(--tx2);font-variant-numeric:tabular-nums}
 .cn.t{background:var(--acc);color:var(--acc-ink);font-weight:800}
 .ca{font-style:normal;font-size:10px;font-weight:750;line-height:1;padding:3px 4px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums;max-width:100%;overflow:hidden}
-.ca.p{color:var(--onAccC);background:var(--accC)}
-.ca.n{color:#FFB0AA;background:var(--negC)}
+.ca.p{color:var(--acc);background:none}
+.ca.n{color:#E7A4A0;background:none}
 .ca.z{color:var(--mute);background:none}
 .chd{width:100%;display:flex;align-items:center;gap:10px;padding:0 6px 10px;text-align:left}
 .chd .dt{flex:1;min-width:0}.chd .dt b{display:block;font-size:14px;font-weight:700}.chd .dt small{display:block;font-size:12px;color:var(--mute);margin-top:2px;line-height:1.35}
@@ -1330,12 +1339,14 @@ const catShape=c=>SHAPES[hsh((c?c.id:'x')+'s')%SHAPES.length];
 const TYPE_BG={inc:'#1E4A24',exp:'#52201F'},TYPE_FG={inc:'#A8F552',exp:'#FF8A8A'};
 const catHex=c=>c&&hexOk(c.color)?c.color:PAL[catCol(c)%PAL.length][1];
 const ringFit=h=>{const n=parseInt(h.slice(1),16),r=n>>16&255,g=n>>8&255,b=n&255,L=(.2126*r+.7152*g+.0722*b)/255;if(L>=.38)return h;const m=Math.min(.6,(.38-L)*1.6+.15),f=x=>Math.round(x+(255-x)*m).toString(16).padStart(2,'0');return'#'+f(r)+f(g)+f(b)};
+/* latar tonal: warna kategori dibaurkan ke permukaan gelap supaya ikon tidak menyilaukan */
+const catTone=h=>{const n=parseInt(h.slice(1),16),m=.26,f=(x,b)=>Math.round(b+(x-b)*m).toString(16).padStart(2,'0');return'#'+f(n>>16&255,20)+f(n>>8&255,20)+f(n&255,24)};
 const stkBadge=()=>!!(S&&S.settings&&S.settings.stk==='badge');
 /* warna latar + cincin untuk stiker (dua gaya: 'bg' = latar jenis + cincin pilihan, 'badge' = warna kategori + lencana panah) */
 const stkVars=c=>{const t=c&&c.t==='inc'?'inc':'exp';return stkBadge()?[catHex(c),'transparent']:[TYPE_BG[t],ringFit(catHex(c))]};
 const BDG_UP='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5.5 20 18H4z"/></svg>',BDG_DN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 18.5 4 6h16z"/></svg>';
 const catIconX=(content,c,size)=>{const t=c&&c.t==='inc'?'inc':'exp';
-  if(stkBadge())return`<span class="shi bd" style="--sz:${size}px;--c:${catHex(c)};--oc:${hexInk(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b><i class="bdg ${t}">${t==='inc'?BDG_UP:BDG_DN}</i></span>`;
+  if(stkBadge())return`<span class="shi bd rg" style="--sz:${size}px;--c:${catTone(catHex(c))};--oc:${catHex(c)};--rc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b><i class="bdg ${t}">${t==='inc'?BDG_UP:BDG_DN}</i></span>`;
   return`<span class="shi rg" style="--sz:${size}px;--c:${TYPE_BG[t]};--oc:${TYPE_FG[t]};--rc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b></span>`};
 const catIcon=(c,size)=>catIconX(c?esc(c.icon):'📦',c,size);
 /* warna sub-kategori (opsional, c.sc[nama]); kosong = ikut warna kategori */
@@ -1375,7 +1386,7 @@ function colorField(cur){
   const sl=(k,lab,cls)=>`<div class="hp-row"><label>${lab}</label><div class="hp-sl ${cls}" data-sk="${k}" role="slider" aria-label="${lab}" aria-valuemin="${mn[k]}" aria-valuemax="${mx[k]}" aria-valuenow="${nowv[k]}"><i class="hp-th" style="left:${(clamp(pos[k],0,1)*100).toFixed(2)}%;background:${hex}"></i></div></div>`;
   return`<div class="f"><span>Warna</span><div class="hp" data-hex="${hex}" data-h="${hsl[0]}" data-s="${hsl[1]}" data-l="${hsl[2]}" style="--hh:${hsl[0]};--ss:${hsl[1]}%;--ll:${hsl[2]}%">
     <div class="hp-top"><button type="button" class="hp-pv" data-action="hpcopy" style="background:${hex};color:${hexInk(hex)}" aria-label="Salin kode warna"><b style="color:${hexInk(hex)}">${hex}</b><span class="hp-cp">Salin</span></button><input class="hp-hx" value="${hex}" maxlength="30" list="hp_nm" placeholder="Kode atau nama" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Kode atau nama warna" data-input="hphex"><datalist id="hp_nm">${COLOR_HINTS.map(n=>`<option value="${n}">`).join('')}</datalist></div>
-    <small class="hp-tip">Ketik kode (#1A2B3C, #abc, rgb 255 136 0) atau nama warna (merah, biru muda). Ketuk kotak warna untuk menyalin kodenya.</small>
+    <small class="hp-tip">Ketik kode warna atau namanya, misalnya merah.</small>
     <div class="hp-pre">${HP_GRID.map(c=>`<button type="button" class="hp-s ${hex===c?'on':''}" style="background:${c}" data-action="pcol" data-arg="${c}" aria-label="Warna ${c}"></button>`).join('')}</div>
     <button type="button" class="hp-tg" data-action="hptog" aria-expanded="false">Atur manual<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
     <div class="hp-adv"><div class="hp-adv-in">${sl('h','Rona','hue')}${sl('s','Kejenuhan','sat')}${sl('l','Kecerahan','lig')}</div></div>
@@ -2490,7 +2501,7 @@ function blkWallets(){
 }
 function sortedTx(){return S.tx.slice().reverse().sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0)}
 const SYS={pay:['💳',2,'cookie6'],xfer:['⇄',3,'clover4'],gcard:['⚡',5,'sunny'],gin:['⚡',8,'sunny'],gfee:['🧾',0,'squircle']};
-function txRow(t){
+function txRow(t,ctx){
   const cat=S.cats.find(c=>c.id===t.cat),an=accName(t.acc);
   let ico,title='',meta='',sign='',cls='';
   switch(t.t){
@@ -2503,12 +2514,12 @@ function txRow(t){
     case'gfee':title='Gestun · biaya admin';sign='−';break;
   }
   if(!ico){const s=SYS[t.t];ico=shapeIcon(s[0],s[1],s[2],42)}
-  if(!meta)meta=[t.t==='gfee'?'':an,t.note].filter(Boolean).join(' · ');
+  if(!meta)meta=[t.t==='gfee'||(ctx&&t.acc===ctx)?'':an,t.note].filter(Boolean).join(' · ');
   return`<button class="lrow" data-action="tx-open" data-id="${t.id}">${ico}<span class="lm"><b>${esc(title)}</b><small>${esc(meta)}</small></span><span class="lr"><b class="${cls}">${sign}${money(t.amt)}</b>${t.sg?stampSVG(t.d,false,t.t,t.id):''}</span></button>`;
 }
-function txList(list){
+function txList(list,ctx){
   let h='',last='';
-  list.forEach(t=>{if(t.d!==last){last=t.d;h+=`<div class="dh">${esc(relDate(t.d))}</div>`}h+=txRow(t)});
+  list.forEach(t=>{if(t.d!==last){last=t.d;h+=`<div class="dh">${esc(relDate(t.d))}</div>`}h+=txRow(t,ctx)});
   return h||'<p class="empty">Belum ada transaksi.</p>';
 }
 /* ---- beranda: kartu anggaran "amplop" dengan air yang naik seiring pengeluaran ---- */
@@ -2763,7 +2774,7 @@ function mutBody(){
     const days=[];for(let i=6;i>=0;i--)days.push(addDays(anchor,-i));
     const wnet=days.reduce((a,d)=>a+(byD[d]?byD[d].net:0),0),rg=d=>parseD(d).getDate()+' '+MONS[parseD(d).getMonth()];
     const ttl=m===curM?'7 hari terakhir':m<curM?'Minggu terakhir bulan ini':'Minggu pertama bulan ini';
-    head=`<button class="chd" data-action="calfull" aria-expanded="false"><span class="dt"><b>${ttl}</b><small>${rg(days[0])} – ${rg(days[6])} · ketuk untuk buka bulan</small></span><span class="dtn ${wnet<0?'neg':wnet>0?'pos':''}">${wnet<0?'−':wnet>0?'+':''}${money(Math.abs(wnet))}</span>${chev(false)}</button>`;
+    head=`<button class="chd" data-action="calfull" aria-expanded="false"><span class="dt"><b>${ttl}</b><small>${rg(days[0])} – ${rg(days[6])}</small></span><span class="dtn ${wnet<0?'neg':wnet>0?'pos':''}">${wnet<0?'−':wnet>0?'+':''}${money(Math.abs(wnet))}</span>${chev(false)}</button>`;
     body=`<div class="cg">${days.map(d=>cell(d,true)).join('')}</div>`;
   }
   const cal=`<div class="mcal ${full?'cm-f':'cm-s'}">${head}${body}</div>`;
@@ -2780,7 +2791,8 @@ function mutBody(){
   const td=today();
   let h='',last='',buf='',net=0,cnt=0,di=0,dout=0;
   const flush=()=>{if(!last)return;const ov=ui.mutDay[last],open=ov!==undefined?ov:(filtering||last===td);
-    const parts=[`<span class="dsp">${cnt} transaksi</span>`];if(di>0)parts.push(`<span class="dsp">Masuk <span class="pos">${money(di)}</span></span>`);if(dout>0)parts.push(`<span class="dsp">Keluar <span class="neg">${money(dout)}</span></span>`);
+    const parts=[`<span class="dsp">${cnt} transaksi</span>`];/* rincian masuk/keluar hanya bila keduanya ada; kalau cuma satu, angkanya sudah di kanan */
+    if(di>0&&dout>0)parts.push(`<span class="dsp">Masuk <span class="pos">${money(di)}</span></span>`);if(di>0&&dout>0)parts.push(`<span class="dsp">Keluar <span class="neg">${money(dout)}</span></span>`);
     h+=`<div class="md ${open?'open':''}" data-d="${last}"><button class="dh3" data-action="mutday" data-arg="${last}" aria-expanded="${open}"><span class="dt"><b>${esc(relDate(last))}</b><small>${parts.join('')}</small></span><span class="dtn">${net<0?'−':net>0?'+':''}${money(Math.abs(net))}</span>${chev(open)}</button><div class="md-b"><div class="md-in">${buf}</div></div></div>`;buf='';net=0;cnt=0;di=0;dout=0};
   l.forEach(t=>{if(t.d!==last){flush();last=t.d}buf+=txRow2(t);cnt++;if(t.t==='exp'||t.t==='gfee'){net-=t.amt;dout+=t.amt}else if(t.t==='inc'){net+=t.amt;di+=t.amt}});flush();
   const empty=`<p class="empty">${q?'Tidak ada transaksi yang cocok.':'Belum ada transaksi di '+MONF[+m.slice(5)-1]+'.'}</p>`;
@@ -2948,10 +2960,10 @@ function anBuckets(r){
 let AC=null;
 function anFlowBlk(){
   if(ui.arange==null)ui.arange=90;
-  return`<section class="blk"><div class="blk-h"><h2>Arus kas</h2><div class="legend" style="margin:0"><span><b style="background:var(--acc)"></b>Masuk</span><span><b style="background:#FF7BAC"></b>Keluar</span></div></div>
+  return`<section class="blk"><div class="blk-h"><h2>Arus kas</h2><div class="legend" style="margin:0"><span><b style="background:var(--acc)"></b>Masuk</span><span><b style="background:var(--neg)"></b>Keluar</span></div></div>
     <div class="surface" style="padding:16px 0 14px">
       <div style="padding:0 16px"><small id="anLab" class="lbl"></small>
-        <div style="display:grid;grid-template-columns:repeat(3,auto);justify-content:space-between;gap:8px;margin-top:6px;white-space:nowrap"><div><small class="lbl">Masuk</small><br><b id="anI" style="color:var(--acc);font-size:14px"></b></div><div><small class="lbl">Keluar</small><br><b id="anE" style="color:#FF7BAC;font-size:14px"></b></div><div><small class="lbl">Selisih</small><br><b id="anN" style="font-size:14px"></b></div></div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,auto);justify-content:space-between;gap:8px;margin-top:6px;white-space:nowrap"><div><small class="lbl">Masuk</small><br><b id="anI" style="color:var(--acc);font-size:14px"></b></div><div><small class="lbl">Keluar</small><br><b id="anE" style="color:var(--neg);font-size:14px"></b></div><div><small class="lbl">Selisih</small><br><b id="anN" style="font-size:14px"></b></div></div></div>
       <div class="chart-wrap" style="margin:12px 0 0;height:230px"><canvas id="achart" aria-label="Grafik arus kas"></canvas></div>
       <div class="bgroup rng" role="group" aria-label="Rentang waktu" style="margin:6px 16px 0">${AR.map(r=>`<button class="${ui.arange===r[0]?'on':''}" data-action="arange" data-arg="${r[0]}">${r[1]}</button>`).join('')}</div>
     </div></section>`;
@@ -2967,7 +2979,7 @@ function drawAn(){
   const xs=B.map((_,i)=>L+(n>1?i/(n-1):.5)*pw),yv=v=>top+(1-v/mx)*ph;
   const layer=document.createElement('canvas');layer.width=Math.round(w*dpr);layer.height=Math.round(h*dpr);
   const g=layer.getContext('2d');g.scale(dpr,dpr);
-  const GREEN='#A8F552',PINK='#FF7BAC';
+  const GREEN='#A8F552',PINK='#FF6B6B';
   g.font='500 10.5px '+getComputedStyle(document.body).fontFamily;g.lineWidth=1;
   for(let k=0;k<=4;k++){const y=top+ph*k/4+.5;g.strokeStyle='rgba(255,255,255,.10)';g.setLineDash([5,6]);g.beginPath();g.moveTo(L,y);g.lineTo(w-R,y);g.stroke();g.setLineDash([]);
     if(!priv){g.fillStyle='rgba(255,255,255,.42)';g.textAlign='right';g.textBaseline='middle';g.fillText(shortRp(mx-mx*k/4),L-10,y)}}
@@ -3041,7 +3053,7 @@ VIEWS.an=function(){
   <section class="blk"><div class="blk-h"><h2>Per kategori</h2><button class="tbtn" data-action="tgcall">${anyOpen?'Tutup semua':'Buka semua'}</button></div><div class="surface">
     ${rows.map(r=>{const open=!S.settings.anCollapsed[r.k],pc=total?Math.round(r.total/total*100):0,on=!!selG&&(selG.k===r.k||(selG.k==='_o'&&r.og));
       return`<div class="grp ${open?'open':''} ${on?'on':''}" data-ck="${esc(r.k)}" ${r.og?'data-og="1" ':''}style="--rc:${r.color}"><button class="cat-h" data-action="tgc" data-id="${esc(r.k)}" aria-expanded="${open}"><div class="cat-l">${catIcon(r.cat,38)}<span class="lm"><b>${r.cat?esc(r.cat.name):'Tanpa kategori'}</b></span><span class="p">${pc}%</span><span class="lr"><b>${money(r.total)}</b></span>${chev(open)}</div><div class="pbar"><i style="width:${total?(r.total/total*100).toFixed(1):0}%;background:${r.color}"></i></div></button>${budMeter(r,A.type)}
-      <div class="sub-w"><div class="sub-in">${Object.keys(r.subs).sort((a,b)=>r.subs[b]-r.subs[a]).map(sn=>`<div class="sub-r"><span>${esc(sn)}</span><span class="num">${money(r.subs[sn])}</span></div>`).join('')}${A.type==='exp'&&r.cat?`<button class="tbtn bud-set" data-action="fedit" data-arg="cat" data-id="${esc(r.cat.id)}">${r.cat.budget>0?'Ubah':'Atur'} anggaran bulanan</button>`:''}<div style="height:8px"></div></div></div></div>`}).join('')||'<p class="empty">Belum ada data di bulan ini.</p>'}
+      <div class="sub-w"><div class="sub-in">${Object.keys(r.subs).sort((a,b)=>r.subs[b]-r.subs[a]).map(sn=>`<div class="sub-r"><span>${esc(sn)}</span><span class="num">${money(r.subs[sn])}</span></div>`).join('')}${A.type==='exp'&&r.cat?`<button class="tbtn bud-set" data-action="fedit" data-arg="cat" data-id="${esc(r.cat.id)}">${r.cat.budget>0?'Anggaran '+money(+r.cat.budget)+' · Ubah':'+ Anggaran'}</button>`:''}<div style="height:8px"></div></div></div></div>`}).join('')||'<p class="empty">Belum ada data di bulan ini.</p>'}
   </div></section>`;
 };
 
@@ -3261,7 +3273,8 @@ VIEWS.manage=function(){
   if(ui.mg==='pool')ui.mg='card';
   const k=ui.mg;let rows='';
   if(k==='group')rows=S.groups.map(g=>mrow('group',g.id,colIcon(esc(g.name.charAt(0).toUpperCase()),grpCol(g),'squircle',40),esc(g.name),S.wallets.filter(w=>w.g===g.id).length+' dompet',money(grpBal(g)))).join('');
-  if(k==='wallet'){const wr=w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc(g?g.name:'–')+(purOf(w)?` · <span class="pu-chip" style="--pc:${purCol(purOf(w))}"><i></i>${esc(purOf(w).name)}</span>`:'')+(wUse(w)!=='both'?' · '+esc(USE_LBL[wUse(w)]):''),money(D.bal[w.id]||0))};
+  if(k==='wallet'){const wr=w=>{const g=S.groups.find(x=>x.id===w.g);/* nama kelompok sudah jadi judul bagian, jadi baris memakai keterangan dompet */
+      return mrow('wallet',w.id,accIcon(w,40),esc(w.name),[w.note?esc(w.note):'',purOf(w)?`<span class="pu-chip" style="--pc:${purCol(purOf(w))}"><i></i>${esc(purOf(w).name)}</span>`:'',wUse(w)!=='both'?esc(USE_LBL[wUse(w)]):''].filter(Boolean).join(' · '),money(D.bal[w.id]||0))};
     const known=S.groups.map(g=>{const ws=S.wallets.filter(w=>w.g===g.id);return ws.length?`<div class="dh">${esc(g.name)}</div>${ws.map(wr).join('')}`:''}).join(''),lost=S.wallets.filter(w=>!S.groups.some(g=>g.id===w.g));
     rows=known+(lost.length?`<div class="dh">Tanpa kelompok</div>${lost.map(wr).join('')}`:'')}
   if(k==='card')rows=cardList();
@@ -3272,7 +3285,7 @@ VIEWS.manage=function(){
   const lbl=MG.find(x=>x[0]===k)[1],srt=!!ui.mgSort&&SORTABLE.includes(k);
   const sortHint={wallet:'Ketuk ↑ ↓ untuk memindahkan dompet dalam kelompoknya. Urutan ini dipakai di beranda dan pilihan dompet.',group:'Ketuk ↑ ↓ untuk memindahkan kelompok. Urutan ini dipakai di beranda.',cat:'Ketuk ↑ ↓ untuk memindahkan kategori dalam jenisnya. Urutan ini dipakai di pilihan kategori.'}[k];
   return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><span class="bh-r">${SORTABLE.includes(k)?`<button class="tbtn" data-action="mgsort" aria-pressed="${srt}">${srt?'Selesai':'Urutkan'}</button>`:''}<button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></span></div>
-    <div class="chips fit" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
+    <div class="chips fit g3" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
     ${srt?`<p class="kd-hint" style="margin:0 2px 10px">${sortHint}</p>`:''}${k==='wallet'&&!srt?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'&&!srt?catDash():''}${k==='group'&&!srt?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}${(k==='group'&&S.groups.length&&!srt)||(k==='pur'&&S.purs.length)?'':`<div class="surface ${k==='cat'?'cl':''}">${rows||`<p class="empty">${EMPTY_MG[k]||'Belum ada.'}</p>`}</div>`}</section>`;
 };
 
@@ -3372,7 +3385,7 @@ function numpad(saveAct,label){
   const kb=(k,t,c)=>`<button class="k ${c||''}" data-action="key" data-arg="${k}" aria-label="${k==='-'?'kurang':k==='='?'sama dengan':k}">${t||k}</button>`;
   const nums=['1','2','3','4','5','6','7','8','9','=','0','000'].map(k=>k==='='?kb('=','=','eq'):kb(k)).join('');
   const ops=kb('÷','÷','op')+kb('×','×','op')+kb('-','−','op')+kb('+','+','op');
-  return`<div class="pad"><div class="pad-n">${nums}</div><div class="pad-o">${ops}</div></div><button class="svb" data-action="${saveAct}">${label||'Simpan'}</button>`;
+  return`<div class="pad"><div class="pad-n">${nums}</div><div class="pad-o">${ops}</div></div><button class="svb" data-action="${saveAct}" data-lbl="${label||'Simpan'}">${label||'Simpan'}</button>`;
 }
 function evalExpr(e){
   const tk=String(e).match(/\d+|[+\-×÷]/g)||[];
@@ -3398,10 +3411,16 @@ function pressKey(o,k){
   o.expr=e;
 }
 const amtVal=()=>evalExpr(ui.amt.expr);
+/* pilihan nominal sekali ketuk (di bawah layar angka) */
+const QA=[50000,100000,500000,1000000],qaLbl=v=>v>=1e6?(v/1e6)+' jt':(v/1e3)+' rb';
+const quickAmts=extra=>`<div class="chips qa">${extra||''}${QA.map(v=>`<button type="button" class="chip" data-action="q-amt" data-arg="${v}">${qaLbl(v)}</button>`).join('')}</div>`;
 function updateAmt(){
   const e=ui.amt.expr,de=$('#dExpr');if(!de)return;
   de.textContent=e?e.replace(/\d+/g,m=>nf.format(+m)).replace(/-/g,'−'):'0';
-  const v=amtVal();$('#dRes').textContent=/[+\-×÷]/.test(e)?'= '+rp(v):'';
+  const v=amtVal();
+  /* tombol simpan ikut menampilkan nominal yang akan dicatat */
+  const sv=document.querySelector('#sheet .svb');if(sv&&sv.dataset.lbl)sv.textContent=v>0?sv.dataset.lbl+' · '+money(v):sv.dataset.lbl;
+  $('#dRes').textContent=/[+\-×÷]/.test(e)?'= '+rp(v):'';
   let msg='';
   if(ui.sheet==='flow')msg=limitWarn(v);
   else if(ui.sheet==='pay'){const debt=Math.max(0,D.debt[ui.pay.card]||0),bal=D.bal[ui.pay.from]||0;if(v>debt&&v>0)msg='Melebihi tagihan '+rp(debt)+'.';if(v>bal)msg+=(msg?' ':'')+'Saldo '+accName(ui.pay.from)+' cuma '+rp(bal)+'.'}
@@ -3454,7 +3473,7 @@ function flowStep3(){
   const f=ui.flow,c=S.cats.find(x=>x.id===f.cat),a=accById(f.acc);
   return`<div class="sh-h">${f.mode==='edit'?'':backBtn}<h3>${f.mode==='edit'?'Ubah transaksi':f.type==='exp'?'Pengeluaran':'Pemasukan'}</h3>${closeBtn}</div>
   <div class="sel2"><button data-action="fjump" data-arg="1">${a?(isCard(a.id)?shapeIcon(IC.card,hsh(a.id)%10,'cookie6',28):accIcon(a,28)):''}<span>${esc(a?a.name:'Pilih akun')}</span></button><button data-action="fjump" data-arg="2">${c?catIcon(c,28):''}<span>${c?esc(c.name)+(f.sub?' · '+esc(f.sub):''):'Pilih kategori'}</span></button></div>
-  ${amtDisp()}
+  ${amtDisp()}${quickAmts()}
   <div class="row2"><input id="f_date" type="date" data-input="fdate" value="${esc(f.date)}" aria-label="Tanggal"><input id="f_note" type="text" data-input="fnote" placeholder="Catatan (opsional)" value="${esc(f.note)}" aria-label="Catatan"></div>
   ${f.mode==='edit'?'':`<div class="rep-row"><span><b>Ulangi tiap bulan</b><small>Catat otomatis di tanggal yang sama tiap bulan</small></span><button type="button" class="sw-t ${f.rep?'on':''}" data-action="frep" role="switch" aria-checked="${!!f.rep}" aria-label="Ulangi tiap bulan"></button></div>`}
   ${numpad('fsave')}
@@ -3477,7 +3496,7 @@ const cardChips=(act,cur)=>S.cards.length>1?`<div class="chips" style="margin-bo
 /* ---- bayar kartu ---- */
 /* dompet yang terhubung ke kartu: pembayaran dan dana gestun hanya lewat dompet ini */
 const cardWallet=c=>{const w=c&&c.wallet?S.wallets.find(x=>x.id===c.wallet):null;return w?w.id:''};
-const linkedRow=(label,id)=>{const w=accById(id);return`<div class="pk-g" style="margin-top:6px">${label}</div><div class="mini"><span>${w?accIcon(w,24):''} ${esc(accName(id))} <span class="mute">· terhubung ke kartu</span></span><b class="num">${money(D.bal[id]||0)}</b></div>`};
+const linkedRow=(label,id)=>{const w=accById(id);return`<div class="pk-g" style="margin-top:6px">${label}</div><div class="mini"><span class="mini-w">${w?accIcon(w,32):''}<span class="lm"><b>${esc(accName(id))}</b><small>Terhubung ke kartu</small></span></span><b class="num">${money(D.bal[id]||0)}</b></div>`};
 const unlinkedHint='<p class="hint">Kartu ini belum punya dompet terhubung. Atur di Kelola → Kartu → Ubah supaya otomatis.</p>';
 const richest=()=>{const w=S.wallets.slice().sort((a,b)=>(D.bal[b.id]||0)-(D.bal[a.id]||0))[0];return w?w.id:''};
 const richestX=()=>{const w=S.wallets.filter(canXfer).sort((a,b)=>(D.bal[b.id]||0)-(D.bal[a.id]||0))[0];return w?w.id:''};
@@ -3511,7 +3530,7 @@ function xferHTML(){
   const slab=i=>`<div class="xs-c" data-i="${i}"><div class="xs-face" id="xsf${i}" style="${i===0?'top:0':'bottom:0'}">${xferFace(i)}</div><div class="xs-pick" id="xsp${i}"></div></div>`;
   return`<div class="sh-h"><h3>Transfer</h3>${closeBtn}</div>
   <div class="xs" id="xs">${slab(0)}${slab(1)}<button type="button" class="xs-flip" data-action="x-flip" aria-label="Balik arah transfer"><svg id="xsArrow" style="transform:rotate(${X.turns*180}deg)" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button></div>
-  ${amtDisp()}
+  ${amtDisp()}${quickAmts('<button type="button" class="chip" data-action="q-all">Semua saldo</button>')}
   <div class="row2"><input type="date" id="x_date" data-input="x-date" value="${esc(X.date)}" aria-label="Tanggal"><input id="x_note" data-input="x-note" placeholder="Catatan (opsional)" value="${esc(X.note)}" aria-label="Catatan"></div>
   ${numpad('x-save','Transfer')}`;
 }
@@ -3543,13 +3562,14 @@ function gestHTML(){
   <div class="fee-row"><input id="g_fee" data-input="g-fee" inputmode="decimal" placeholder="${G.feeMode==='pct'?'Contoh: 3':'Contoh: 50000'}" value="${esc(G.feeVal)}" aria-label="Nilai fee"><div class="bgroup"><button class="${G.feeMode==='pct'?'on':''}" data-action="g-mode" data-arg="pct">%</button><button class="${G.feeMode==='rp'?'on':''}" data-action="g-mode" data-arg="rp">Rp</button></div></div>
   ${cardWallet(c)?linkedRow('Dana cair ke',cardWallet(c)):`<div class="pk-g">Dana cair ke</div>${walletChips('g-wallet',G.wallet)}${unlinkedHint}`}
   <div class="pk-g">Nominal gestun</div>
-  ${amtDisp()}<div class="prev" id="gprev"></div>
+  ${amtDisp()}${quickAmts()}<div class="prev" id="gprev"></div>
   <div class="row2" style="grid-template-columns:1fr"><input id="g_date" type="date" data-input="g-date" value="${esc(G.date)}" aria-label="Tanggal"></div>
   ${numpad('g-save')}`;
 }
 function updateGest(){
   const G=ui.gest,c=S.cards.find(x=>x.id===G.card),r=gestCalc(),p=$('#gprev');if(!p||!c)return;
-  p.innerHTML=`<div class="pr"><span>Tagihan ${esc(c.name)}</span><b class="num warnc">+${rp(r.cardAmt)}</b></div><div class="pr"><span>Saldo ${esc(accName(G.wallet))}</span><b class="num pos">+${rp(r.inAmt)}</b></div><div class="pr"><span>Biaya admin (Admin · Gestun)</span><b class="num">${rp(r.fee)}</b></div><div class="pr t"><span>Kekayaan bersih</span><b class="num neg">−${rp(r.fee)}</b></div>`;
+  const sg=(v,sgn,cls)=>v?`<b class="num ${cls}">${sgn}${rp(v)}</b>`:`<b class="num mute">${rp(0)}</b>`;
+  p.innerHTML=`<div class="pr"><span>Tagihan ${esc(c.name)}</span>${sg(r.cardAmt,'+','warnc')}</div><div class="pr"><span>Saldo ${esc(accName(G.wallet))}</span>${sg(r.inAmt,'+','pos')}</div><div class="pr"><span>Biaya admin (Admin · Gestun)</span>${sg(r.fee,'','')}</div><div class="pr t"><span>Kekayaan bersih</span>${sg(r.fee,'−','neg')}</div>`;
   const rem=cardInfo(c).remain;let m='';
   if(r.cardAmt>rem)m=`Melebihi sisa limit: sisa ${rp(rem)}.`;
   if(r.nom>0&&r.inAmt<=0)m='Fee lebih besar dari nominal.';
@@ -3566,10 +3586,10 @@ function accdHTML(){
     acts=`<div class="bgroup" style="margin-bottom:6px"><button class="fill" data-action="swipe" data-id="${id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${id}">Gestun</button>`:''}<button class="tonal" data-action="fedit" data-arg="card" data-id="${id}">Ubah</button></div>${limitBlock(a)}`;
   }else{
     const g=S.groups.find(x=>x.id===a.g);
-    head=`<div class="accd-h">${accIcon(a,64)}<div><div class="lbl">${esc(g?g.name:'')}</div><b style="font-size:17px">${esc(a.name)}</b></div><div class="big num" ${mv('s:ab:'+id,D.bal[id]||0)}>${money(D.bal[id]||0)}</div></div>`;
+    head=`<div class="accd-h" style="--c:${walCol(a)}">${colIcon(esc((a.name||'?').charAt(0).toUpperCase()),walCol(a),'squircle',52)}<div class="accd-t"><b>${esc(a.name)}</b><small>${esc([g?g.name:'',a.note].filter(Boolean).join(' · '))}</small></div><div class="big num" ${mv('s:ab:'+id,D.bal[id]||0)}>${money(D.bal[id]||0)}</div></div>`;
     acts=`<div class="bgroup">${canTrx(a)?`<button class="fill" data-action="open-acc" data-id="${id}">+ Catat</button>`:''}${canXfer(a)?`<button class="${canTrx(a)?'tonal':'fill'}" data-action="open-xfer" data-id="${id}">Transfer</button>`:''}<button class="tonal" data-action="fedit" data-arg="wallet" data-id="${id}">Ubah</button></div>`;
   }
-  return`<div class="sh-h"><h3>${card?'Detail kartu':'Detail dompet'}</h3>${closeBtn}</div>${head}${acts}<div class="pk-g" style="margin-top:20px">Riwayat</div>${txList(list)}`;
+  return`<div class="sh-h"><h3>${card?'Detail kartu':'Detail dompet'}</h3>${closeBtn}</div>${head}${acts}<div class="pk-g" style="margin-top:20px">Riwayat</div>${txList(list,id)}`;
 }
 
 /* ---- detail transaksi sistem ---- */
@@ -3626,7 +3646,7 @@ function openForm(kind,id){
 const subRow=(c,name,orig)=>{const sh=((c.sc||{})[orig])||'',v=stkVars(sh?Object.assign({},c,{color:sh}):c);
   return`<div class="sub-row" style="--sbg:${v[0]};--srg:${v[1]}"><input class="sub-ic" maxlength="4" value="${esc(((c.si||{})[orig]||''))}" placeholder="${esc(c.icon||'📦')}" aria-label="Ikon sub-kategori" inputmode="text"><button type="button" class="sub-cb${sh?' set':''}" data-action="subcol" data-hex="${sh}" style="--c:${sh||catHex(c)}" aria-label="Warna sub-kategori" aria-expanded="false"><i></i></button><input class="sub-nm" value="${esc(name)}" data-orig="${esc(orig||'')}" placeholder="Nama sub-kategori" maxlength="30"><button type="button" class="sub-x" data-action="subdel" aria-label="Hapus sub-kategori">×</button></div>`};
 const subPal=cur=>`<div class="sub-pal" role="group" aria-label="Pilih warna sub-kategori"><button type="button" class="sp-f${cur?'':' on'}" data-action="subpick" data-arg="" aria-label="Ikut warna kategori">Ikut kategori</button>${COLS.map(h=>`<button type="button" class="sp-c${h===cur?' on':''}" style="background:${h}" data-action="subpick" data-arg="${h}" aria-label="Warna ${h}"></button>`).join('')}</div>`;
-const subEditor=o=>{const c=o||{icon:'📦',t:'exp',subs:[],si:{},color:COLS[S.cats.length%COLS.length]};return`<div class="f"><span>Sub-kategori</span><div class="subed" id="subEd" style="--sbg:${stkVars(c)[0]};--srg:${stkVars(c)[1]}">${c.subs.map(n=>subRow(c,n,n)).join('')}</div><button type="button" class="sub-add" data-action="subadd">+ Tambah sub-kategori</button><small class="sub-hint">Ikon kosong = ikut ikon kategori. Ketuk titik warna untuk mengganti warna sub-kategori; kosong = ikut warna kategori.</small></div>`};
+const subEditor=o=>{const c=o||{icon:'📦',t:'exp',subs:[],si:{},color:COLS[S.cats.length%COLS.length]};return`<div class="f"><span>Sub-kategori</span><div class="subed" id="subEd" style="--sbg:${stkVars(c)[0]};--srg:${stkVars(c)[1]}">${c.subs.map(n=>subRow(c,n,n)).join('')}</div><button type="button" class="sub-add" data-action="subadd">+ Tambah sub-kategori</button><small class="sub-hint">Ikon dan warna yang kosong ikut kategori.</small></div>`};
 function formHTML(){
   const F=ui.form,k=F.kind,o=F.id?S[FK[k]].find(x=>x.id===F.id):null;
   let b='';
@@ -3641,7 +3661,7 @@ function formHTML(){
     b=fld('Kategori',o?`<input value="${esc(o.name)}" disabled><input type="hidden" name="cat" value="${esc(o.id)}">`:psel('cat',[[null,[['','Pilih kategori…']].concat(free.map(c=>[c.id,c.name]))]],''))+fld('Anggaran per bulan (Rp)',inp('amt',o&&o.budget?nf.format(o.budget):'','data-input="money" inputmode="numeric" placeholder="0"'),'Kartu di beranda terisi air seiring pengeluaran bulan ini.')}
   if(k==='pur')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Darurat" maxlength="24"'))+colorField(o?purCol(o):purNext());
   if(k==='group')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Kas & Bank"'))+colorField(o?grpCol(o):COLS[0]);
-  if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name,grpCol(g)]),o?o.g:(S.groups[0]||{}).id))+fld('Fungsi dompet',sel('use',[['both','Semua'],['trx','Hanya transaksi'],['xfer','Hanya transfer']],o?wUse(o):'both'),'Transaksi = pemasukan dan pengeluaran. Transfer = pindah uang antar dompet. Dompet hanya muncul di pilihan yang sesuai saat mencatat.')+fld('Peruntukan',sel('pu',[['','Tanpa peruntukan']].concat(S.purs.map(q=>[q.id,q.name,purCol(q)]),[['__new','+ Peruntukan baru…']]),o&&o.pu?o.pu:'','data-input="pusel"')+inp('pun','','maxlength="24" placeholder="Nama peruntukan baru" hidden style="margin-top:8px"'),'Dompet dengan peruntukan sama dijumlahkan di dasbor, walau beda bank. Ubah nama dan warna di Kelola → Peruntukan.')+fld('Target (Rp)',inp('tg',o&&o.tg?nf.format(o.tg):'','data-input="money" inputmode="numeric" placeholder="Opsional"'),'Isi kalau kantong ini punya tujuan saldo.')+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
+  if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name,grpCol(g)]),o?o.g:(S.groups[0]||{}).id))+fld('Fungsi dompet',sel('use',[['both','Semua'],['trx','Hanya transaksi'],['xfer','Hanya transfer']],o?wUse(o):'both'),'Menentukan dompet ini muncul di pilihan mana saat mencatat.')+fld('Peruntukan',sel('pu',[['','Tanpa peruntukan']].concat(S.purs.map(q=>[q.id,q.name,purCol(q)]),[['__new','+ Peruntukan baru…']]),o&&o.pu?o.pu:'','data-input="pusel"')+inp('pun','','maxlength="24" placeholder="Nama peruntukan baru" hidden style="margin-top:8px"'),'Dompet dengan peruntukan sama dijumlahkan di dasbor.')+fld('Target (Rp)',inp('tg',o&&o.tg?nf.format(o.tg):'','data-input="money" inputmode="numeric" placeholder="Opsional"'),'Isi kalau kantong ini punya tujuan saldo.')+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
   if(k==='pool')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Plafon Bank"'))+fld('Limit bersama (Rp)',inp('limit',o?nf.format(o.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bersama oleh kartu-kartu dalam grup ini.');
   if(k==='cat'){
     const init=o||{id:'new',icon:'📦',t:'exp',color:COLS[S.cats.length%COLS.length]};
@@ -4070,6 +4090,8 @@ const A={
   'open-pay'(el,arg,id){openPay(id)},
   'p-card'(el,arg,id){ui.pay.card=id;const lw=cardWallet(S.cards.find(x=>x.id===id));if(lw)ui.pay.from=lw;renderSheet()},
   'p-from'(el,arg,id){ui.pay.from=id;renderSheet()},
+  'q-amt'(el,arg){ui.amt.expr=String(+arg||'');updateAmt()},
+  'q-all'(){const v=Math.max(0,Math.round(D.bal[ui.xfer.from]||0));ui.amt.expr=v?String(v):'';updateAmt()},
   'p-full'(){const v=Math.max(0,D.debt[ui.pay.card]||0);ui.amt.expr=v?String(v):'';updateAmt()},
   'p-min'(){const c=S.cards.find(x=>x.id===ui.pay.card),mp=c&&c.minPct!=null?c.minPct:10,v=Math.round(Math.max(0,D.debt[ui.pay.card]||0)*mp/100/1000)*1000;ui.amt.expr=v?String(v):'';updateAmt()},
   'p-save'(){
@@ -4266,7 +4288,7 @@ window.addEventListener('appinstalled',()=>{PWA_EV=null;toast('Aplikasi terpasan
 function pwaRow(){
   const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span><small class="pwa-h" style="margin-top:4px">Mode tampilan: <b>${pwaMode()}</b>${pwaMode()==='layar penuh'?' (bilah status disembunyikan; hapus lalu pasang ulang aplikasi untuk memakai manifest terbaru)':''}</small>`
     :PWA_EV?`<button class="pbtn" data-action="pwainst">Pasang aplikasi</button>`
-    :`<small class="pwa-h">Mode tampilan: <b>${pwaMode()}</b>. Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
+    :`<small class="pwa-h">Di Chrome: menu ⋮ → <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
   return`<div class="setrow" style="display:block"><div><b>Aplikasi layar penuh</b><small>Tanpa bilah alamat browser, seperti aplikasi biasa</small></div><div style="margin-top:10px">${inner}</div></div>`;
 }
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
