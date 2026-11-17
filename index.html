@@ -462,6 +462,10 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .wg-m{flex:1;min-width:0;display:flex;align-items:center;gap:14px;padding:13px 6px 13px 18px;text-align:left;border-radius:14px}
 .wg-m:active{background:rgba(255,255,255,.03)}
 .acc-bar{display:block;flex:none;width:var(--w,4px);height:var(--h,36px);border-radius:99px;background:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 45%,transparent);margin:0 7px 0 5px}
+.acc-bar.pu{background:linear-gradient(to bottom,var(--pc) 0 34%,transparent 34% calc(34% + 2px),var(--c) calc(34% + 2px) 100%);box-shadow:0 0 10px color-mix(in srgb,var(--pc) 55%,transparent),0 0 3px color-mix(in srgb,var(--c) 40%,transparent)}
+.lrow[data-arg] .lm small{white-space:normal;line-height:1.4}
+.pu-chip{display:inline-flex;align-items:center;gap:6px;font-weight:650;color:var(--pc);vertical-align:baseline}
+.pu-chip i{width:8px;height:8px;border-radius:50%;background:var(--pc);box-shadow:0 0 8px 1px color-mix(in srgb,var(--pc) 75%,transparent);flex:none}
 .wg-bar{width:4px;align-self:stretch;min-height:34px;border-radius:99px;background:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 45%,transparent);flex:none}
 .wg-m .lm b{font-size:14px}
 .wg-amt{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -663,7 +667,7 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 .bh-r{display:flex;align-items:center;gap:4px}
 .lrow.srt{cursor:default;will-change:transform}
 .srt-b{display:flex;gap:6px;margin-left:auto;flex:none}
-.kd-b{display:block;width:100%;text-align:left;font:inherit;color:inherit;border-radius:12px;transition:background .2s}
+.kd-b{display:block;width:100%;text-align:left;font:inherit;color:inherit;border-radius:0;transition:background .2s}
 .kd-b:active{background:var(--s3)}.kd-b:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
 .kd-hint{margin:6px 2px 4px;font-size:11.5px;color:var(--mute)}
 .xp-tg{display:flex;align-items:center;gap:6px;margin-top:10px;padding:6px 0;font-size:13px;font-weight:650;color:var(--acc)}
@@ -793,7 +797,7 @@ input:disabled{opacity:.6}
 .dsh-n b{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:650}
 .wg-bar{position:relative}
 .wg-bar.pu{background:linear-gradient(to bottom,var(--pc) 0 34%,transparent 34% calc(34% + 2px),var(--c) calc(34% + 2px) 100%);box-shadow:0 0 10px color-mix(in srgb,var(--pc) 40%,transparent)}
-.pu-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.pu-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px;box-shadow:0 0 8px 1px color-mix(in srgb,var(--pc,transparent) 75%,transparent)}
 .dsh .kd-rb i{transform-origin:left;animation:wsg .8s var(--spring) both}
 
 /* ══ Tanda tangan ═════════════════════════════════════════ */
@@ -1303,7 +1307,7 @@ document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.c
 document.addEventListener('pointermove',e=>{if(HPD){e.preventDefault();hpMove(e)}},{passive:false});
 document.addEventListener('pointerup',()=>{HPD=null});document.addEventListener('pointercancel',()=>{HPD=null});
 /* dompet: hanya garis menyala berwarna (tanpa huruf/foto) */
-const accIcon=(a,size)=>{const c=a?walCol(a):'#7C7C88';return`<i class="acc-bar" style="--c:${c};--h:${Math.round((size||40)*.9)}px;--w:${(size||40)>=56?5:4}px" aria-hidden="true"></i>`};
+const accIcon=(a,size)=>{const c=a?walCol(a):'#7C7C88',q=a?purOf(a):null;return`<i class="acc-bar${q?' pu':''}" style="--c:${c};${q?`--pc:${purCol(q)};`:''}--h:${Math.round((size||40)*.9)}px;--w:${(size||40)>=56?5:4}px" aria-hidden="true"></i>`};
 
 /* ============ ikon garis ============ */
 const sv=(p,w)=>`<svg width="${w||20}" height="${w||20}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
@@ -3082,7 +3086,7 @@ function groupDash(){
   const tot=rows.reduce((a,r)=>a+r.v,0),pos=rows.reduce((a,r)=>a+Math.max(0,r.v),0);
   return`<div class="surface kd dsh"><span class="ws2-k">Total saldo semua kelompok</span><b class="num ws2-v" style="font-size:26px">${money(tot)}</b>
     ${pos>0?`<div class="dsh-split" aria-hidden="true">${rows.filter(r=>r.v>0).map(r=>`<i style="width:${(r.v/pos*100).toFixed(1)}%;background:${grpCol(r.g)}"></i>`).join('')}</div>`:''}
-    <div class="kd-rows">${rows.map(r=>{const v=pos>0?Math.max(0,r.v)/pos*100:0;return`<button type="button" class="kd-r kd-b" data-action="fedit" data-arg="group" data-id="${esc(r.g.id)}"><div class="kd-rh"><b><i class="pu-dot" style="background:${grpCol(r.g)}"></i>${esc(r.g.name)}</b><span>${money(r.v)} <em>/ ${Math.round(v)}%</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${grpCol(r.g)}"></i></div><small class="lbl" style="display:block;margin-top:6px">${r.n} dompet</small></button>`}).join('')}</div><p class="kd-hint">Ketuk baris untuk mengubah</p></div>`;
+    <div class="kd-rows">${rows.map(r=>{const v=pos>0?Math.max(0,r.v)/pos*100:0;return`<button type="button" class="kd-r kd-b" data-action="fedit" data-arg="group" data-id="${esc(r.g.id)}"><div class="kd-rh"><b><i class="pu-dot" style="background:${grpCol(r.g)};--pc:${grpCol(r.g)}"></i>${esc(r.g.name)}</b><span>${money(r.v)} <em>/ ${Math.round(v)}%</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${grpCol(r.g)}"></i></div><small class="lbl" style="display:block;margin-top:6px">${r.n} dompet</small></button>`}).join('')}</div><p class="kd-hint">Ketuk baris untuk mengubah</p></div>`;
 }
 
 /* ---- kelola > kategori: dasbor bulan ini per kategori dan sub-kategori ---- */
@@ -3123,14 +3127,14 @@ function purDash(){
   return`<div class="surface kd dsh" style="margin-bottom:12px"><span class="ws2-k">Saldo per peruntukan</span><b class="num ws2-v" style="font-size:26px">${money(tot)}</b>
     ${pos>0?`<div class="dsh-split" aria-hidden="true">${rows.map(r=>r.v>0?`<i style="width:${(r.v/pos*100).toFixed(1)}%;background:${clr(r)}"></i>`:'').join('')}</div>`:''}
     <div class="kd-rows">${rows.map(r=>{const hasT=r.tg>0,v=hasT?Math.min(100,Math.max(0,r.v)/r.tg*100):(pos>0?Math.max(0,r.v)/pos*100:0),done=hasT&&r.v>=r.tg;
-      return`<${r.q?'button type="button" class="kd-r kd-b" data-action="fedit" data-arg="pur" data-id="'+esc(r.q.id)+'"':'div class="kd-r"'}><div class="kd-rh"><b><i class="pu-dot" style="background:${clr(r)}"></i>${esc(r.n)}</b><span>${money(r.v)} <em>${hasT?'/ '+money(r.tg):'/ '+Math.round(v)+'%'}</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${clr(r)}"></i></div>
+      return`<${r.q?'button type="button" class="kd-r kd-b" data-action="fedit" data-arg="pur" data-id="'+esc(r.q.id)+'"':'div class="kd-r"'}><div class="kd-rh"><b><i class="pu-dot" style="background:${clr(r)};--pc:${clr(r)}"></i>${esc(r.n)}</b><span>${money(r.v)} <em>${hasT?'/ '+money(r.tg):'/ '+Math.round(v)+'%'}</em></span></div><div class="kd-rb"><i style="width:${Math.max(v,r.v>0?3:0).toFixed(1)}%;background:${clr(r)}"></i></div>
       <small class="lbl" style="display:block;margin-top:6px">${hasT?(done?'Target tercapai · ':Math.round(v)+'% dari target · '):''}${r.ws.length?[...r.banks].map(esc).join(', ')+' · '+r.ws.length+' dompet':'Belum ada dompet'}</small></${r.q?'button':'div'}>`}).join('')}</div><p class="kd-hint">Ketuk baris untuk mengubah</p></div>`;
 }
 VIEWS.manage=function(){
   if(ui.mg==='pool')ui.mg='card';
   const k=ui.mg;let rows='';
   if(k==='group')rows=S.groups.map(g=>mrow('group',g.id,colIcon(esc(g.name.charAt(0).toUpperCase()),grpCol(g),'squircle',40),esc(g.name),S.wallets.filter(w=>w.g===g.id).length+' dompet',money(grpBal(g)))).join('');
-  if(k==='wallet'){const wr=w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc((g?g.name:'–')+(purOf(w)?' · '+purOf(w).name:'')+(wUse(w)!=='both'?' · '+USE_LBL[wUse(w)]:'')),money(D.bal[w.id]||0))};
+  if(k==='wallet'){const wr=w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc(g?g.name:'–')+(purOf(w)?` · <span class="pu-chip" style="--pc:${purCol(purOf(w))}"><i></i>${esc(purOf(w).name)}</span>`:'')+(wUse(w)!=='both'?' · '+esc(USE_LBL[wUse(w)]):''),money(D.bal[w.id]||0))};
     const known=S.groups.map(g=>{const ws=S.wallets.filter(w=>w.g===g.id);return ws.length?`<div class="dh">${esc(g.name)}</div>${ws.map(wr).join('')}`:''}).join(''),lost=S.wallets.filter(w=>!S.groups.some(g=>g.id===w.g));
     rows=known+(lost.length?`<div class="dh">Tanpa kelompok</div>${lost.map(wr).join('')}`:'')}
   if(k==='card')rows=cardList();
