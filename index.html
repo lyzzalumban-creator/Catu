@@ -4058,7 +4058,7 @@ function pwaRow(){
   const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span>`
     :PWA_EV?`<button class="pbtn" data-action="pwainst">Pasang aplikasi</button>`
     :`<small class="pwa-h">Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
-  return`<div class="setrow" style="display:block"><div><b>Aplikasi layar penuh</b><small>Tanpa bilah alamat dan bilah sistem, seperti aplikasi biasa</small></div><div style="margin-top:10px">${inner}</div></div>`;
+  return`<div class="setrow" style="display:block"><div><b>Aplikasi layar penuh</b><small>Tanpa bilah alamat browser, seperti aplikasi biasa</small></div><div style="margin-top:10px">${inner}</div></div>`;
 }
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
 </script>
