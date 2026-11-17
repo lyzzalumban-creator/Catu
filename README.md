@@ -1,11 +1,12 @@
 # penniq
 
-Aplikasi pencatat keuangan pribadi (dompet, kartu kredit, transaksi, laporan) dalam satu file `index.html`. Tema hitam dan hijau neon, bahasa Indonesia, dibuat untuk HP.
+Aplikasi pencatat keuangan pribadi (dompet, kartu kredit, transaksi, laporan) dalam tiga berkas: `index.html` (kerangka), `app.css` (gaya), dan `app.js` (logika). Tema hitam dan hijau neon, bahasa Indonesia, dibuat untuk HP.
 
-**Pratinjau:** https://claude.ai/artifact/VVxPyFVG1LV4UxKHhEoip1 (artifact privat, hanya pemilik yang bisa membuka)
+**Pratinjau:** https://claude.ai/artifact/VVxPyFVG1LV4UxKHhEoip1 (artifact privat, hanya pemilik yang bisa membuka; dibuat saat aplikasi masih satu file, jadi tidak otomatis mengikuti perubahan terbaru)
 
 ## Catatan proyek
-- Satu file, tanpa build: `index.html`. Semua gaya dan skrip ada di dalamnya.
+- Tanpa build, langsung dibuka: `index.html` memuat `app.css` dan `app.js` dari folder yang sama. Ketiganya harus dipublikasikan bersama.
+- Menambah berkas baru yang dibutuhkan saat offline? Daftarkan di `INTI` pada `sw.js` dan naikkan `VERSI`.
 - Data tersimpan di HP (localStorage, kunci `kantong.v1`). Jangan ganti nama kunci ini agar data lama tidak hilang.
 - Balasan dan teks aplikasi dalam bahasa Indonesia.
 - Beberapa komponen (tanda tangan, animasi kartu, maskot) diadaptasi dari komponen berlisensi MIT; catatan kredit ada di komentar kode dan harus dipertahankan.
@@ -28,7 +29,7 @@ Butuh Node dan paket `playwright` (Chromium). Yang diuji:
 Setelah mengubah logika hitungan, jalankan uji ini sebelum menggabungkan. Kalau menambah fungsi hitungan baru, tambahkan ujinya di `tests/cases.js`.
 
 ## Pembaruan otomatis
-Saat halaman dibuka (atau saat kembali ke aplikasi), `index.html` mengecek versi terbaru di server dan memuat ulang sendiri kalau ada yang berubah. Sidik jari versi disimpan di kunci `catu.ver`; data keuangan (`kantong.v1`) tidak diubah. Syaratnya, perubahan sudah digabung ke branch yang dipublikasikan GitHub Pages.
+Saat halaman dibuka (atau saat kembali ke aplikasi), aplikasi mengecek versi terbaru di server (gabungan `index.html`, `app.css`, dan `app.js`) dan memuat ulang sendiri kalau ada yang berubah. Berkas CSS/JS diambil dengan `cache: 'reload'` supaya cache browser ikut segar. Sidik jari versi disimpan di kunci `catu.ver`; data keuangan (`kantong.v1`) tidak diubah. Syaratnya, perubahan sudah digabung ke branch yang dipublikasikan GitHub Pages.
 
 ## Dompet terhubung ke kartu kredit
 Setiap kartu punya satu dompet terhubung (field `wallet` pada kartu). Bayar kartu hanya keluar dari dompet itu, dan dana gestun cair ke dompet itu. Kartu lama yang belum punya dompet terhubung tetap bisa dipakai dengan memilih dompet manual, sampai dompetnya diatur lewat Kelola → Kartu → Ubah.
