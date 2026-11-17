@@ -148,6 +148,60 @@ t('limit: melebihi limit memberi sisa negatif', () => {
   eq(cardInfo(S.cards[0]).remain, -1000000);
 });
 
+/* ============ fungsi dompet: transfer saja ============ */
+t('fungsi dompet: aturan pemasukan, pengeluaran, transfer', () => {
+  const both = { id: 'a' }, trx = { id: 'b', use: 'trx' }, xf = { id: 'c', use: 'xfer' };
+  eq([canExp(both), canInc(both), canXfer(both)], [true, true, true]);
+  eq([canExp(trx), canInc(trx), canXfer(trx)], [true, true, false], 'transaksi saja: tidak bisa transfer');
+  eq([canExp(xf), canInc(xf), canXfer(xf)], [false, true, true], 'transfer saja: bisa pemasukan, tidak bisa pengeluaran');
+});
+t('fungsi dompet: pilihan akun pengeluaran menyembunyikan dompet transfer-saja, pemasukan menampilkannya', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'Utama', open: 0 }, { id: 'w2', g: 'g1', name: 'Tabungan', open: 0, use: 'xfer' }] });
+  ui.flow = { mode: 'new', step: 1, type: 'exp', acc: '', cat: '', sub: '', openCat: '', date: '2026-11-17', note: '', id: null, ret: 0 };
+  const exp = flowStep1();
+  ok(exp.includes('data-id="w1"') && !exp.includes('data-id="w2"'), 'pengeluaran: hanya Utama');
+  ui.flow.type = 'inc';
+  const inc = flowStep1();
+  ok(inc.includes('data-id="w1"') && inc.includes('data-id="w2"'), 'pemasukan: Utama dan Tabungan');
+});
+t('fungsi dompet: simpan pengeluaran dari dompet transfer-saja ditolak, pemasukan diterima', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'Utama', open: 0 }, { id: 'w2', g: 'g1', name: 'Tabungan', open: 0, use: 'xfer' }] });
+  ui.amt = { expr: '50000' };
+  ui.flow = { mode: 'new', step: 3, type: 'exp', acc: 'w2', cat: 'k1', sub: '', openCat: '', date: '2026-11-17', note: '', id: null, ret: 0 };
+  A.fsave();
+  eq(S.tx.length, 0, 'pengeluaran ditolak');
+  eq(ui.flow.step, 1, 'kembali ke pilih akun');
+  ui.amt = { expr: '75000' };
+  ui.flow = { mode: 'new', step: 3, type: 'inc', acc: 'w2', cat: 'k2', sub: '', openCat: '', date: '2026-11-17', note: '', id: null, ret: 0 };
+  A.fsave();
+  eq(S.tx.length, 1, 'pemasukan diterima');
+  eq(S.tx[0].t, 'inc'); eq(S.tx[0].acc, 'w2');
+  recalc(); eq(D.bal.w2, 75000);
+});
+t('fungsi dompet: ganti ke Pengeluaran melepas dompet transfer-saja yang terpilih', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'Utama', open: 0 }, { id: 'w2', g: 'g1', name: 'Tabungan', open: 0, use: 'xfer' }] });
+  ui.flow = { mode: 'new', step: 1, type: 'inc', acc: 'w2', cat: '', sub: '', openCat: '', date: '2026-11-17', note: '', id: null, ret: 0 };
+  A.ftype(null, 'exp');
+  eq(ui.flow.acc, '', 'akun dikosongkan'); eq(ui.flow.type, 'exp');
+  ui.flow.acc = 'w1'; A.ftype(null, 'inc');
+  eq(ui.flow.acc, 'w1', 'dompet biasa tetap terpilih');
+});
+t('fungsi dompet: tombol + di dompet transfer-saja membuka Pemasukan', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'Utama', open: 0 }, { id: 'w2', g: 'g1', name: 'Tabungan', open: 0, use: 'xfer' }] });
+  A['open-acc'](null, null, 'w2');
+  eq([ui.flow.type, ui.flow.acc], ['inc', 'w2']);
+  ui.sheet = null;
+  A['open-acc'](null, null, 'w1');
+  eq([ui.flow.type, ui.flow.acc], ['exp', 'w1']);
+  ui.sheet = null;
+});
+t('fungsi dompet: transaksi berulang pengeluaran dari dompet transfer-saja ditolak', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'Utama', open: 0 }, { id: 'w2', g: 'g1', name: 'Tabungan', open: 0, use: 'xfer' }] });
+  const html = (openForm('rec'), formHTML());
+  ok(html.includes('Tabungan'), 'dompet transfer-saja tersedia di daftar akun (untuk pemasukan berulang)');
+  ui.sheet = null;
+});
+
 /* ============ tagihan berulang dan tanggal ============ */
 t('tanggal: monShift lintas tahun', () => {
   eq(monShift('2026-12', 1), '2027-01');
