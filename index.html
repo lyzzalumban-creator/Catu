@@ -356,12 +356,14 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .xch.out .xch-in{animation:xch-out .45s var(--emph) forwards}
 .xch svg{width:176px;height:132px;overflow:visible}
 .xch .mk{animation:xch-hop .5s ease-in-out infinite alternate}
-.xch .bl,.xch .br{animation:xch-up .5s ease-in-out infinite alternate}.xch .br{animation-delay:.25s}
+.xch .bl,.xch .br{transform-box:fill-box;transform-origin:50% 50%}
+.xch .bl{animation:xch-swl .55s ease-in-out infinite alternate}.xch .br{animation:xch-swr .55s ease-in-out infinite alternate}
 .xch b{font-size:16px}.xch small{color:var(--tx2);font-size:12.5px}
 @keyframes xch-in{from{opacity:0;transform:translateY(18px) scale(.8)}to{opacity:1;transform:none}}
 @keyframes xch-out{to{opacity:0;transform:translateY(8px) scale(.96)}}
 @keyframes xch-hop{to{transform:translateY(-7px)}}
-@keyframes xch-up{to{transform:translateY(-6px)}}
+@keyframes xch-swl{from{transform:translateX(-6px) rotate(-6deg)}to{transform:translateX(34px) rotate(6deg)}}
+@keyframes xch-swr{from{transform:translateX(6px) rotate(6deg)}to{transform:translateX(-34px) rotate(-6deg)}}
 @media(prefers-reduced-motion:reduce){.xch .mk,.xch .bl,.xch .br{animation:none}.xch-in{animation-duration:.01s}}
 .xs-gs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 10px 8px}.xs-g{min-height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--bd,rgba(255,255,255,.12));font-size:12.5px;font-weight:650;color:var(--tx2);transition:background .3s var(--emph),color .3s var(--emph)}.xs-g.on{background:var(--acc);color:#0B0B0D;border-color:transparent}
 .xs-row{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:12px;text-align:left}
