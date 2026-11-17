@@ -1358,6 +1358,10 @@ function cardInfo(c){
 const accById=id=>S.wallets.find(x=>x.id===id)||S.cards.find(x=>x.id===id)||null;
 /* nama dompet kembar (mis. 'Darurat' di dua bank) otomatis ditampilkan sebagai 'Darurat · Bank' */
 const wLbl=w=>{const k=(w.name||'').trim().toLowerCase();if(!S.wallets.some(x=>x!==w&&(x.name||'').trim().toLowerCase()===k))return w.name;const g=S.groups.find(x=>x.id===w.g);return g?w.name+' · '+g.name:w.name};
+/* fungsi dompet: 'both' (semua), 'trx' (hanya pemasukan/pengeluaran), 'xfer' (hanya transfer) */
+const wUse=w=>w&&(w.use==='trx'||w.use==='xfer')?w.use:'both';
+const canTrx=w=>wUse(w)!=='xfer',canXfer=w=>wUse(w)!=='trx';
+const USE_LBL={both:'Semua',trx:'Transaksi saja',xfer:'Transfer saja'};
 const accName=id=>{const a=accById(id);return a?(S.wallets.includes(a)?wLbl(a):a.name):''};
 const isCard=id=>S.cards.some(c=>c.id===id);
 function defaultCats(){return[
@@ -1486,7 +1490,7 @@ function normalize(s){
     let q=s.purs.find(x=>x.name.trim().toLowerCase()===t.toLowerCase());
     if(!q){q={id:'pu'+Math.random().toString(36).slice(2,9),name:t,color:COLS[(s.purs.length*3+1)%COLS.length]};s.purs.push(q)}
     w.pu=q.id});
-  s.wallets.forEach(w=>{if(w.pu&&!s.purs.some(x=>x.id===w.pu))w.pu=''});
+  s.wallets.forEach(w=>{if(w.pu&&!s.purs.some(x=>x.id===w.pu))w.pu='';if(w.use!=='trx'&&w.use!=='xfer')delete w.use});
   s.recur=s.recur.filter(r=>r&&r.id&&(r.t==='exp'||r.t==='inc')&&+r.amt>0);s.recur.forEach(r=>{r.day=Math.min(31,Math.max(1,Math.round(+r.day)||1));r.amt=Math.round(+r.amt);r.last=/^\d{4}-\d{2}$/.test(r.last||'')?r.last:today().slice(0,7)});
   s.cats.forEach(c=>{if(c.budget!=null)c.budget=+c.budget>0?Math.round(+c.budget):0});
   /* kategori tanpa warna sama sekali (tanpa pilihan lama): beri warna awal yang tersebar; yang punya pilihan lama dibiarkan */
@@ -2334,7 +2338,7 @@ const grpCol=g=>g.color||PAL[hsh(g.id+'g')%PAL.length][1];
 const walCol=w=>w.color||PAL[hsh(w.id)%PAL.length][1];
 function wgRow(w,i){
   const b=D.bal[w.id]||0;
-  return`<div class="wg-r" style="--c:${walCol(w)};--d:${i*40}ms"><button class="wg-m" data-action="open-accd" data-id="${w.id}"><i class="wg-bar${purOf(w)?' pu':''}"${purOf(w)?` style="--pc:${purCol(purOf(w))}" title="Peruntukan: ${esc(purOf(w).name)}"`:''}></i><span class="lm"><b>${esc(wLbl(w))}</b><small>${esc(w.note||'Ketuk untuk detail')}</small></span><b class="wg-amt ${b<0?'neg':''}" ${mv('wb:'+w.id,b)}>${money(b)}</b></button><button class="wg-add" data-action="open-acc" data-id="${w.id}" aria-label="Catat di ${esc(w.name)}">${IC.plus||'+'}</button></div>`;
+  return`<div class="wg-r" style="--c:${walCol(w)};--d:${i*40}ms"><button class="wg-m" data-action="open-accd" data-id="${w.id}"><i class="wg-bar${purOf(w)?' pu':''}"${purOf(w)?` style="--pc:${purCol(purOf(w))}" title="Peruntukan: ${esc(purOf(w).name)}"`:''}></i><span class="lm"><b>${esc(wLbl(w))}</b><small>${esc(w.note||'Ketuk untuk detail')}${wUse(w)!=='both'?' · '+USE_LBL[wUse(w)]:''}</small></span><b class="wg-amt ${b<0?'neg':''}" ${mv('wb:'+w.id,b)}>${money(b)}</b></button><button class="wg-add" data-action="open-acc" data-id="${w.id}" aria-label="Catat di ${esc(w.name)}">${IC.plus||'+'}</button></div>`;
 }
 const ring=(f,c)=>{const R=15,C=2*Math.PI*R,l=Math.max(.001,Math.min(1,f))*C;return`<span class="wg-ring"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="${R}" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="5"/><circle cx="20" cy="20" r="${R}" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${l.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 20 20)"/></svg></span>`};
 function blkWallets(){
@@ -3105,7 +3109,7 @@ VIEWS.manage=function(){
   if(ui.mg==='pool')ui.mg='card';
   const k=ui.mg;let rows='';
   if(k==='group')rows=S.groups.map(g=>mrow('group',g.id,colIcon(esc(g.name.charAt(0).toUpperCase()),grpCol(g),'squircle',40),esc(g.name),S.wallets.filter(w=>w.g===g.id).length+' dompet',money(grpBal(g)))).join('');
-  if(k==='wallet')rows=S.wallets.map(w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc((g?g.name:'–')+(purOf(w)?' · '+purOf(w).name:'')),money(D.bal[w.id]||0))}).join('');
+  if(k==='wallet')rows=S.wallets.map(w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc((g?g.name:'–')+(purOf(w)?' · '+purOf(w).name:'')+(wUse(w)!=='both'?' · '+USE_LBL[wUse(w)]:'')),money(D.bal[w.id]||0))}).join('');
   if(k==='card')rows=cardList();
   if(k==='pur')rows=purData().filter(r=>r.q).map(r=>mrow('pur',r.q.id,colIcon(esc(r.q.name.charAt(0).toUpperCase()),purCol(r.q),'squircle',40),esc(r.q.name),r.ws.length+' dompet'+(r.banks.size?' · '+[...r.banks].map(esc).join(', '):''),money(r.v))).join('');
   if(k==='rec')rows=S.recur.map(r=>{const c=S.cats.find(x=>x.id===r.cat);return mrow('rec',r.id,catIcon(c,40),esc((c?c.name:'Tanpa kategori')+(r.note?' · '+r.note:'')),'Tiap tanggal '+r.day+' · '+esc(accName(r.acc)),(r.t==='inc'?'+':'−')+money(r.amt))}).join('');
@@ -3278,10 +3282,11 @@ function flowStep1(){
   const f=ui.flow,exp=f.type==='exp';
   let h=`<div class="sh-h"><h3>${f.mode==='edit'?'Ganti akun':'Catat transaksi'}</h3>${f.ret?backBtn:''}${closeBtn}</div>`;
   if(f.mode==='new')h+=`<div class="vtab" id="vtab" data-t="${exp?'exp':'inc'}" role="group"><i class="vt-i" aria-hidden="true"></i><button class="${exp?'on':''}" data-action="ftype" data-arg="exp">Pengeluaran</button><button class="${!exp?'on':''}" data-action="ftype" data-arg="inc">Pemasukan</button></div>`;
-  S.groups.forEach(g=>{const ws=S.wallets.filter(w=>w.g===g.id);if(!ws.length)return;
+  S.groups.forEach(g=>{const ws=S.wallets.filter(w=>w.g===g.id&&(canTrx(w)||w.id===f.acc));if(!ws.length)return;
     h+=`<div class="pk-g">${esc(g.name)}</div>`+ws.map(w=>pickAcc(w.id,'facc',f.acc===w.id,false,money(D.bal[w.id]||0))).join('')});
   if(S.cards.length)h+='<div class="pk-g">Kartu kredit</div>'+S.cards.map(c=>pickAcc(c.id,'facc',f.acc===c.id,!exp,'Sisa '+money(cardInfo(c).remain))).join('');
   if(!S.wallets.length&&!S.cards.length)h+='<p class="empty">Belum ada dompet atau kartu. Tambah dulu di Kelola.</p>';
+  else if(!S.wallets.some(canTrx)&&!S.cards.length)h+='<p class="empty">Belum ada dompet untuk transaksi. Ubah "Fungsi dompet" di Kelola → Dompet.</p>';
   return h;
 }
 function flowStep2(){
@@ -3320,6 +3325,7 @@ const cardWallet=c=>{const w=c&&c.wallet?S.wallets.find(x=>x.id===c.wallet):null
 const linkedRow=(label,id)=>{const w=accById(id);return`<div class="pk-g" style="margin-top:6px">${label}</div><div class="mini"><span>${w?accIcon(w,24):''} ${esc(accName(id))} <span class="mute">· terhubung ke kartu</span></span><b class="num">${money(D.bal[id]||0)}</b></div>`};
 const unlinkedHint='<p class="hint">Kartu ini belum punya dompet terhubung. Atur di Kelola → Kartu → Ubah supaya otomatis.</p>';
 const richest=()=>{const w=S.wallets.slice().sort((a,b)=>(D.bal[b.id]||0)-(D.bal[a.id]||0))[0];return w?w.id:''};
+const richestX=()=>{const w=S.wallets.filter(canXfer).sort((a,b)=>(D.bal[b.id]||0)-(D.bal[a.id]||0))[0];return w?w.id:''};
 function openPay(cardId){ui.pay={card:cardId,from:cardWallet(S.cards.find(x=>x.id===cardId))||richest(),date:today()};ui.amt={expr:''};ui.sheet='pay';renderSheet()}
 function payHTML(){
   const P=ui.pay,c=S.cards.find(x=>x.id===P.card);if(!c)return'';const mp=c.minPct==null?10:c.minPct;
@@ -3338,7 +3344,7 @@ function payHTML(){
    menekan dompet membuat kepingnya tumbuh jadi daftar pilihan. */
 function xSync(){const X=ui.xfer;X.from=X.slots[X.up?1:0];X.to=X.slots[X.up?0:1]}
 function openXfer(from){
-  const f=from||richest(),to=(S.wallets.find(w=>w.id!==f)||{}).id||'';
+  const fw=S.wallets.find(w=>w.id===from),f=fw&&canXfer(fw)?from:richestX(),to=(S.wallets.find(w=>w.id!==f&&canXfer(w))||{}).id||'';
   ui.xfer={slots:[f,to],up:false,turns:0,pick:null,from:f,to,date:today(),note:''};ui.amt={expr:''};ui.sheet='xfer';renderSheet();
 }
 function xferFace(i){
@@ -3406,7 +3412,7 @@ function accdHTML(){
   }else{
     const g=S.groups.find(x=>x.id===a.g);
     head=`<div class="accd-h">${accIcon(a,64)}<div><div class="lbl">${esc(g?g.name:'')}</div><b style="font-size:17px">${esc(a.name)}</b></div><div class="big num" ${mv('s:ab:'+id,D.bal[id]||0)}>${money(D.bal[id]||0)}</div></div>`;
-    acts=`<div class="bgroup"><button class="fill" data-action="open-acc" data-id="${id}">+ Catat</button><button class="tonal" data-action="open-xfer" data-id="${id}">Transfer</button><button class="tonal" data-action="fedit" data-arg="wallet" data-id="${id}">Ubah</button></div>`;
+    acts=`<div class="bgroup">${canTrx(a)?`<button class="fill" data-action="open-acc" data-id="${id}">+ Catat</button>`:''}${canXfer(a)?`<button class="${canTrx(a)?'tonal':'fill'}" data-action="open-xfer" data-id="${id}">Transfer</button>`:''}<button class="tonal" data-action="fedit" data-arg="wallet" data-id="${id}">Ubah</button></div>`;
   }
   return`<div class="sh-h"><h3>${card?'Detail kartu':'Detail dompet'}</h3>${closeBtn}</div>${head}${acts}<div class="pk-g" style="margin-top:20px">Riwayat</div>${txList(list)}`;
 }
@@ -3467,7 +3473,7 @@ const subEditor=o=>{const c=o||{icon:'📦',t:'exp',subs:[],si:{},color:COLS[S.c
 function formHTML(){
   const F=ui.form,k=F.kind,o=F.id?S[FK[k]].find(x=>x.id===F.id):null;
   let b='';
-  if(k==='rec'){const accs=S.wallets.map(w=>[w.id,wLbl(w)]).concat(S.cards.map(c=>[c.id,c.name+' ••'+c.last4+' (kartu)']));
+  if(k==='rec'){const accs=S.wallets.filter(w=>canTrx(w)||(o&&o.acc===w.id)).map(w=>[w.id,wLbl(w)]).concat(S.cards.map(c=>[c.id,c.name+' ••'+c.last4+' (kartu)']));
     const catOpt=t=>S.cats.filter(c=>c.t===t).map(c=>[c.id,c.name]);
     b=fld('Kategori',psel('cat',[[null,[['','Pilih kategori…']]],['Pengeluaran',catOpt('exp')],['Pemasukan',catOpt('inc')]],o?o.cat:''))+
       fld('Akun',sel('acc',[['','Pilih akun…']].concat(accs),o?o.acc:''))+
@@ -3478,7 +3484,7 @@ function formHTML(){
     b=fld('Kategori',o?`<input value="${esc(o.name)}" disabled><input type="hidden" name="cat" value="${esc(o.id)}">`:psel('cat',[[null,[['','Pilih kategori…']].concat(free.map(c=>[c.id,c.name]))]],''))+fld('Anggaran per bulan (Rp)',inp('amt',o&&o.budget?nf.format(o.budget):'','data-input="money" inputmode="numeric" placeholder="0"'),'Kartu di beranda terisi air seiring pengeluaran bulan ini.')}
   if(k==='pur')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Darurat" maxlength="24"'))+colorField(o?purCol(o):purNext());
   if(k==='group')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Kas & Bank"'))+colorField(o?grpCol(o):COLS[0]);
-  if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name,grpCol(g)]),o?o.g:(S.groups[0]||{}).id))+fld('Peruntukan',sel('pu',[['','Tanpa peruntukan']].concat(S.purs.map(q=>[q.id,q.name,purCol(q)]),[['__new','+ Peruntukan baru…']]),o&&o.pu?o.pu:'','data-input="pusel"')+inp('pun','','maxlength="24" placeholder="Nama peruntukan baru" hidden style="margin-top:8px"'),'Dompet dengan peruntukan sama dijumlahkan di dasbor, walau beda bank. Ubah nama dan warna di Kelola → Peruntukan.')+fld('Target (Rp)',inp('tg',o&&o.tg?nf.format(o.tg):'','data-input="money" inputmode="numeric" placeholder="Opsional"'),'Isi kalau kantong ini punya tujuan saldo.')+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
+  if(k==='wallet')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Dompet harian"'))+fld('Keterangan',inp('note',o&&o.note?o.note:'','placeholder="Contoh: Transport & jajan" maxlength="40"'))+colorField(o?walCol(o):COLS[3])+fld('Kelompok',sel('g',S.groups.map(g=>[g.id,g.name,grpCol(g)]),o?o.g:(S.groups[0]||{}).id))+fld('Fungsi dompet',sel('use',[['both','Semua'],['trx','Hanya transaksi'],['xfer','Hanya transfer']],o?wUse(o):'both'),'Transaksi = pemasukan dan pengeluaran. Transfer = pindah uang antar dompet. Dompet hanya muncul di pilihan yang sesuai saat mencatat.')+fld('Peruntukan',sel('pu',[['','Tanpa peruntukan']].concat(S.purs.map(q=>[q.id,q.name,purCol(q)]),[['__new','+ Peruntukan baru…']]),o&&o.pu?o.pu:'','data-input="pusel"')+inp('pun','','maxlength="24" placeholder="Nama peruntukan baru" hidden style="margin-top:8px"'),'Dompet dengan peruntukan sama dijumlahkan di dasbor, walau beda bank. Ubah nama dan warna di Kelola → Peruntukan.')+fld('Target (Rp)',inp('tg',o&&o.tg?nf.format(o.tg):'','data-input="money" inputmode="numeric" placeholder="Opsional"'),'Isi kalau kantong ini punya tujuan saldo.')+fld('Saldo awal (Rp)',inp('open',o&&o.open?nf.format(o.open):'','data-input="money" inputmode="numeric" placeholder="0"'),'Saldo sebelum transaksi pertama yang dicatat.');
   if(k==='pool')b=fld('Nama',inp('name',o?o.name:'','placeholder="Contoh: Plafon Bank"'))+fld('Limit bersama (Rp)',inp('limit',o?nf.format(o.limit):'','data-input="money" inputmode="numeric" placeholder="0"'),'Dipakai bersama oleh kartu-kartu dalam grup ini.');
   if(k==='cat'){
     const init=o||{id:'new',icon:'📦',t:'exp',color:COLS[S.cats.length%COLS.length]};
@@ -3516,7 +3522,7 @@ function saveForm(){
   let rec;
   if(k==='bud'){const c=S.cats.find(x=>x.id===(o?o.id:fv('cat'))),a=num(fv('amt'));if(!c)return toast('Pilih kategori dulu');if(!(a>0))return toast('Isi jumlah anggaran');c.budget=a;closeSheet();commit('Tersimpan');return}
   if(k==='group'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,color:hexOk(fv('color'))?fv('color'):undefined}}
-  if(k==='wallet'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(!fv('g'))return toast('Buat kelompok akun dulu');rec={name:n,note:(fv('note')||'').trim(),color:hexOk(fv('color'))?fv('color'):undefined,g:fv('g'),pu:fv('pu'),tg:num(fv('tg'))||0,open:num(fv('open'))};
+  if(k==='wallet'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(!fv('g'))return toast('Buat kelompok akun dulu');rec={name:n,note:(fv('note')||'').trim(),color:hexOk(fv('color'))?fv('color'):undefined,g:fv('g'),pu:fv('pu'),use:(['trx','xfer'].includes(fv('use'))?fv('use'):undefined),tg:num(fv('tg'))||0,open:num(fv('open'))};
     if(rec.pu==='__new'){const pn=(fv('pun')||'').trim();if(!pn)return toast('Isi nama peruntukan baru');
       let q=S.purs.find(x=>x.name.trim().toLowerCase()===pn.toLowerCase());if(!q){q={id:uid(),name:pn,color:purNext()};S.purs.push(q)}rec.pu=q.id}}
   if(k==='pur'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(S.purs.some(x=>x.id!==F.id&&x.name.trim().toLowerCase()===n.toLowerCase()))return toast('Nama peruntukan sudah ada');
@@ -3806,7 +3812,7 @@ const A={
   'open-new'(){openNew()},
   'fab'(){toggleFab()},
   'fab-go'(el,arg){toggleFab(false);if(arg==='xfer')A['open-xfer'](null,null,undefined);else openNew({type:arg})},
-  'open-acc'(el,arg,id){openNew({acc:id})},
+  'open-acc'(el,arg,id){const w=S.wallets.find(x=>x.id===id);if(w&&!canTrx(w)){A['open-xfer'](null,null,id);return}openNew({acc:id})},
   'open-accd'(el,arg,id){ui.accd={id};ui.sheet='accd';renderSheet()},
   'wl-sel'(el,arg,id){ui.wlSel=ui.wlSel===id?'':id;applyWl();
     const c=ui.wlSel&&S.cards.find(x=>x.id===ui.wlSel);
@@ -3833,7 +3839,7 @@ const A={
   },
   mascotset(el,arg){S.settings.mascot=arg;persist();applyMascot();render()},
   wlcolor(el,arg){S.settings.wl=arg;persist();render()},
-  'open-xfer'(el,arg,id){if(S.wallets.length<2)return toast('Butuh minimal 2 dompet');openXfer(id)},
+  'open-xfer'(el,arg,id){if(S.wallets.filter(canXfer).length<2)return toast(S.wallets.length<2?'Butuh minimal 2 dompet':'Butuh minimal 2 dompet yang boleh transfer');openXfer(id)},
   qpay(){if(!S.cards.length)return toast('Belum ada kartu kredit');openPay(S.cards[0].id)},
   qgest(){if(!gestOn())return toast('Menu Gestun nonaktif. Aktifkan di Atur');if(!S.cards.length)return toast('Belum ada kartu kredit');openGest(S.cards[0].id)},
   swipe(el,arg,id){openNew({acc:id})},
@@ -3891,7 +3897,7 @@ const A={
   'x-open'(el,arg){
     const X=ui.xfer,xs=document.getElementById('xs'),i=+arg;if(!X||!xs||X.pick!==null)return;
     X.pick=i;const payer=X.up?1:0;
-    const rows=S.wallets.map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(wLbl(w))}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
+    const rows=S.wallets.filter(w=>canXfer(w)||X.slots.includes(w.id)).map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(wLbl(w))}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
     document.getElementById('xsp'+i).innerHTML=`<div class="xs-ph"><span>${i===payer?'Dari':'Ke'}</span><button type="button" class="xs-x" data-action="x-close" aria-label="Tutup">✕</button></div><div class="xs-list">${rows}</div>`;
     xs.classList.add('pk');
     xs.querySelectorAll('.xs-c').forEach(c=>c.classList.add(+c.dataset.i===i?'on':'sq'));
@@ -4051,13 +4057,14 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
 
 /* ---- pasang sebagai aplikasi layar penuh (PWA) ---- */
 let PWA_EV=null;
+const pwaMode=()=>{try{return matchMedia('(display-mode: fullscreen)').matches?'layar penuh':(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)?'standalone':matchMedia('(display-mode: minimal-ui)').matches?'minimal-ui':'browser'}catch(e){return'browser'}};
 const pwaApp=()=>{try{return matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();PWA_EV=e;if(ui.view==='set')render()});
 window.addEventListener('appinstalled',()=>{PWA_EV=null;toast('Aplikasi terpasang');if(ui.view==='set')render()});
 function pwaRow(){
-  const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span>`
+  const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span><small class="pwa-h" style="margin-top:4px">Mode tampilan: <b>${pwaMode()}</b>${pwaMode()==='layar penuh'?' (bilah status disembunyikan; hapus lalu pasang ulang aplikasi untuk memakai manifest terbaru)':''}</small>`
     :PWA_EV?`<button class="pbtn" data-action="pwainst">Pasang aplikasi</button>`
-    :`<small class="pwa-h">Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
+    :`<small class="pwa-h">Mode tampilan: <b>${pwaMode()}</b>. Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
   return`<div class="setrow" style="display:block"><div><b>Aplikasi layar penuh</b><small>Tanpa bilah alamat browser, seperti aplikasi biasa</small></div><div style="margin-top:10px">${inner}</div></div>`;
 }
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
