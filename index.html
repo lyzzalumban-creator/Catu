@@ -4051,13 +4051,14 @@ let rzT=0;window.addEventListener('resize',()=>{clearTimeout(rzT);rzT=setTimeout
 
 /* ---- pasang sebagai aplikasi layar penuh (PWA) ---- */
 let PWA_EV=null;
+const pwaMode=()=>{try{return matchMedia('(display-mode: fullscreen)').matches?'layar penuh':(matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)?'standalone':matchMedia('(display-mode: minimal-ui)').matches?'minimal-ui':'browser'}catch(e){return'browser'}};
 const pwaApp=()=>{try{return matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();PWA_EV=e;if(ui.view==='set')render()});
 window.addEventListener('appinstalled',()=>{PWA_EV=null;toast('Aplikasi terpasang');if(ui.view==='set')render()});
 function pwaRow(){
-  const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span>`
+  const ok=pwaApp(),inner=ok?`<span class="pwa-ok">Sedang berjalan sebagai aplikasi</span><small class="pwa-h" style="margin-top:4px">Mode tampilan: <b>${pwaMode()}</b>${pwaMode()==='layar penuh'?' (bilah status disembunyikan; hapus lalu pasang ulang aplikasi untuk memakai manifest terbaru)':''}</small>`
     :PWA_EV?`<button class="pbtn" data-action="pwainst">Pasang aplikasi</button>`
-    :`<small class="pwa-h">Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
+    :`<small class="pwa-h">Mode tampilan: <b>${pwaMode()}</b>. Buka menu ⋮ di Chrome, lalu pilih <b>Instal aplikasi</b> atau <b>Tambahkan ke layar utama</b>.</small>`;
   return`<div class="setrow" style="display:block"><div><b>Aplikasi layar penuh</b><small>Tanpa bilah alamat browser, seperti aplikasi biasa</small></div><div style="margin-top:10px">${inner}</div></div>`;
 }
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})})}
