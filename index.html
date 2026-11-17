@@ -660,6 +660,9 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 /* kategori ringkas */
 .dsh.cp .kd-rows{margin-top:10px}
 .dsh.cp .kd-r{padding:8px 0 7px}.dsh.cp .kd-rh{margin-bottom:6px}
+.bh-r{display:flex;align-items:center;gap:4px}
+.lrow.srt{cursor:default;will-change:transform}
+.srt-b{display:flex;gap:6px;margin-left:auto;flex:none}
 .kd-b{display:block;width:100%;text-align:left;font:inherit;color:inherit;border-radius:12px;transition:background .2s}
 .kd-b:active{background:var(--s3)}.kd-b:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
 .kd-hint{margin:6px 2px 4px;font-size:11.5px;color:var(--mute)}
@@ -2916,7 +2919,25 @@ VIEWS.an=function(){
 /* ---- kelola ---- */
 const EMPTY_MG={wallet:'Belum ada dompet. Buat dompet untuk rekening bank, e-wallet, atau tunai.',cat:'Belum ada kategori.',rec:'Belum ada transaksi berulang. Contohnya gaji, cicilan, atau langganan bulanan.',group:'Belum ada kelompok. Kelompokkan dompet per bank, misalnya BCA atau Jago.',pur:'Belum ada peruntukan. Buat satu, misalnya Darurat atau Tabungan, lalu pilih di formulir dompet.',card:'Belum ada kartu kredit. Tambah kartu untuk memantau limit dan tagihan.'};
 const MG=[['wallet','Dompet'],['cat','Kategori'],['rec','Berulang'],['group','Kelompok'],['pur','Peruntukan'],['card','Kartu & limit']];
-const mrow=(kind,id,ico,a,b,c)=>`<button class="lrow" data-action="fedit" data-arg="${kind}" data-id="${id}">${ico}<span class="lm"><b>${a}</b>${b?`<small>${b}</small>`:''}</span>${c?`<span class="lr"><b>${c}</b></span>`:''}</button>`;
+/* urutan yang bisa diubah: dompet (dalam satu kelompok), kelompok, kategori (dalam satu jenis) */
+const SORTABLE=['wallet','group','cat'];
+function peerIds(kind,id){const col=S[FK[kind]]||[],o=col.find(x=>x.id===id);if(!o)return[];
+  return col.filter(x=>kind==='wallet'?x.g===o.g:kind==='cat'?x.t===o.t:true).map(x=>x.id)}
+const mrow=(kind,id,ico,a,b,c)=>{
+  if(ui.mgSort&&SORTABLE.includes(kind)){const ps=peerIds(kind,id),i=ps.indexOf(id);
+    return`<div class="lrow srt" data-sid="${id}">${ico}<span class="lm"><b>${a}</b>${b?`<small>${b}</small>`:''}</span><span class="srt-b"><button type="button" class="mini-b" data-action="mvup" data-arg="${kind}" data-id="${id}" ${i<=0?'disabled':''} aria-label="Naikkan ${esc(String(a).replace(/<[^>]*>/g,''))}">↑</button><button type="button" class="mini-b" data-action="mvdn" data-arg="${kind}" data-id="${id}" ${i>=ps.length-1?'disabled':''} aria-label="Turunkan ${esc(String(a).replace(/<[^>]*>/g,''))}">↓</button></span></div>`}
+  return`<button class="lrow" data-action="fedit" data-arg="${kind}" data-id="${id}">${ico}<span class="lm"><b>${a}</b>${b?`<small>${b}</small>`:''}</span>${c?`<span class="lr"><b>${c}</b></span>`:''}</button>`};
+/* gerakkan satu langkah, dengan animasi pegas pada baris yang bergeser */
+function mvItem(kind,id,dir){
+  const col=S[FK[kind]],ps=peerIds(kind,id),i=ps.indexOf(id),j=i+dir;if(i<0||j<0||j>=ps.length)return;
+  const a=col.findIndex(x=>x.id===id),b=col.findIndex(x=>x.id===ps[j]);
+  const before={};document.querySelectorAll('[data-sid]').forEach(e=>{before[e.dataset.sid]=e.getBoundingClientRect().top});
+  [col[a],col[b]]=[col[b],col[a]];persist();render();
+  if(RM())return;
+  document.querySelectorAll('[data-sid]').forEach(e=>{const d=before[e.dataset.sid];if(d==null)return;const dy=d-e.getBoundingClientRect().top;if(!dy)return;
+    e.style.transition='none';e.style.transform='translateY('+dy+'px)';void e.offsetHeight;e.style.transition='transform .5s var(--spring)';e.style.transform='';
+    setTimeout(()=>{e.style.transition=''},560)});
+}
 
 /* ---- kelola > dompet: grafik Pareto (dompet mana yang menyimpan sebagian besar uang) ---- */
 let PC=null;
@@ -3109,16 +3130,19 @@ VIEWS.manage=function(){
   if(ui.mg==='pool')ui.mg='card';
   const k=ui.mg;let rows='';
   if(k==='group')rows=S.groups.map(g=>mrow('group',g.id,colIcon(esc(g.name.charAt(0).toUpperCase()),grpCol(g),'squircle',40),esc(g.name),S.wallets.filter(w=>w.g===g.id).length+' dompet',money(grpBal(g)))).join('');
-  if(k==='wallet')rows=S.wallets.map(w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc((g?g.name:'–')+(purOf(w)?' · '+purOf(w).name:'')+(wUse(w)!=='both'?' · '+USE_LBL[wUse(w)]:'')),money(D.bal[w.id]||0))}).join('');
+  if(k==='wallet'){const wr=w=>{const g=S.groups.find(x=>x.id===w.g);return mrow('wallet',w.id,accIcon(w,40),esc(w.name),esc((g?g.name:'–')+(purOf(w)?' · '+purOf(w).name:'')+(wUse(w)!=='both'?' · '+USE_LBL[wUse(w)]:'')),money(D.bal[w.id]||0))};
+    const known=S.groups.map(g=>{const ws=S.wallets.filter(w=>w.g===g.id);return ws.length?`<div class="dh">${esc(g.name)}</div>${ws.map(wr).join('')}`:''}).join(''),lost=S.wallets.filter(w=>!S.groups.some(g=>g.id===w.g));
+    rows=known+(lost.length?`<div class="dh">Tanpa kelompok</div>${lost.map(wr).join('')}`:'')}
   if(k==='card')rows=cardList();
   if(k==='pur')rows=purData().filter(r=>r.q).map(r=>mrow('pur',r.q.id,colIcon(esc(r.q.name.charAt(0).toUpperCase()),purCol(r.q),'squircle',40),esc(r.q.name),r.ws.length+' dompet'+(r.banks.size?' · '+[...r.banks].map(esc).join(', '):''),money(r.v))).join('');
   if(k==='rec')rows=S.recur.map(r=>{const c=S.cats.find(x=>x.id===r.cat);return mrow('rec',r.id,catIcon(c,40),esc((c?c.name:'Tanpa kategori')+(r.note?' · '+r.note:'')),'Tiap tanggal '+r.day+' · '+esc(accName(r.acc)),(r.t==='inc'?'+':'−')+money(r.amt))}).join('');
   if(k==='cat'){const sec=t=>{const M=catMonth(t);return S.cats.filter(c=>c.t===t).map(c=>mrow('cat',c.id,catIcon(c,34),esc(c.name),c.subs.length?esc(c.subs.join(', ')):'Tanpa sub-kategori',M.cats[c.id]?money(M.cats[c.id]):'')).join('')};
     rows=`<div class="dh">Pengeluaran</div>${sec('exp')}<div class="dh">Pemasukan</div>${sec('inc')}`}
-  const lbl=MG.find(x=>x[0]===k)[1];
-  return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></div>
+  const lbl=MG.find(x=>x[0]===k)[1],srt=!!ui.mgSort&&SORTABLE.includes(k);
+  const sortHint={wallet:'Ketuk ↑ ↓ untuk memindahkan dompet dalam kelompoknya. Urutan ini dipakai di beranda dan pilihan dompet.',group:'Ketuk ↑ ↓ untuk memindahkan kelompok. Urutan ini dipakai di beranda.',cat:'Ketuk ↑ ↓ untuk memindahkan kategori dalam jenisnya. Urutan ini dipakai di pilihan kategori.'}[k];
+  return`<section class="blk"><div class="blk-h"><h2>Kelola</h2><span class="bh-r">${SORTABLE.includes(k)?`<button class="tbtn" data-action="mgsort" aria-pressed="${srt}">${srt?'Selesai':'Urutkan'}</button>`:''}<button class="tbtn" data-action="fnew" data-arg="${k==='card'?'card':k}">+ ${k==='card'?'Kartu':lbl}</button></span></div>
     <div class="chips fit" style="margin-bottom:12px">${MG.map(m=>`<button class="chip ${k===m[0]?'on':''}" data-action="mgtab" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
-    ${k==='wallet'?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'?catDash():''}${k==='group'?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}${(k==='group'&&S.groups.length)||(k==='pur'&&S.purs.length)?'':`<div class="surface ${k==='cat'?'cl':''}">${rows||`<p class="empty">${EMPTY_MG[k]||'Belum ada.'}</p>`}</div>`}</section>`;
+    ${srt?`<p class="kd-hint" style="margin:0 2px 10px">${sortHint}</p>`:''}${k==='wallet'&&!srt?paretoBlk():''}${k==='pur'?purDash():''}${k==='rec'?recDash():''}${k==='cat'&&!srt?catDash():''}${k==='group'&&!srt?groupDash():''}${k==='card'?cardDash()+'<div class="blk-h" style="margin-top:18px"><h2 style="font-size:16px">Kartu per grup</h2><button class="tbtn" data-action="fnew" data-arg="pool">+ Grup limit</button></div>':''}${(k==='group'&&S.groups.length&&!srt)||(k==='pur'&&S.purs.length)?'':`<div class="surface ${k==='cat'?'cl':''}">${rows||`<p class="empty">${EMPTY_MG[k]||'Belum ada.'}</p>`}</div>`}</section>`;
 };
 
 /* ---- atur ---- */
@@ -3745,7 +3769,7 @@ const A={
   sigpre(el,arg){S.settings.sigMin=+arg;persist();render()},
   sigdemo(){askSign(S.settings.sigMin,null,true)},
   sigcancel(){closeSign()},
-  nav(el,arg){const ch=ui.view!==arg;ui.view=arg;if(arg==='home')ui.bwSeen={};if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
+  nav(el,arg){const ch=ui.view!==arg;ui.view=arg;ui.mgSort=false;if(arg==='home')ui.bwSeen={};if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
   'sync-tap'(){if(gdAuto())gdLogin();else if(S.settings.gd.cid)toast('Aktifkan cadangan Drive di Atur');else{ui.view='set';render();window.scrollTo(0,0)}},
   'gd-login'(){gdLogin()},
   'gd-now'(){GD.act='now';setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');gdClear();render();toast('Tercadangkan ke Drive')}).catch(e=>{gdFail(e);toast(e.message);render()})},
@@ -3807,7 +3831,10 @@ const A={
     if(bd){bd.classList.add(arg>old?'sl-in-r':'sl-in-l');setTimeout(()=>bd.classList.remove('sl-in-r','sl-in-l'),500)}
   },
   muts(){ui.mutS=!ui.mutS;if(!ui.mutS)ui.mutQ='';render();if(ui.mutS){const i=$('#mutq');if(i)i.focus()}},
-  mgtab(el,arg){ui.mg=arg;render()},
+  mgtab(el,arg){ui.mg=arg;ui.mgSort=false;render()},
+  mgsort(){ui.mgSort=!ui.mgSort;render()},
+  mvup(el,arg,id){mvItem(arg,id,-1)},
+  mvdn(el,arg,id){mvItem(arg,id,1)},
   'sheet-close'(){closeSheet()},
   'open-new'(){openNew()},
   'fab'(){toggleFab()},
