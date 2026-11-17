@@ -883,7 +883,7 @@ input:disabled{opacity:.6}
 .kg-h{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:10px 4px 6px}
 .kg-h b{display:block;font-size:14px}.kg-h small{display:block;color:var(--mute);font-size:12px;margin-top:2px;line-height:1.35}
 .kg-e{font-size:12.5px;color:var(--acc);font-weight:650}
-.hp-pv{height:46px;border-radius:15px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .12s}
+.hp-pv{display:block;width:100%;border:0;text-align:left;cursor:pointer;font:inherit;height:46px;border-radius:15px;position:relative;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);transition:background .12s}
 .hp-pv b{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:650;letter-spacing:.3px}
 .hp{--hh:120;--ss:80%;--ll:56%}
 .hp-row{display:grid;grid-template-columns:74px 1fr;align-items:center;gap:10px;margin-top:14px}
@@ -894,7 +894,10 @@ input:disabled{opacity:.6}
 .hp-sl.sat{background:linear-gradient(90deg,hsl(var(--hh) 0% var(--ll)),hsl(var(--hh) 100% var(--ll)))}
 .hp-sl.lig{background:linear-gradient(90deg,hsl(var(--hh) var(--ss) 8%),hsl(var(--hh) var(--ss) 50%),hsl(var(--hh) var(--ss) 94%))}
 .hp-th{position:absolute;top:50%;width:24px;height:24px;border-radius:50%;border:3.5px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.4);transform:translate(-50%,-50%);pointer-events:none}
-.hp-hx{font:inherit;font-size:14px;letter-spacing:.04em;text-transform:uppercase;padding:9px 12px}
+.hp-hx{font:inherit;font-size:14px;letter-spacing:.02em;padding:9px 12px}
+.hp-top{display:flex;gap:10px;align-items:stretch}.hp-top .hp-pv{flex:1;min-width:0}.hp-top .hp-hx{width:132px;flex:none}
+.hp-cp{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:11.5px;font-weight:650;opacity:.6}
+.hp-tip{display:block;margin:8px 2px 0;font-size:11.5px;line-height:1.4;color:var(--mute)}
 .hp-pre{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-top:12px}
 .hp-tg{display:flex;align-items:center;gap:6px;margin:14px 2px 0;padding:4px 0;font-size:13px;font-weight:650;color:var(--acc)}
 .hp-tg svg{transition:transform .4s var(--spring)}.hp.open .hp-tg svg{transform:rotate(180deg)}
@@ -1267,6 +1270,18 @@ const hexInk=h=>{const n=parseInt(h.slice(1),16);return((n>>16&255)*.299+(n>>8&2
 /* pemilih warna: pratinjau + tiga slider (rona, kejenuhan, kecerahan) + kode hex + 50 warna siap pakai */
 const hex2hsl=h=>{const n=parseInt(h.slice(1),16),r=(n>>16&255)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn,l=(mx+mn)/2;
   const sa=d===0?0:d/(1-Math.abs(2*l-1));return[Math.round(hexHue(h)),Math.round(sa*100),Math.round(l*100)]};
+/* kolom warna menerima: #RRGGBB, RRGGBB, #abc, rgb(r,g,b) / "r g b", hsl(h,s,l), dan nama warna (Indonesia atau Inggris) */
+const COLOR_NAMES={'merah':'#EF4444','red':'#EF4444','oranye':'#FB923C','jingga':'#FB923C','orange':'#FB923C','kuning':'#FBBF24','yellow':'#FBBF24','lime':'#A8F552','hijau muda':'#A8F552','hijau':'#22C55E','green':'#22C55E','mint':'#5BE49B','toska':'#2DD4BF','teal':'#2DD4BF','biru muda':'#38BDF8','cyan':'#38BDF8','biru':'#3B82F6','blue':'#3B82F6','biru tua':'#1E3A8A','navy':'#1E3A8A','nila':'#818CF8','indigo':'#818CF8','ungu':'#A78BFA','purple':'#A78BFA','violet':'#A78BFA','magenta':'#E879F9','pink':'#F472B6','merah muda':'#F472B6','marun':'#7F1D1D','maroon':'#7F1D1D','cokelat':'#A16207','coklat':'#A16207','brown':'#A16207','krem':'#D6B88A','emas':'#D4AF37','gold':'#D4AF37','perak':'#A1A1AA','silver':'#A1A1AA','abu':'#71717A','abu-abu':'#71717A','gray':'#71717A','grey':'#71717A','hitam':'#27272A','black':'#27272A','putih':'#FAFAFA','white':'#FAFAFA','zaitun':'#4D7C0F','olive':'#4D7C0F'};
+const COLOR_HINTS=['Merah','Oranye','Kuning','Lime','Hijau','Mint','Toska','Biru muda','Biru','Biru tua','Nila','Ungu','Magenta','Pink','Marun','Cokelat','Krem','Emas','Perak','Abu-abu','Hitam','Putih','Zaitun'];
+function parseColor(t){
+  const v=String(t||'').trim().toLowerCase().replace(/\s+/g,' ');if(!v)return null;
+  if(COLOR_NAMES[v])return COLOR_NAMES[v];
+  let m=v.match(/^#?([0-9a-f]{6})$/);if(m)return'#'+m[1].toUpperCase();
+  m=v.match(/^#?([0-9a-f]{3})$/);if(m)return'#'+m[1].split('').map(x=>x+x).join('').toUpperCase();
+  m=v.match(/^(?:rgb\s*\(?)?\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*[, ]\s*(\d{1,3})\s*\)?$/);
+  if(m){const a=[m[1],m[2],m[3]].map(Number);if(a.every(n=>n<=255))return'#'+a.map(n=>n.toString(16).padStart(2,'0')).join('').toUpperCase()}
+  m=v.match(/^hsl\(\s*(\d{1,3})\s*[, ]\s*(\d{1,3})%?\s*[, ]\s*(\d{1,3})%?\s*\)$/);if(m)return hsl2hex(+m[1]%360,Math.min(100,+m[2]),Math.min(100,+m[3]));
+  return null}
 const HP_HUES=[2,25,46,75,140,172,200,228,265,325];
 const CAT_AUTO=[2,205,46,145,265,25,172,325,228,75];
 const HP_TONES=[[75,82],[85,60],[78,47],[65,32]];
@@ -1278,11 +1293,11 @@ function colorField(cur){
   const pos={h:hsl[0]/360,s:hsl[1]/100,l:(hsl[2]-HP_LMIN)/(HP_LMAX-HP_LMIN)},nowv={h:hsl[0],s:hsl[1],l:hsl[2]},mx={h:360,s:100,l:HP_LMAX},mn={h:0,s:0,l:HP_LMIN};
   const sl=(k,lab,cls)=>`<div class="hp-row"><label>${lab}</label><div class="hp-sl ${cls}" data-sk="${k}" role="slider" aria-label="${lab}" aria-valuemin="${mn[k]}" aria-valuemax="${mx[k]}" aria-valuenow="${nowv[k]}"><i class="hp-th" style="left:${(clamp(pos[k],0,1)*100).toFixed(2)}%;background:${hex}"></i></div></div>`;
   return`<div class="f"><span>Warna</span><div class="hp" data-hex="${hex}" data-h="${hsl[0]}" data-s="${hsl[1]}" data-l="${hsl[2]}" style="--hh:${hsl[0]};--ss:${hsl[1]}%;--ll:${hsl[2]}%">
-    <div class="hp-pv" style="background:${hex}"><b style="color:${hexInk(hex)}">${hex}</b></div>
+    <div class="hp-top"><button type="button" class="hp-pv" data-action="hpcopy" style="background:${hex};color:${hexInk(hex)}" aria-label="Salin kode warna"><b style="color:${hexInk(hex)}">${hex}</b><span class="hp-cp">Salin</span></button><input class="hp-hx" value="${hex}" maxlength="30" list="hp_nm" placeholder="Kode atau nama" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Kode atau nama warna" data-input="hphex"><datalist id="hp_nm">${COLOR_HINTS.map(n=>`<option value="${n}">`).join('')}</datalist></div>
+    <small class="hp-tip">Ketik kode (#1A2B3C, #abc, rgb 255 136 0) atau nama warna (merah, biru muda). Ketuk kotak warna untuk menyalin kodenya.</small>
     <div class="hp-pre">${HP_GRID.map(c=>`<button type="button" class="hp-s ${hex===c?'on':''}" style="background:${c}" data-action="pcol" data-arg="${c}" aria-label="Warna ${c}"></button>`).join('')}</div>
     <button type="button" class="hp-tg" data-action="hptog" aria-expanded="false">Atur manual<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-    <div class="hp-adv"><div class="hp-adv-in">${sl('h','Rona','hue')}${sl('s','Kejenuhan','sat')}${sl('l','Kecerahan','lig')}
-      <div class="hp-row"><label>Kode hex</label><input class="hp-hx" value="${hex}" maxlength="7" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Kode hex warna" data-input="hphex"></div></div></div>
+    <div class="hp-adv"><div class="hp-adv-in">${sl('h','Rona','hue')}${sl('s','Kejenuhan','sat')}${sl('l','Kecerahan','lig')}</div></div>
   </div><input type="hidden" name="color" value="${esc(cur||'')}"></div>`;
 }
 /* terapkan keadaan HSL di dataset ke semua bagian pemilih */
@@ -3968,6 +3983,7 @@ const A={
   ctheme(el,arg){const h=$('#panel [name=theme]');if(h)h.value=arg;el.parentElement.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b===el));updateCardPrev()},
   xptog(el){ui.cdSub=!ui.cdSub;el.classList.toggle('open',ui.cdSub);el.setAttribute('aria-expanded',ui.cdSub);const b=el.nextElementSibling;if(b)b.classList.toggle('open',ui.cdSub)},
   hptog(el){const r=el.closest('.hp'),o=r.classList.toggle('open');el.setAttribute('aria-expanded',o)},
+  hpcopy(el){const hex=el.closest('.hp').dataset.hex;try{navigator.clipboard.writeText(hex).then(()=>toast('Kode '+hex+' disalin'),()=>toast('Salin manual: '+hex))}catch(e){toast('Salin manual: '+hex)}},
   pcol(el,arg){hpSet(el.closest('.hp'),arg)},
   kureset(el){const r=el.closest('.ku');kuSet(r,+r.dataset.f0,false)},
   subadd(){const ed=$('#subEd');if(!ed)return;const o=ui.form&&ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const ic=($('#panel [name=icon]')||{}).value||(o&&o.icon)||'📦';ed.insertAdjacentHTML('beforeend',subRow({icon:ic.trim()||'📦',si:{}},'',''));const n=ed.lastElementChild.querySelector('.sub-nm');n&&n.focus()},
@@ -4010,7 +4026,7 @@ document.addEventListener('click',e=>{
 });
 function onInput(e){
   const el=e.target,h=el.dataset&&el.dataset.input;if(!h)return;
-  if(h==='hphex'){let v=el.value.trim().toUpperCase();if(v&&v[0]!=='#')v='#'+v;const root=el.closest('.hp');if(hexOk(v))hpSet(root,v,'hex');else if(e.type==='change')el.value=root.dataset.hex}
+  if(h==='hphex'){const v=parseColor(el.value),root=el.closest('.hp');if(v){hpSet(root,v,'hex');if(e.type==='change')el.value=v}else if(e.type==='change')el.value=root.dataset.hex}
   else if(h==='pusel'){const n=$('#f_pun');if(n){n.hidden=el.value!=='__new';if(!n.hidden)n.focus()}}
   else if(h==='money'){const n=num(el.value);el.value=n?nf.format(n):''}
   else if(h==='mutq'){ui.mutQ=el.value;ui.mutDay={};const b=$('#mutBody');if(b)b.innerHTML=mutBody()}
