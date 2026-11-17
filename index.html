@@ -350,6 +350,21 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .xs-ph{display:flex;align-items:center;justify-content:space-between;height:32px;padding-left:10px;font-size:12px;color:var(--tx2)}
 .xs-x{width:30px;height:30px;border-radius:50%;color:var(--tx2);font-size:14px}
 .xs-list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+/* sorak transfer: maskot memegang batang dompet asal & tujuan */
+.xch{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;z-index:300}
+.xch-in{display:flex;flex-direction:column;align-items:center;gap:6px;padding:18px 26px 16px;border-radius:26px;background:color-mix(in srgb,var(--s2) 94%,transparent);box-shadow:0 18px 50px rgba(0,0,0,.55);animation:xch-in .6s var(--spring) both}
+.xch.out .xch-in{animation:xch-out .45s var(--emph) forwards}
+.xch svg{width:176px;height:132px;overflow:visible}
+.xch .mk{animation:xch-hop .5s ease-in-out infinite alternate}
+.xch .bl,.xch .br{transform-box:fill-box;transform-origin:50% 50%}
+.xch .bl{animation:xch-swl .55s ease-in-out infinite alternate}.xch .br{animation:xch-swr .55s ease-in-out infinite alternate}
+.xch b{font-size:16px}.xch small{color:var(--tx2);font-size:12.5px}
+@keyframes xch-in{from{opacity:0;transform:translateY(18px) scale(.8)}to{opacity:1;transform:none}}
+@keyframes xch-out{to{opacity:0;transform:translateY(8px) scale(.96)}}
+@keyframes xch-hop{to{transform:translateY(-7px)}}
+@keyframes xch-swl{from{transform:translateX(-6px) rotate(-6deg)}to{transform:translateX(34px) rotate(6deg)}}
+@keyframes xch-swr{from{transform:translateX(6px) rotate(6deg)}to{transform:translateX(-34px) rotate(-6deg)}}
+@media(prefers-reduced-motion:reduce){.xch .mk,.xch .bl,.xch .br{animation:none}.xch-in{animation-duration:.01s}}
 .xs-gs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 10px 8px}.xs-g{min-height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--bd,rgba(255,255,255,.12));font-size:12.5px;font-weight:650;color:var(--tx2);transition:background .3s var(--emph),color .3s var(--emph)}.xs-g.on{background:var(--acc);color:#0B0B0D;border-color:transparent}
 .xs-row{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:12px;text-align:left}
 .xs-row:active{background:var(--s3)}
@@ -3783,6 +3798,20 @@ function askSign(amt,done,demo){
 }
 function closeSign(){clearTimeout(SIGT);if(SIGM){SIGM.destroy();SIGM=null}const e=document.getElementById('sigov');if(e)e.remove()}
 
+function xCheer(fw,tw,amt){
+  const c=MK.find(m=>m.id===S.settings.mascotChar)||MK[0],d=EYT_SHAPES[c.shape]||EYT_SHAPES.Ball,n='xc'+(mkN++);
+  const base=EYT_STYLES[c.eyes]||EYT_STYLES.Slant,sc=c.eyeScale||1.4,w=base.w*sc,h=base.h*sc,g=EYT_GAP*Math.max(1,sc*.8)*EYT_R;
+  const defs=c.grad?`<linearGradient id="${n}" x1="0" y1="0" x2="1" y2="1">${c.grad.map((col,i)=>`<stop offset="${Math.round(i/(c.grad.length-1)*100)}%" stop-color="${col}"/>`).join('')}</linearGradient>`:'';
+  const hap=x=>`<path d="M${(x-w*.58).toFixed(1)} ${(50+h*.16).toFixed(1)} Q${x} ${(50-h*.4).toFixed(1)} ${(x+w*.58).toFixed(1)} ${(50+h*.16).toFixed(1)}" fill="none" stroke="${c.ink}" stroke-width="5" stroke-linecap="round"/>`;
+  const fc=walCol(fw),tc=walCol(tw),bar=(x,col,cls)=>`<g class="${cls}"><rect x="${x}" y="42" width="14" height="64" rx="7" fill="${col}" style="filter:drop-shadow(0 0 8px ${col})"/></g>`;
+  const el=document.createElement('div');el.className='xch';el.setAttribute('role','status');
+  el.innerHTML=`<div class="xch-in"><svg viewBox="0 0 176 132" aria-hidden="true"><defs>${defs}</defs>
+    <g class="mk"><g transform="translate(48 34) scale(.8)"><path d="${d}" fill="${c.grad?`url(#${n})`:c.fill}"/>${hap(50-g)}${hap(50+g)}</g>
+    ${bar(28,fc,'bl')}${bar(134,tc,'br')}</svg>
+    <b>Transfer berhasil!</b><small>${esc(wLbl(fw))} → ${esc(wLbl(tw))} · ${money(amt)}</small></div>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.classList.add('out'),2300);setTimeout(()=>el.remove(),2800);
+}
 function xPanel(i){
   const X=ui.xfer,payer=X.up?1:0,all=S.wallets.filter(w=>canXfer(w)||X.slots.includes(w.id));
   const gs=S.groups.filter(g=>all.some(w=>w.g===g.id));
@@ -3969,7 +3998,12 @@ const A={
     xSync();if(!X.from||!X.to||X.from===X.to)return toast('Pilih dompet asal dan tujuan yang berbeda');
     if(sigGate(amt,()=>A['x-save']()))return;
     S.tx.push({id:uid(),d:X.date||today(),t:'xfer',acc:X.from,to:X.to,amt,cat:'',sub:'',note:X.note.trim()});
-    closeSheet();commit('Transfer tersimpan');
+    const fw=S.wallets.find(w=>w.id===X.from),tw=S.wallets.find(w=>w.id===X.to);
+    closeSheet();commit(window.mascot&&S.settings.mascot!=='off'?'':'Transfer tersimpan');
+    if(window.mascot&&S.settings.mascot!=='off'){
+      mascot.happy(2500);
+      if(fw&&tw)xCheer(fw,tw,amt);
+    }
   },
   'open-gest'(el,arg,id){openGest(id)},
   'g-card'(el,arg,id){ui.gest.card=id;const lw=cardWallet(S.cards.find(x=>x.id===id));if(lw)ui.gest.wallet=lw;renderSheet()},
