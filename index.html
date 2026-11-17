@@ -1092,10 +1092,20 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .mk-tag{margin-top:6px;font-size:12px;font-weight:650;color:var(--mute)}
 .mk-tag.new{padding:5px 12px;border-radius:99px;background:var(--accC);color:var(--onAccC)}
 /* bungkus */
-.mk-packw{display:grid;place-items:center;padding:6px 0 4px}
-.mk-pack{animation:mk-shake .9s ease-in-out both;filter:drop-shadow(0 10px 22px rgba(168,245,82,.28))}
-@keyframes mk-shake{0%{transform:rotate(0)}15%{transform:rotate(-9deg) translateX(-3px)}30%{transform:rotate(8deg) translateX(3px)}45%{transform:rotate(-7deg)}60%{transform:rotate(6deg)}75%{transform:rotate(-3deg) scale(1.06)}100%{transform:rotate(0) scale(1.14);opacity:.2}}
-.mk-hero.tear::after{content:'';position:absolute;z-index:-1;left:50%;top:50%;width:150px;height:150px;margin:-95px 0 0 -75px;border-radius:50%;background:radial-gradient(closest-side,rgba(168,245,82,.4),transparent);animation:mk-pulse .9s ease-in-out infinite alternate}
+.mk-packw{display:grid;place-items:center;padding:10px 0 6px}
+.mk-pack{overflow:visible;filter:drop-shadow(0 12px 24px rgba(168,245,82,.28))}
+.mk-pack g{transform-box:fill-box}
+.pk-all{transform-origin:50% 60%;animation:pk-shake 1.5s ease-in-out both}
+.pk-top{transform-origin:0 100%;animation:pk-tear 1.5s cubic-bezier(.4,0,.6,1) both}
+.pk-body{transform-origin:50% 100%;animation:pk-body 1.5s ease-in both}
+.pk-light{transform-box:fill-box;transform-origin:50% 50%;opacity:0;animation:pk-light 1.5s ease-out both}
+.pk-sheen{animation:pk-sheen 1.5s linear both}
+@keyframes pk-shake{0%{transform:rotate(0) scale(1)}8%{transform:rotate(-7deg) translateX(-3px)}16%{transform:rotate(6deg) translateX(3px)}24%{transform:rotate(-6deg)}32%{transform:rotate(5deg)}40%{transform:rotate(-2deg) scale(1.06)}52%,100%{transform:rotate(0) scale(1.08)}}
+@keyframes pk-tear{0%,42%{transform:none;opacity:1}58%{transform:translate(6px,-6px) rotate(8deg);opacity:1}100%{transform:translate(52px,-64px) rotate(38deg);opacity:0}}
+@keyframes pk-body{0%,50%{opacity:1;transform:none}100%{opacity:0;transform:scale(1.1,1.16)}}
+@keyframes pk-light{0%,44%{opacity:0;transform:scale(.3,.2)}58%{opacity:1;transform:scale(1,1)}100%{opacity:0;transform:scale(1.9,3.2)}}
+@keyframes pk-sheen{from{transform:translateX(-30px)}to{transform:translateX(120px)}}
+.mk-hero.tear::after{content:'';position:absolute;z-index:-1;left:50%;top:50%;width:190px;height:190px;margin:-105px 0 0 -95px;border-radius:50%;background:radial-gradient(closest-side,rgba(168,245,82,.4),transparent);animation:mk-pulse .75s ease-in-out infinite alternate}
 @keyframes mk-pulse{from{opacity:.4;transform:scale(.85)}to{opacity:1;transform:scale(1.15)}}
 /* hasil bungkus */
 .mk-rays{position:absolute;z-index:-1;left:50%;top:22px;width:330px;height:330px;margin-left:-165px;border-radius:50%;background:repeating-conic-gradient(from 0deg,var(--rc) 0 7deg,transparent 7deg 18deg);opacity:.15;-webkit-mask:radial-gradient(closest-side,#000 8%,transparent 72%);mask:radial-gradient(closest-side,#000 8%,transparent 72%);animation:mk-spin 28s linear infinite;pointer-events:none}
@@ -1129,7 +1139,7 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .mk-entry b{display:block;font-size:14.5px;font-weight:700}
 .mk-entry .go{flex:none;color:var(--mute);display:grid;place-items:center}
 .mk-entry .go svg{width:18px;height:18px}
-@media (prefers-reduced-motion:reduce){.mk-float,.mk-rays,.mk-hero.tear::after{animation:none}}
+@media (prefers-reduced-motion:reduce){.mk-float,.mk-rays,.mk-hero.tear::after,.pk-all,.pk-sheen{animation:none}}
 @keyframes pet-caret {
   50% { opacity: 0; }}
 @media (max-height:760px){.pad{--kh:46px}.disp .expr{font-size:34px}.disp{min-height:46px}}
@@ -1553,10 +1563,29 @@ function mkOpen(){
   persist();return{c,isNew};
 }
 function packArt(){
-  const crimp=(n,dy)=>Array.from({length:n},(_,i)=>i%2?`l10 ${-dy}`:`l10 ${dy}`).join(' ');
-  const crimpR=(n,dy)=>Array.from({length:n},(_,i)=>i%2?`l-10 ${dy}`:`l-10 ${-dy}`).join(' ');
-  const body=`M14 10 ${crimp(7,5)} L86 10 L86 124 ${crimpR(7,5)} L14 124 Z`;
-  return`<svg class="mk-pack" viewBox="0 0 100 134" width="112" aria-hidden="true"><defs><linearGradient id="pkg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2A3D12"/><stop offset="1" stop-color="#0A1004"/></linearGradient><linearGradient id="pks" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path d="${body}" fill="url(#pkg)" stroke="rgba(168,245,82,.55)" stroke-width="1.2" stroke-linejoin="round"/><path d="M14 10 ${crimp(7,5)} L86 10 L86 26 L14 26 Z" fill="rgba(168,245,82,.12)"/><path d="M30 26 L58 124 L74 124 L46 26 Z" fill="url(#pks)"/><text x="50" y="43" text-anchor="middle" font-size="9.5" font-weight="800" fill="#A8F552" letter-spacing="2.6" font-family="sans-serif">MASKOT</text><rect x="33" y="55" width="34" height="34" rx="11" fill="#A8F552"/><rect x="42" y="66" width="5" height="12" rx="2.5" fill="#0B1400"/><rect x="53" y="66" width="5" height="12" rx="2.5" fill="#0B1400"/><text x="50" y="110" text-anchor="middle" font-size="7.5" font-weight="700" fill="#D9F5B4" fill-opacity=".7" letter-spacing="1.4" font-family="sans-serif">BUNGKUS ACAK</text></svg>`;
+  const zig=(x0,x1,y,dy,n)=>{const w=(x1-x0)/n;return Array.from({length:n},(_,i)=>`L${(x0+w*(i+1)).toFixed(1)} ${i%2?y:y+dy}`).join(' ')};
+  const zigR=(x0,x1,y,dy,n)=>{const w=(x1-x0)/n;return Array.from({length:n},(_,i)=>`L${(x1-w*(i+1)).toFixed(1)} ${i%2?y:y+dy}`).join(' ')};
+  const top=`M16 13 ${zig(16,104,13,-6,8)} L104 38 L16 38 Z`;
+  const body=`M16 38 L104 38 L104 156 ${zigR(16,104,156,6,8)} L16 156 Z`;
+  const ribs=Array.from({length:15},(_,i)=>`<rect x="${(20+i*5.6).toFixed(1)}" y="12" width="1.4" height="24" fill="#000" opacity=".22"/>`).join('');
+  const spark=(x,y,r)=>`<path d="M${x} ${y-r}Q${x} ${y} ${x+r} ${y}Q${x} ${y} ${x} ${y+r}Q${x} ${y} ${x-r} ${y}Q${x} ${y} ${x} ${y-r}Z" fill="#E4FFB8"/>`;
+  return`<svg class="mk-pack" viewBox="0 0 120 172" width="138" aria-hidden="true"><defs>
+<linearGradient id="pkg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3B5718"/><stop offset=".55" stop-color="#16240A"/><stop offset="1" stop-color="#0A1004"/></linearGradient>
+<linearGradient id="pkt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9FB7D"/><stop offset="1" stop-color="#6FBF1F"/></linearGradient>
+<linearGradient id="pks" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="pkl"><stop offset="0" stop-color="#F4FFD6"/><stop offset=".45" stop-color="#A8F552" stop-opacity=".8"/><stop offset="1" stop-color="#A8F552" stop-opacity="0"/></radialGradient>
+<radialGradient id="pke"><stop offset="0" stop-color="#A8F552" stop-opacity=".35"/><stop offset="1" stop-color="#A8F552" stop-opacity="0"/></radialGradient>
+<clipPath id="pkc"><path d="${body}"/></clipPath></defs>
+<g class="pk-all">
+<g class="pk-body"><path d="${body}" fill="url(#pkg)" stroke="rgba(168,245,82,.6)" stroke-width="1.2" stroke-linejoin="round"/>
+<g clip-path="url(#pkc)"><circle cx="60" cy="96" r="44" fill="url(#pke)"/><path class="pk-sheen" d="M22 38 L52 38 L30 156 L0 156 Z" fill="url(#pks)"/></g>
+<circle cx="60" cy="96" r="30" fill="none" stroke="rgba(168,245,82,.3)" stroke-width="1" stroke-dasharray="2 4"/>
+<rect x="43" y="79" width="34" height="34" rx="11" fill="#A8F552"/><rect x="51" y="90" width="5.5" height="12" rx="2.75" fill="#0B1400"/><rect x="63.5" y="90" width="5.5" height="12" rx="2.75" fill="#0B1400"/>
+${spark(26,70,5)}${spark(95,118,4)}${spark(92,62,3)}
+<text x="60" y="58" text-anchor="middle" font-size="10" font-weight="800" fill="#A8F552" letter-spacing="3.2" font-family="sans-serif">MASKOT</text>
+<text x="60" y="144" text-anchor="middle" font-size="7.5" font-weight="700" fill="#D9F5B4" fill-opacity=".75" letter-spacing="1.6" font-family="sans-serif">BUNGKUS ACAK</text></g>
+<g class="pk-top"><path d="${top}" fill="url(#pkt)" stroke="rgba(11,20,0,.35)" stroke-width="1" stroke-linejoin="round"/>${ribs}<path d="M16 38 L104 38" stroke="rgba(11,20,0,.45)" stroke-width="1" stroke-dasharray="3 2.5"/></g>
+<ellipse class="pk-light" cx="60" cy="38" rx="58" ry="22" fill="url(#pkl)"/></g></svg>`;
 }
 function koleksiHTML(){
   const st=S.settings,M=ui.mk||{phase:'idle'},cur=MK.find(c=>c.id===st.mascotChar)||MK[0],P=mkPacks();
@@ -3990,7 +4019,7 @@ const A={
     if(!ui.mk||ui.mk.phase!=='idle')return;
     const res=mkOpen();if(!res)return toast('Belum ada bungkus');
     ui.mk={phase:'tearing',res};renderSheet();mkTop();
-    setTimeout(()=>{if(ui.sheet==='koleksi'&&ui.mk){ui.mk.phase='reveal';renderSheet();mkTop();if(window.mascot)mascot.happy(900)}},1000);
+    setTimeout(()=>{if(ui.sheet==='koleksi'&&ui.mk){ui.mk.phase='reveal';renderSheet();mkTop();if(window.mascot)mascot.happy(900)}},1500);
   },
   'mk-done'(){ui.mk={phase:'idle'};renderSheet();mkTop()},
   'mk-use'(el,arg,id){
