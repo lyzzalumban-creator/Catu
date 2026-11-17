@@ -950,7 +950,16 @@ input:disabled{opacity:.6}
 .subed{display:flex;flex-direction:column;gap:8px}
 .sub-row{display:flex;align-items:center;gap:8px}
 .sub-row .sub-ic{flex:none;width:52px;height:52px;padding:0;text-align:center;font-size:24px;border-radius:16px;background:var(--sbg,var(--s3));box-shadow:inset 0 0 0 1.8px var(--srg,var(--line2))}
-.sub-row .sub-nm{flex:1;height:52px}
+.sub-row .sub-nm{flex:1;min-width:0;height:52px}
+.sub-cb{flex:none;width:36px;height:52px;border-radius:14px;background:var(--s2);display:grid;place-items:center}
+.sub-cb i{width:20px;height:20px;border-radius:99px;background:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 55%,transparent)}
+.sub-cb:not(.set) i{box-shadow:none;outline:2px dashed color-mix(in srgb,var(--c) 70%,transparent);outline-offset:2px;background:color-mix(in srgb,var(--c) 40%,transparent)}
+.sub-cb:active{background:var(--s3)}
+.sub-pal{display:flex;flex-wrap:wrap;gap:7px;padding:10px 4px 6px;animation:sp-in .3s var(--spring) both}
+.sp-c{width:28px;height:28px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}.sp-c.on{box-shadow:0 0 0 2px var(--s1),0 0 0 4px #fff}
+.sp-f{height:28px;padding:0 12px;border-radius:99px;border:1px dashed var(--line2);font-size:12.5px;font-weight:650;color:var(--tx2)}.sp-f.on{color:var(--acc);border-color:var(--acc)}
+@keyframes sp-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.sub-pal{animation:none}}
 .sub-x{flex:none;width:44px;height:52px;border-radius:14px;background:var(--s2);color:var(--tx3);font-size:20px;line-height:1}
 .sub-x:active{background:#3a1c20;color:#FF9A9A}
 .sub-add{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;margin-top:2px;border-radius:99px;background:var(--s2);box-shadow:inset 0 0 0 1px var(--line2);font-weight:650;font-size:14px;color:var(--acc)}
@@ -1285,7 +1294,9 @@ const catIconX=(content,c,size)=>{const t=c&&c.t==='inc'?'inc':'exp';
   if(stkBadge())return`<span class="shi bd" style="--sz:${size}px;--c:${catHex(c)};--oc:${hexInk(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b><i class="bdg ${t}">${t==='inc'?BDG_UP:BDG_DN}</i></span>`;
   return`<span class="shi rg" style="--sz:${size}px;--c:${TYPE_BG[t]};--oc:${TYPE_FG[t]};--rc:${ringFit(catHex(c))}"><svg class="shp" viewBox="0 0 100 100" aria-hidden="true"><path d="${shapePath('squircle')}"/></svg><b>${content}</b></span>`};
 const catIcon=(c,size)=>catIconX(c?esc(c.icon):'📦',c,size);
-const txIcon=(c,t,size)=>c&&t.sub&&c.si&&c.si[t.sub]?catIconX(esc(c.si[t.sub]),c,size):catIcon(c,size);
+/* warna sub-kategori (opsional, c.sc[nama]); kosong = ikut warna kategori */
+const subC=(c,sn)=>c&&sn&&c.sc&&/^#[0-9a-f]{6}$/i.test(c.sc[sn]||'')?Object.assign({},c,{color:c.sc[sn]}):c;
+const txIcon=(c,t,size)=>{const cs=subC(c,t.sub);return c&&t.sub&&c.si&&c.si[t.sub]?catIconX(esc(c.si[t.sub]),cs,size):catIconX(c?esc(c.icon):'📦',cs,size)};
 const hexOk=h=>/^#[0-9a-f]{6}$/i.test(h||'');
 function darkTint(h){const n=parseInt(h.slice(1),16),f=x=>Math.round(x*.22+10).toString(16).padStart(2,'0');return'#'+f(n>>16&255)+f(n>>8&255)+f(n&255)}
 const colIcon=(ch,hex,shape,size)=>shapeIconC(ch,darkTint(hex),hex,shape,size);
@@ -1337,6 +1348,7 @@ function hpApply(root,from){
   const hx=root.querySelector('.hp-hx');if(hx&&from!=='hex')hx.value=hex;
   root.querySelectorAll('.hp-s').forEach(x=>x.classList.toggle('on',x.dataset.arg===hex));
   const hid=root.parentElement.querySelector('[name=color]');if(hid)hid.value=hex;
+  document.querySelectorAll('#subEd .sub-row').forEach(subSync);
   if($('#catPrev'))updateCatPrev();
 }
 function hpSet(root,hex,from){hex=hex.toUpperCase();const v=hex2hsl(hex);root.dataset.h=v[0];root.dataset.s=v[1];root.dataset.l=v[2];root.dataset.xh=hex;hpApply(root,from)}
@@ -1540,6 +1552,7 @@ function normalize(s){
   s.wallets.forEach(w=>{if(w.pu&&!s.purs.some(x=>x.id===w.pu))w.pu='';if(w.use!=='trx'&&w.use!=='xfer')delete w.use});
   s.recur=s.recur.filter(r=>r&&r.id&&(r.t==='exp'||r.t==='inc')&&+r.amt>0);s.recur.forEach(r=>{r.day=Math.min(31,Math.max(1,Math.round(+r.day)||1));r.amt=Math.round(+r.amt);r.last=/^\d{4}-\d{2}$/.test(r.last||'')?r.last:today().slice(0,7)});
   s.cats.forEach(c=>{if(c.budget!=null)c.budget=+c.budget>0?Math.round(+c.budget):0});
+  s.cats.forEach(c=>{if(c.sc&&typeof c.sc==='object'){Object.keys(c.sc).forEach(k=>{if(!hexOk(c.sc[k])||!(c.subs||[]).includes(k))delete c.sc[k]})}else delete c.sc});
   /* kategori tanpa warna sama sekali (tanpa pilihan lama): beri warna awal yang tersebar; yang punya pilihan lama dibiarkan */
   s.cats.forEach((c,i)=>{if(hexOk(c.color)||c.col!=null)return;c.color=hsl2hex(CAT_AUTO[i%CAT_AUTO.length],82,i<CAT_AUTO.length?60:48)});
   s.cards.forEach(c=>{if(c.minPct==null)c.minPct=10;if(!c.wallet||!s.wallets.some(w=>w.id===c.wallet))c.wallet=''});
@@ -3148,7 +3161,7 @@ function catDash(){
     ${M.tot>0?`<div class="dsh-split" aria-hidden="true">${rows.map(k=>`<i style="width:${(M.cats[k]/M.tot*100).toFixed(1)}%;background:${cc(k).clr}"></i>`).join('')}</div>`:''}
     ${rows.length?`<div class="kd-rows">${rows.slice(0,3).map(k=>{const o=cc(k);return`<div class="kd-r"><div class="kd-rh"><b>${esc(o.n)}</b><span>${money(M.cats[k])} <em>/ ${Math.round(M.cats[k]/M.tot*100)}%</em></span></div>${bar(M.cats[k],o.clr)}</div>`}).join('')}</div>
     ${subs.length?`<button type="button" class="xp-tg ${open?'open':''}" data-action="xptog" aria-expanded="${open}">Sub-kategori teratas<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-    <div class="xp ${open?'open':''}"><div class="xp-in"><div class="kd-rows" style="margin-top:2px">${subs.map(k=>{const[id,sb]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b><span class="dsh-ic">${o.c?catIconX(esc((o.c.si&&o.c.si[sb])||o.c.icon||'📦'),o.c,22):''}</span>${esc(o.n)} › ${sb?esc(sb):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div></div></div>`:''}`:'<p class="empty" style="margin:12px 0 4px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
+    <div class="xp ${open?'open':''}"><div class="xp-in"><div class="kd-rows" style="margin-top:2px">${subs.map(k=>{const[id,sb]=k.split('\u0001'),o=cc(id);return`<div class="kd-r"><div class="kd-rh"><b><span class="dsh-ic">${o.c?catIconX(esc((o.c.si&&o.c.si[sb])||o.c.icon||'📦'),subC(o.c,sb),22):''}</span>${esc(o.n)} › ${sb?esc(sb):'Tanpa sub'}</b><span>${money(M.subs[k])} <em>/ ${Math.round(M.subs[k]/M.tot*100)}%</em></span></div>${bar(M.subs[k],o.clr)}</div>`}).join('')}</div></div></div>`:''}`:'<p class="empty" style="margin:12px 0 4px">Belum ada transaksi berkategori bulan ini.</p>'}</div>`;
 }
 
 /* ---- peruntukan: daftar bernama + warna, dipakai lintas bank ---- */
@@ -3254,7 +3267,7 @@ function subPop(){
   const tile=(label,val,ico)=>`<button class="cat ${cur===val?'on':''}" data-action="fsub" data-arg="${esc(val)}">${ico}<span>${esc(label)}</span></button>`;
   return`<div class="ov ov2" data-action="fsubclose"></div><div class="panel2" id="panel2"><div class="handle"><i></i></div>
     <div class="sh-h"><div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0">${catIcon(c,40)}<h3 style="font-size:18px">Pilih sub-kategori<small style="display:block;font-size:12.5px;color:var(--mute);font-weight:500;margin-top:2px">${esc(c.name)}</small></h3></div><button class="ibtn sm" data-action="fsubclose" aria-label="Tutup">${IC.x}</button></div>
-    <div class="grid4">${tile('Tanpa sub','',catIconX('⊘',c,60))}${c.subs.map(sn=>tile(sn,sn,catIconX(esc((c.si&&c.si[sn])||c.icon||'📦'),c,60))).join('')}</div></div>`;
+    <div class="grid4">${tile('Tanpa sub','',catIconX('⊘',c,60))}${c.subs.map(sn=>tile(sn,sn,catIconX(esc((c.si&&c.si[sn])||c.icon||'📦'),subC(c,sn),60))).join('')}</div></div>`;
 }
 function renderSheet(){
   const el=$('#sheet');
@@ -3537,8 +3550,10 @@ function openForm(kind,id){
   const o=id?S[FK[kind]].find(x=>x.id===id):null;
   ui.accd=null;ui.form={kind,id:id||null,bg:o&&o.bg?o.bg:null};ui.sheet='form';renderSheet();
 }
-const subRow=(c,name,orig)=>`<div class="sub-row"><input class="sub-ic" maxlength="4" value="${esc(((c.si||{})[orig]||''))}" placeholder="${esc(c.icon||'📦')}" aria-label="Ikon sub-kategori" inputmode="text"><input class="sub-nm" value="${esc(name)}" data-orig="${esc(orig||'')}" placeholder="Nama sub-kategori" maxlength="30"><button type="button" class="sub-x" data-action="subdel" aria-label="Hapus sub-kategori">×</button></div>`;
-const subEditor=o=>{const c=o||{icon:'📦',t:'exp',subs:[],si:{},color:COLS[S.cats.length%COLS.length]};return`<div class="f"><span>Sub-kategori</span><div class="subed" id="subEd" style="--sbg:${stkVars(c)[0]};--srg:${stkVars(c)[1]}">${c.subs.map(n=>subRow(c,n,n)).join('')}</div><button type="button" class="sub-add" data-action="subadd">+ Tambah sub-kategori</button><small class="sub-hint">Ikon kosong = ikut ikon kategori.</small></div>`};
+const subRow=(c,name,orig)=>{const sh=((c.sc||{})[orig])||'',v=stkVars(sh?Object.assign({},c,{color:sh}):c);
+  return`<div class="sub-row" style="--sbg:${v[0]};--srg:${v[1]}"><input class="sub-ic" maxlength="4" value="${esc(((c.si||{})[orig]||''))}" placeholder="${esc(c.icon||'📦')}" aria-label="Ikon sub-kategori" inputmode="text"><button type="button" class="sub-cb${sh?' set':''}" data-action="subcol" data-hex="${sh}" style="--c:${sh||catHex(c)}" aria-label="Warna sub-kategori" aria-expanded="false"><i></i></button><input class="sub-nm" value="${esc(name)}" data-orig="${esc(orig||'')}" placeholder="Nama sub-kategori" maxlength="30"><button type="button" class="sub-x" data-action="subdel" aria-label="Hapus sub-kategori">×</button></div>`};
+const subPal=cur=>`<div class="sub-pal" role="group" aria-label="Pilih warna sub-kategori"><button type="button" class="sp-f${cur?'':' on'}" data-action="subpick" data-arg="" aria-label="Ikut warna kategori">Ikut kategori</button>${COLS.map(h=>`<button type="button" class="sp-c${h===cur?' on':''}" style="background:${h}" data-action="subpick" data-arg="${h}" aria-label="Warna ${h}"></button>`).join('')}</div>`;
+const subEditor=o=>{const c=o||{icon:'📦',t:'exp',subs:[],si:{},color:COLS[S.cats.length%COLS.length]};return`<div class="f"><span>Sub-kategori</span><div class="subed" id="subEd" style="--sbg:${stkVars(c)[0]};--srg:${stkVars(c)[1]}">${c.subs.map(n=>subRow(c,n,n)).join('')}</div><button type="button" class="sub-add" data-action="subadd">+ Tambah sub-kategori</button><small class="sub-hint">Ikon kosong = ikut ikon kategori. Ketuk titik warna untuk mengganti warna sub-kategori; kosong = ikut warna kategori.</small></div>`};
 function formHTML(){
   const F=ui.form,k=F.kind,o=F.id?S[FK[k]].find(x=>x.id===F.id):null;
   let b='';
@@ -3597,9 +3612,9 @@ function saveForm(){
   if(k==='pur'){const n=fv('name');if(!n)return toast('Isi nama dulu');if(S.purs.some(x=>x.id!==F.id&&x.name.trim().toLowerCase()===n.toLowerCase()))return toast('Nama peruntukan sudah ada');
     rec={name:n,color:hexOk(fv('color'))?fv('color'):purNext()}}
   if(k==='pool'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,limit:num(fv('limit'))}}
-  if(k==='cat'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,t:o?o.t:fv('t'),icon:fv('icon')||'📦',color:hexOk(fv('color'))?fv('color'):undefined,subs:[],si:{},budget:(o?o.t:fv('t'))==='exp'?num(fv('budget')):0};
+  if(k==='cat'){const n=fv('name');if(!n)return toast('Isi nama dulu');rec={name:n,t:o?o.t:fv('t'),icon:fv('icon')||'📦',color:hexOk(fv('color'))?fv('color'):undefined,subs:[],si:{},sc:{},budget:(o?o.t:fv('t'))==='exp'?num(fv('budget')):0};
     const seen={},ren={};
-    document.querySelectorAll('#panel .sub-row').forEach(r=>{const nm=r.querySelector('.sub-nm'),ic=r.querySelector('.sub-ic');const n=nm.value.trim();if(!n||seen[n.toLowerCase()])return;seen[n.toLowerCase()]=1;rec.subs.push(n);const e=[...ic.value.trim()].slice(0,2).join('');if(e)rec.si[n]=e;const og=nm.dataset.orig;if(og&&og!==n)ren[og]=n});
+    document.querySelectorAll('#panel .sub-row').forEach(r=>{const nm=r.querySelector('.sub-nm'),ic=r.querySelector('.sub-ic');const n=nm.value.trim();if(!n||seen[n.toLowerCase()])return;seen[n.toLowerCase()]=1;rec.subs.push(n);const cb=r.querySelector('.sub-cb');if(cb&&hexOk(cb.dataset.hex))rec.sc[n]=cb.dataset.hex;const e=[...ic.value.trim()].slice(0,2).join('');if(e)rec.si[n]=e;const og=nm.dataset.orig;if(og&&og!==n)ren[og]=n});
     if(o&&Object.keys(ren).length)S.tx.forEach(t=>{if(t.cat===o.id&&t.sub&&ren[t.sub])t.sub=ren[t.sub]})}
   if(k==='card'){rec=cardFromForm();if(S.wallets.length&&!rec.wallet)return toast('Pilih dompet terhubung dulu')}
   if(k==='rec'){const c=S.cats.find(x=>x.id===fv('cat')),acc=fv('acc'),amt=num(fv('amt')),day=clamp(num(fv('day'))||1,1,31);
@@ -3826,6 +3841,11 @@ function xCheer(fw,tw,amt){
   document.body.appendChild(el);
   setTimeout(()=>el.classList.add('out'),2300);setTimeout(()=>el.remove(),2800);
 }
+const subT=()=>{const o=ui.form&&ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;return o?o.t:(($('#panel [name=t]')||{}).value||'exp')};
+/* samakan titik warna + latar ikon baris sub dengan pilihannya (atau warna kategori bila kosong) */
+function subSync(r){const b=r.querySelector('.sub-cb'),f=($('#panel [name=color]')||{}).value,o=ui.form&&ui.form.id?S.cats.find(x=>x.id===ui.form.id):null,
+  base=hexOk(f)?f:(o?catHex(o):'#A8F552'),hx=hexOk(b.dataset.hex)?b.dataset.hex:'',v=stkVars({t:subT(),color:hx||base});
+  b.style.setProperty('--c',hx||base);r.style.setProperty('--sbg',v[0]);r.style.setProperty('--srg',v[1])}
 function xPanel(i){
   const X=ui.xfer,payer=X.up?1:0,all=S.wallets.filter(w=>canXfer(w)||X.slots.includes(w.id));
   const gs=S.groups.filter(g=>all.some(w=>w.g===g.id));
@@ -4045,8 +4065,13 @@ const A={
   hpcopy(el){const hex=el.closest('.hp').dataset.hex;try{navigator.clipboard.writeText(hex).then(()=>toast('Kode '+hex+' disalin'),()=>toast('Salin manual: '+hex))}catch(e){toast('Salin manual: '+hex)}},
   pcol(el,arg){hpSet(el.closest('.hp'),arg)},
   kureset(el){const r=el.closest('.ku');kuSet(r,+r.dataset.f0,false)},
-  subadd(){const ed=$('#subEd');if(!ed)return;const o=ui.form&&ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const ic=($('#panel [name=icon]')||{}).value||(o&&o.icon)||'📦';ed.insertAdjacentHTML('beforeend',subRow({icon:ic.trim()||'📦',si:{}},'',''));const n=ed.lastElementChild.querySelector('.sub-nm');n&&n.focus()},
-  subdel(el){const r=el.closest('.sub-row');r&&r.remove()},
+  subadd(){const ed=$('#subEd');if(!ed)return;const o=ui.form&&ui.form.id?S.cats.find(x=>x.id===ui.form.id):null;const ic=($('#panel [name=icon]')||{}).value||(o&&o.icon)||'📦';const fc=($('#panel [name=color]')||{}).value;ed.insertAdjacentHTML('beforeend',subRow({icon:ic.trim()||'📦',si:{},t:subT(),color:hexOk(fc)?fc:(o&&o.color)||undefined,col:o?o.col:undefined,id:o?o.id:'x'},'',''));const n=ed.lastElementChild.querySelector('.sub-nm');n&&n.focus()},
+  subdel(el){const r=el.closest('.sub-row');if(r){const n=r.nextElementSibling;if(n&&n.classList.contains('sub-pal'))n.remove();r.remove()}},
+  subcol(el){const r=el.closest('.sub-row'),n=r.nextElementSibling,open=n&&n.classList.contains('sub-pal');
+    document.querySelectorAll('#subEd .sub-pal').forEach(x=>{const b=x.previousElementSibling&&x.previousElementSibling.querySelector('.sub-cb');if(b)b.setAttribute('aria-expanded','false');x.remove()});
+    if(open)return;r.insertAdjacentHTML('afterend',subPal(el.dataset.hex));el.setAttribute('aria-expanded','true')},
+  subpick(el,arg){const pal=el.closest('.sub-pal'),r=pal&&pal.previousElementSibling;if(!r)return;
+    const b=r.querySelector('.sub-cb');b.dataset.hex=arg||'';b.classList.toggle('set',!!arg);b.setAttribute('aria-expanded','false');subSync(r);pal.remove()},
   ccol(el,arg){const h=$('#panel [name=col]');if(h)h.value=arg;el.parentElement.querySelectorAll('.sw').forEach(b=>b.classList.toggle('on',b===el));updateCatPrev()},
   rmbg(){ui.form.bg=null;const f=$('#f_bgfile');if(f)f.value='';updateCardPrev()},
   lup(el,arg,id){const L=S.settings.layout,i=L.findIndex(b=>b.id===id);if(i>0){[L[i-1],L[i]]=[L[i],L[i-1]];persist();render()}},
