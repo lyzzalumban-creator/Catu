@@ -350,6 +350,7 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .xs-ph{display:flex;align-items:center;justify-content:space-between;height:32px;padding-left:10px;font-size:12px;color:var(--tx2)}
 .xs-x{width:30px;height:30px;border-radius:50%;color:var(--tx2);font-size:14px}
 .xs-list{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.xs-gs{display:flex;flex-wrap:wrap;gap:6px;padding:2px 10px 8px}.xs-g{min-height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--bd,rgba(255,255,255,.12));font-size:12.5px;font-weight:650;color:var(--tx2);transition:background .3s var(--emph),color .3s var(--emph)}.xs-g.on{background:var(--acc);color:#0B0B0D;border-color:transparent}
 .xs-row{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 10px;border-radius:12px;text-align:left}
 .xs-row:active{background:var(--s3)}
 .xs-rn{font-weight:650;font-size:14px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2959,7 +2960,7 @@ function mvItem(kind,id,dir){
 /* ---- kelola > dompet: grafik Pareto (dompet mana yang menyimpan sebagian besar uang) ---- */
 let PC=null;
 function parData(){
-  let w=S.wallets.map(x=>({n:wLbl(x),v:D.bal[x.id]||0})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  let w=S.wallets.map(x=>({n:wLbl(x),v:D.bal[x.id]||0,c:walCol(x),pc:(q=>q?purCol(q):null)(purOf(x))})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
   if(w.length>8){const rest=w.slice(7);w=w.slice(0,7);w.push({n:'Lainnya',v:rest.reduce((a,x)=>a+x.v,0),multi:rest.length})}
   const tot=w.reduce((a,x)=>a+x.v,0);let c=0;w.forEach(x=>{x.pre=c/tot;c+=x.v;x.cum=c/tot});
   return{w,tot};
@@ -2969,7 +2970,7 @@ function paretoBlk(){
   return`<div class="surface" style="padding:16px 0 14px;margin-bottom:12px">
     <div style="padding:0 16px"><b id="prT" style="font-size:15px"></b><br><small id="prS" class="lbl"></small></div>
     <div class="chart-wrap" style="margin:8px 0 0;height:160px"><canvas id="pchart" aria-label="Grafik Pareto saldo dompet"></canvas></div>
-    <div class="legend" style="padding:0 16px;margin-top:6px"><span><b style="background:var(--acc)"></b>Dalam 80%</span><span><b style="background:#3E5A25"></b>Sisanya</span><span><b style="background:#fff"></b>Kumulatif</span></div>
+    <div class="legend" style="padding:0 16px;margin-top:6px"><span><b style="background:#fff"></b>Dalam 80%</span><span><b style="background:rgba(255,255,255,.35)"></b>Redup: sisa</span><span><b style="background:#fff"></b>Kumulatif</span></div>
   </div>`;
 }
 function drawPareto(){
@@ -2993,8 +2994,11 @@ function drawPareto(){
   const rr=(x,y,bwid,bh,r)=>{r=Math.min(r,bwid/2,bh);g.beginPath();g.moveTo(x,y+bh);g.lineTo(x,y+r);g.quadraticCurveTo(x,y,x+r,y);g.lineTo(x+bwid-r,y);g.quadraticCurveTo(x+bwid,y,x+bwid,y+r);g.lineTo(x+bwid,y+bh);g.closePath()};
   const bwid=Math.min(bw*.62,46);
   W.forEach((b,i)=>{const y=Math.min(yb(b.v),top+ph-4),on=b.pre<.8;
-    g.save();g.shadowColor=on?'rgba(168,245,82,.85)':'rgba(168,245,82,.35)';g.shadowBlur=on?18:9;
-    g.fillStyle=on?GREEN:DIM;rr(cx(i)-bwid/2,y,bwid,top+ph-y,6);g.fill();g.fill();g.restore()});
+    const col=b.c||'#9AA0A6';
+    g.save();g.globalAlpha=on?1:.5;g.shadowColor=col+'73';g.shadowBlur=10;
+    const bx=cx(i)-bwid/2,bh=top+ph-y;rr(bx,y,bwid,bh,6);
+    if(b.pc&&bh>10){g.fillStyle='#0B0B0D';g.fill();g.shadowBlur=0;g.save();g.clip();const t=Math.max(5,bh*.34);g.fillStyle=b.pc;g.fillRect(bx,y,bwid,t-1);g.fillStyle=col;g.fillRect(bx,y+t+1,bwid,bh);g.restore();g.shadowBlur=10;g.fillStyle='rgba(0,0,0,0)'}
+    else{g.fillStyle=col;g.fill()}g.restore()});
   /* garis kumulatif */
   g.strokeStyle='#fff';g.lineWidth=1.6;g.lineJoin='round';g.beginPath();W.forEach((b,i)=>{i?g.lineTo(cx(i),yp(b.cum)):g.moveTo(cx(i),yp(b.cum))});g.stroke();
   const dot=(i,r)=>{g.fillStyle='#0B0B0D';g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.fill();g.strokeStyle='#fff';g.lineWidth=1.8;g.beginPath();g.arc(cx(i),yp(W[i].cum),r,0,7);g.stroke()};
@@ -3779,6 +3783,14 @@ function askSign(amt,done,demo){
 }
 function closeSign(){clearTimeout(SIGT);if(SIGM){SIGM.destroy();SIGM=null}const e=document.getElementById('sigov');if(e)e.remove()}
 
+function xPanel(i){
+  const X=ui.xfer,payer=X.up?1:0,all=S.wallets.filter(w=>canXfer(w)||X.slots.includes(w.id));
+  const gs=S.groups.filter(g=>all.some(w=>w.g===g.id));
+  if(!gs.some(g=>g.id===X.gf))X.gf=gs.length?gs[0].id:null;
+  const rows=all.filter(w=>gs.length<2||w.g===X.gf).map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(wLbl(w))}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
+  const chips=gs.length>1?`<div class="xs-gs" role="tablist">${gs.map(g=>`<button type="button" class="xs-g${g.id===X.gf?' on':''}" role="tab" aria-selected="${g.id===X.gf}" data-action="x-grp" data-arg="${g.id}">${esc(g.name)}</button>`).join('')}</div>`:'';
+  document.getElementById('xsp'+i).innerHTML=`<div class="xs-ph"><span>${i===payer?'Dari':'Ke'}</span><button type="button" class="xs-x" data-action="x-close" aria-label="Tutup">✕</button></div>${chips}<div class="xs-list">${rows}</div>`;
+}
 const A={
   psopen:el=>psOpen(el),ppclose:()=>ppClose(),pspick:el=>psPick(el),
   sigtoggle(){S.settings.sigOn=!S.settings.sigOn;persist();render()},
@@ -3939,12 +3951,12 @@ const A={
   },
   'x-open'(el,arg){
     const X=ui.xfer,xs=document.getElementById('xs'),i=+arg;if(!X||!xs||X.pick!==null)return;
-    X.pick=i;const payer=X.up?1:0;
-    const rows=S.wallets.filter(w=>canXfer(w)||X.slots.includes(w.id)).map(w=>`<button type="button" class="xs-row" data-action="x-pick" data-id="${w.id}">${accIcon(w,28)}<span class="xs-rn">${esc(wLbl(w))}</span><span class="xs-rb num">${money(D.bal[w.id]||0)}</span>${X.slots[i]===w.id?'<svg class="xs-ok" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>':''}</button>`).join('');
-    document.getElementById('xsp'+i).innerHTML=`<div class="xs-ph"><span>${i===payer?'Dari':'Ke'}</span><button type="button" class="xs-x" data-action="x-close" aria-label="Tutup">✕</button></div><div class="xs-list">${rows}</div>`;
+    X.pick=i;const cur=S.wallets.find(w=>w.id===X.slots[i]);X.gf=cur?cur.g:null;
+    xPanel(i);
     xs.classList.add('pk');
     xs.querySelectorAll('.xs-c').forEach(c=>c.classList.add(+c.dataset.i===i?'on':'sq'));
   },
+  'x-grp'(el,arg){const X=ui.xfer;if(!X||X.pick===null)return;X.gf=arg;xPanel(X.pick)},
   'x-close'(){xClose()},
   'x-pick'(el,arg,id){
     const X=ui.xfer;if(!X||X.pick===null)return;
