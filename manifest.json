@@ -1,0 +1,21 @@
+{
+  "id": "./",
+  "name": "penniq",
+  "short_name": "penniq",
+  "description": "Pencatat keuangan pribadi: dompet, kartu kredit, anggaran, dan analitik.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    { "src": "assets/logo/penniq-ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/penniq-ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/logo/penniq-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
