@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "skills": {
+    "elirox_bot_manager": {
+      "source": "elirox-ai/mcp",
+      "commit": "a4984e00184d34a8b321f50ec20b963a8890d3c3",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "c8f518f57ca5ad8be142ba801ae8681744cb6f0823041b5d13024852c181c3f2"
+    }
+  }
+}
