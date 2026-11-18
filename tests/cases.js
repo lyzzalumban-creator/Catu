@@ -202,6 +202,120 @@ t('fungsi dompet: transaksi berulang pengeluaran dari dompet transfer-saja ditol
   ui.sheet = null;
 });
 
+/* ============ isian bawaan cerdas ============ */
+t('bawaan: akun terakhir per jenis, melewati dompet transfer-saja', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'A', open: 0 }, { id: 'w2', g: 'g1', name: 'B', open: 0, use: 'xfer' }],
+    tx: [tx({ t: 'exp', acc: 'w1', amt: 1, cat: 'k1' }), tx({ t: 'inc', acc: 'w2', amt: 1, cat: 'k2' }), tx({ t: 'exp', acc: 'c1', amt: 1, cat: 'k1' })] });
+  eq(lastAcc('exp'), 'c1', 'pengeluaran terakhir lewat kartu');
+  eq(lastAcc('inc'), 'w2', 'pemasukan boleh ke dompet transfer-saja');
+  S.tx.push(tx({ t: 'exp', acc: 'w2', amt: 1, cat: 'k1' }));
+  eq(lastAcc('exp'), 'c1', 'dompet transfer-saja dilewati untuk pengeluaran');
+});
+t('bawaan: Catat dari tombol + langsung ke pilih kategori dengan akun terakhir', () => {
+  fresh({ tx: [tx({ t: 'exp', acc: 'w2', amt: 1, cat: 'k1' })] });
+  openNew({ type: 'exp' });
+  eq([ui.flow.step, ui.flow.acc], [2, 'w2']);
+  ui.sheet = null;
+  fresh();
+  openNew({ type: 'exp' });
+  eq([ui.flow.step, ui.flow.acc], [1, ''], 'tanpa riwayat: mulai dari pilih akun');
+  ui.sheet = null;
+});
+t('bawaan: Transfer memakai tujuan yang paling sering', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'A', open: 0 }, { id: 'w2', g: 'g1', name: 'B', open: 0 }, { id: 'w3', g: 'g1', name: 'C', open: 0 }],
+    tx: [tx({ t: 'xfer', acc: 'w1', to: 'w3', amt: 1 }), tx({ t: 'xfer', acc: 'w1', to: 'w3', amt: 1 }), tx({ t: 'xfer', acc: 'w1', to: 'w2', amt: 1 }), tx({ t: 'xfer', acc: 'w2', to: 'w1', amt: 1 })] });
+  eq(xferPair('w1'), ['w1', 'w3'], 'dari w1 paling sering ke w3');
+  eq(xferPair(undefined), ['w2', 'w1'], 'tanpa asal: pakai transfer terakhir');
+});
+t('bawaan: Bayar kartu terisi tagihan penuh', () => {
+  fresh({ tx: [tx({ t: 'exp', acc: 'c1', amt: 345000, cat: 'k1' })] }); recalc();
+  openPay('c1'); eq(ui.amt.expr, '345000'); ui.sheet = null;
+});
+t('bawaan: Gestun mengingat fee dan skema terakhir', () => {
+  fresh();
+  eq(gestLast(), { feeMode: 'pct', feeVal: '', scheme: 'A' });
+  S.settings.gLast = { feeMode: 'rp', feeVal: '25000', scheme: 'B' };
+  eq(gestLast(), { feeMode: 'rp', feeVal: '25000', scheme: 'B' });
+  S.settings.gLast = { feeMode: 'x', feeVal: 5, scheme: 'Z' };
+  eq(gestLast(), { feeMode: 'pct', feeVal: '', scheme: 'A' }, 'nilai rusak diabaikan');
+});
+t('bawaan: saran anggaran = rata-rata 3 bulan penuh, dibulatkan ke atas 50 rb', () => {
+  fresh({ tx: [
+    tx({ t: 'exp', acc: 'w1', amt: 400000, cat: 'k1', d: '2026-10-05' }),
+    tx({ t: 'exp', acc: 'w1', amt: 300000, cat: 'k1', d: '2026-09-05' }),
+    tx({ t: 'exp', acc: 'w1', amt: 200000, cat: 'k1', d: '2026-08-05' }),
+    tx({ t: 'exp', acc: 'w1', amt: 999000, cat: 'k1', d: '2026-11-05' }),
+    tx({ t: 'exp', acc: 'w1', amt: 999000, cat: 'k1', d: '2026-07-05' })] });
+  eq(budSuggest('k1'), 300000, '(400+300+200)/3 = 300 rb; bulan ini dan Juli tidak dihitung');
+  S.tx.push(tx({ t: 'exp', acc: 'w1', amt: 10000, cat: 'k1', d: '2026-10-06' }));
+  eq(budSuggest('k1'), 350000, '303.333 dibulatkan ke atas');
+  eq(budSuggest('k2'), 0);
+});
+
+t('anggaran: kategori tanpa anggaran dibuka sebagai Tambah (tanpa Hapus), berisi saran', () => {
+  fresh({ tx: [tx({ t: 'exp', acc: 'w1', amt: 300000, cat: 'k1', d: '2026-10-05' })] });
+  openForm('bud', 'k1');
+  let h = document.querySelector('#panel').innerHTML;
+  ok(h.includes('Tambah anggaran') && !h.includes('fdelform'), 'judul Tambah, tanpa Hapus');
+  eq(document.querySelector('#f_amt').value, '100.000', 'saran 300 rb / 3 bulan');
+  S.cats.find((c) => c.id === 'k1').budget = 500000; openForm('bud', 'k1');
+  h = document.querySelector('#panel').innerHTML;
+  ok(h.includes('Ubah anggaran') && h.includes('fdelform'), 'sudah ada anggaran: Ubah + Hapus');
+  ui.sheet = null; renderSheet();
+});
+
+/* ============ progres target ============ */
+t('target: progres dan kekurangan', () => {
+  fresh({ wallets: [{ id: 'w1', g: 'g1', name: 'A', open: 2500000, tg: 10000000 }, { id: 'w2', g: 'g1', name: 'B', open: 0 }] }); recalc();
+  const g = goalInfo(S.wallets[0]);
+  eq([g.pct, g.left], [25, 7500000]);
+  eq(goalInfo(S.wallets[1]), null, 'tanpa target');
+  S.wallets[0].open = 12000000; recalc();
+  eq([goalInfo(S.wallets[0]).pct, goalInfo(S.wallets[0]).left], [100, 0]);
+  ok(goalBar(S.wallets[0]).includes('tercapai'));
+});
+
+/* ============ data contoh ============ */
+t('data contoh: ditandai, banner tampil, bisa disembunyikan, hilang setelah dikosongkan', () => {
+  S = makeSample(); S = normalize(S); recalc();
+  ok(S.settings.demo, 'data contoh ditandai');
+  ok(demoNudge().includes('data contoh'), 'banner tampil');
+  eq(bkNudge(), '', 'tidak menagih cadangan untuk data contoh');
+  A['demo-hide'](); eq(demoNudge(), '', 'disembunyikan');
+  A.wipe(null, null, null, true);
+  eq([S.settings.demo, S.wallets.length, S.tx.length], [false, 0, 0]);
+  eq(demoNudge(), '');
+});
+t('data contoh: data pengguna lama tidak dianggap contoh', () => {
+  const s = normalize({ wallets: [{ id: 'w1', g: 'g', name: 'A' }] });
+  eq(s.settings.demo, false);
+});
+
+/* ============ peringatan & pembanding ============ */
+t('anggaran saat mencatat: sisa (info) dan melebihi (peringatan)', () => {
+  fresh({ cats: [{ id: 'k1', name: 'Makan', t: 'exp', icon: '🍜', subs: [], budget: 1000000 }, { id: 'k2', name: 'Gaji', t: 'inc', icon: '💼', subs: [] }],
+    tx: [tx({ t: 'exp', acc: 'w1', amt: 700000, cat: 'k1', d: '2026-11-02' })] });
+  ui.flow = { mode: 'new', step: 3, type: 'exp', acc: 'w1', cat: 'k1', sub: '', openCat: '', date: '2026-11-17', note: '', id: null, ret: 0 };
+  eq(budWarn(200000), { over: false, t: 'Sisa anggaran Makan setelah ini Rp 100.000 dari Rp 1.000.000.' });
+  eq(budWarn(450000), { over: true, t: 'Melebihi anggaran Makan sebesar Rp 150.000 (anggaran Rp 1.000.000).' });
+  ui.flow.date = '2026-10-17'; eq(budWarn(450000), null, 'bulan lain tidak dibandingkan');
+  ui.flow.date = '2026-11-17'; ui.flow.type = 'inc'; eq(budWarn(450000), null, 'pemasukan tidak dibandingkan');
+});
+t('bayar sebagian: sisa tagihan disebut', () => {
+  fresh({ tx: [tx({ t: 'exp', acc: 'c1', amt: 500000, cat: 'k1' })] }); recalc();
+  openPay('c1'); ui.amt.expr = '200000'; updateAmt();
+  eq(document.querySelector('#dWarn').textContent, 'Sisa tagihan Rp 300.000 belum lunas dan bisa kena bunga bulan depan.');
+  ui.amt.expr = '500000'; updateAmt();
+  eq(document.querySelector('#dWarn').textContent, '', 'lunas: tanpa pesan');
+  ui.sheet = null; renderSheet();
+});
+t('gestun: fee ditampilkan sebagai persen dari nominal', () => {
+  fresh(); openGest('c1');
+  ui.gest.feeMode = 'rp'; ui.gest.feeVal = '25000'; ui.amt.expr = '1000000'; updateAmt();
+  ok(document.querySelector('#gprev').textContent.includes('2,5% dari nominal'));
+  ui.sheet = null; renderSheet();
+});
+
 /* ============ tagihan berulang dan tanggal ============ */
 t('tanggal: monShift lintas tahun', () => {
   eq(monShift('2026-12', 1), '2027-01');
