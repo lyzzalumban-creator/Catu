@@ -316,6 +316,44 @@ t('gestun: fee ditampilkan sebagai persen dari nominal', () => {
   ui.sheet = null; renderSheet();
 });
 
+/* ============ pengaturan: menu kategori ============ */
+t('pengaturan: tampil sebagai menu, isi baru terbuka setelah diketuk', () => {
+  fresh(); ui.view = 'set'; ui.setSec = null; render();
+  const rows = [...document.querySelectorAll('#view .sm-r')].map((e) => e.querySelector('b').textContent);
+  eq(rows, ['Umum', 'Cadangan', 'Tampilan', 'Susunan Beranda', 'Fitur', 'Ekspor & impor', 'Hapus data']);
+  ok(!document.querySelector('#view .setrow'), 'tidak ada pengaturan di halaman menu');
+  ok(!document.querySelector('#view .sw-t'), 'tidak ada sakelar di halaman menu');
+});
+t('pengaturan: tiap kategori memuat kontrolnya dan bisa kembali', () => {
+  fresh();
+  const want = { umum: 'data-action="privacy"', cadangan: 'data-action="bk-file"', tampilan: 'data-action="cardview"', layout: 'data-action="lup"',
+    fitur: 'data-action="gestun-tog"', ekspor: 'data-action="csv"', hapus: 'data-action="wipe"' };
+  for (const k in want) {
+    A['set-open'](null, k);
+    ok(document.querySelector('#view').innerHTML.includes(want[k]), k + ' memuat ' + want[k]);
+    ok(document.querySelector('#view .blk-h.sub'), k + ' punya tombol kembali');
+    ok(!document.querySelector('#view .sm-list'), k + ': menu tidak tampil bersamaan');
+  }
+  A['set-back']();
+  ok(document.querySelector('#view .sm-list'), 'kembali ke menu');
+  eq(ui.setSec, null);
+});
+t('pengaturan: ketuk tab Pengaturan dari dalam kategori kembali ke menu; Sesuaikan beranda langsung ke Susunan Beranda', () => {
+  fresh(); A['set-open'](null, 'fitur');
+  A.nav(null, 'set'); eq(ui.setSec, null);
+  A['set-go'](null, 'layout');
+  eq([ui.view, ui.setSec], ['set', 'layout']);
+  ok(document.querySelector('#view .blk-h.sub h2').textContent === 'Susunan Beranda');
+  ui.view = 'home'; ui.setSec = null;
+});
+t('pengaturan: ringkasan menu mengikuti keadaan', () => {
+  fresh(); S.settings.gestun = false; S.settings.calendar = true; S.settings.sigOn = false; ui.view = 'set'; ui.setSec = null; render();
+  const txt = [...document.querySelectorAll('#view .sm-r small')].map((e) => e.textContent).join('|');
+  ok(txt.includes('1 dari 3 aktif'), 'fitur: 1 dari 3 aktif');
+  ok(txt.includes('6 dari 6 blok tampil'), 'susunan beranda');
+  ui.view = 'home';
+});
+
 /* ============ tagihan berulang dan tanggal ============ */
 t('tanggal: monShift lintas tahun', () => {
   eq(monShift('2026-12', 1), '2027-01');
@@ -445,7 +483,8 @@ t('contoh: deterministik (dua kali bangun sama)', () => {
 /* ============ uji asap: halaman & sheet terbuka tanpa error JS ============ */
 const smoke = [];
 const s = (name, code) => smoke.push([name, code]);
-['home', 'mut', 'an', 'set'].forEach((v) => s('halaman ' + v, `ui.view='${v}';render()`));
+['home', 'mut', 'an', 'set'].forEach((v) => s('halaman ' + v, `ui.setSec=null;ui.view='${v}';render()`));
+['umum', 'cadangan', 'tampilan', 'layout', 'fitur', 'ekspor', 'hapus'].forEach((k) => s('Pengaturan → ' + k, `ui.view='set';ui.setSec='${k}';render()`));
 ['wallet', 'cat', 'rec', 'group', 'pur', 'card'].forEach((m) => s('Kelola → ' + m, `ui.view='manage';ui.mg='${m}';render()`));
 s('Beranda dengan mode privasi', `S.settings.privacy=true;ui.view='home';render();S.settings.privacy=false;render()`);
 s('sheet Catat pengeluaran', `ui.view='home';render();openNew({t:'exp'})`);
