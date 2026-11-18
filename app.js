@@ -1457,7 +1457,7 @@ function bkNudge(){
 VIEWS.home=function(){
   const b={chart:blkChart,actions:blkActions,cards:blkCards,wallets:blkWallets,budget:blkBudget,tx:blkTx};
   const blocks=S.settings.layout.filter(x=>x.on).map(x=>b[x.id]()).join('');
-  return demoNudge()+gdNudge()+dueNudge()+bkNudge()+(blocks||'<p class="empty">Semua blok disembunyikan.</p>')+`<div class="hm-own"><button class="tbtn" data-action="nav" data-arg="set">Sesuaikan beranda</button></div>`;
+  return demoNudge()+gdNudge()+dueNudge()+bkNudge()+(blocks||'<p class="empty">Semua blok disembunyikan.</p>')+`<div class="hm-own"><button class="tbtn" data-action="set-go" data-arg="layout">Sesuaikan beranda</button></div>`;
 };
 const MUTF=[['all','Semua'],['exp','Keluar'],['inc','Masuk'],['card','Kartu'],['xfer','Transfer'],['gest','Gestun']];
 function mutFilter(t){const f=ui.mutF;if(f==='all')return true;if(f==='exp')return t.t==='exp'||t.t==='gfee';if(f==='inc')return t.t==='inc';
@@ -2039,35 +2039,60 @@ VIEWS.set=function(){
   const L=S.settings.layout;
   const lay=L.map((b,i)=>`<div class="lay"><span class="n ${b.on?'':'off'}">${BLK_NAME[b.id]}</span><button class="mini-b" data-action="lup" data-id="${b.id}" ${i===0?'disabled':''} aria-label="Naikkan">↑</button><button class="mini-b" data-action="ldown" data-id="${b.id}" ${i===L.length-1?'disabled':''} aria-label="Turunkan">↓</button><button class="sw-t ${b.on?'on':''}" data-action="lon" data-id="${b.id}" role="switch" aria-checked="${b.on}" aria-label="Tampilkan ${BLK_NAME[b.id]}"></button></div>`).join('');
   const st={local:'Tersimpan di perangkat ini.',online:'Tersimpan online ke akun kamu.',saving:'Sedang menyimpan…',err:'Sinkron gagal. Data tetap aman di perangkat.',gdok:'Tersimpan di perangkat dan tercadangkan ke Google Drive.',gdsave:'Tersimpan di perangkat. Cadangan Drive sedang dikirim…',gdneed:'Tersimpan di perangkat. Cadangan Drive menunggu Anda masuk lagi.',gderr:'Tersimpan di perangkat. Cadangan Drive gagal, data tetap aman.'}[ui.sync]||'Tersimpan di perangkat ini.';
-  return`<section class="blk"><div class="blk-h"><h2>Susunan Beranda</h2></div><div class="surface">${lay}</div></section>
-   <section class="blk"><div class="blk-h"><h2>Tampilan</h2></div><div class="surface">
-     ${pwaRow()}
-     <div class="setrow"><div><b>Menu Gestun</b><small>Tampilkan tombol Gestun di Beranda dan kartu</small></div><button class="sw-t ${gestOn()?'on':''}" data-action="gestun-tog" role="switch" aria-checked="${gestOn()}" aria-label="Menu Gestun"></button></div>
-     <div class="setrow"><div><b>Kalender di Riwayat</b><small>Kalender per tanggal di tab Transaksi, ketuk tanggal untuk lihat riwayatnya</small></div><button class="sw-t ${calOn()?'on':''}" data-action="cal-tog" role="switch" aria-checked="${calOn()}" aria-label="Kalender di Riwayat"></button></div>
+  const SEC={
+    umum:`<div class="surface">
      <div class="setrow"><div><b>Mode privasi</b><small>Sembunyikan semua nominal</small></div><button class="sw-t ${S.settings.privacy?'on':''}" data-action="privacy" role="switch" aria-checked="${S.settings.privacy}" aria-label="Mode privasi"></button></div>
-     <div class="setrow" style="display:block"><div><b>Gaya stiker kategori</b><small>Cara jenis pemasukan dan pengeluaran ditandai</small></div><div class="bgroup" role="group">${[['badge','Lencana panah'],['bg','Latar jenis']].map(m=>`<button class="${S.settings.stk===m[0]?'on':''}" data-action="stkstyle" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
-       <div class="stk-prev" aria-label="Contoh">${[S.cats.find(c=>c.t==='exp'),S.cats.find(c=>c.t==='inc')].filter(Boolean).map(c=>catIcon(c,46)).join('')}<span class="t">${S.settings.stk==='badge'?'Warna kategori + panah ▲▼ di pojok':'Latar hijau/merah + cincin warna pilihan'}</span></div></div>
-     <div class="setrow" style="display:block"><div><b>Tampilan kartu</b><small>Cara kartu kredit ditampilkan di beranda</small></div><div class="bgroup" role="group">${[['wallet','Dompet'],['stack','Tumpukan'],['col','Kolom'],['car','Putar']].map(m=>`<button class="${S.settings.cardView===m[0]?'on':''}" data-action="cardview" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div></div>
-     ${(S.settings.cardView==='wallet'||(S.settings.cardView==='col'&&S.cards.length<2)||(S.settings.cardView==='car'&&S.cards.length<2)||(S.settings.cardView==='stack'&&!S.cards.length))?`<div class="setrow" style="display:block"><div><b>Warna dompet kartu</b><small>Dompet tempat kartu kredit menyembul di Beranda</small></div><div class="sw-row" style="margin-top:12px">${Object.keys(WL_COLORS).map(k=>`<button class="sw sw-${k} ${S.settings.wl===k?'on':''}" data-action="wlcolor" data-arg="${k}" aria-label="${WL_COLORS[k]}"></button>`).join('')}</div></div>`:''}
-     <div class="setrow" style="display:block"><div><b>Teman</b><small>Si mata di pojok kiri atas</small></div><div class="bgroup" role="group">${[['on','Normal'],['small','Kecil'],['off','Mati']].map(m=>`<button class="${S.settings.mascot===m[0]?'on':''}" data-action="mascotset" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div><button class="mk-entry" data-action="mk-sheet" aria-label="Buka koleksi teman"><span class="mk-th">${mascotArt(MK.find(c=>c.id===S.settings.mascotChar)||MK[0],38)}</span><span><b>Koleksi teman</b><small>${(MK.find(c=>c.id===S.settings.mascotChar)||MK[0]).name} dipakai · ${S.settings.owned.length} dari ${MK.length} terkumpul</small></span><i class="go">${IC.fwd}</i></button></div></div></section>
-   <section class="blk"><div class="blk-h"><h2>Cap &amp; tanda tangan</h2></div><div class="surface">
-     <div class="setrow"><div><b>Tanda tangan transaksi besar</b><small>Transaksi besar ditandatangani dulu, lalu dapat cap</small></div><button class="sw-t ${S.settings.sigOn?'on':''}" data-action="sigtoggle" role="switch" aria-checked="${S.settings.sigOn}" aria-label="Tanda tangan transaksi besar"></button></div>
-     ${S.settings.sigOn?`<div class="setrow" style="display:block"><div><b>Batas minimal</b><small>Dari nominal ini, transaksi minta tanda tangan</small></div>
-       <div class="sigmin" style="margin-top:12px"><span style="color:var(--mute);font-weight:650">Rp</span><input id="sigMin" inputmode="numeric" data-input="sigmin" value="${nf.format(S.settings.sigMin)}" aria-label="Batas minimal tanda tangan"></div>
-       <div class="sigpre">${[1e6,5e6,10e6,25e6,50e6].map(v=>`<button class="${S.settings.sigMin===v?'on':''}" data-action="sigpre" data-arg="${v}">${v>=1e6?(v/1e6)+' jt':v}</button>`).join('')}</div>
-       <button class="btn acc" style="margin-top:14px" data-action="sigdemo">Coba tanda tangan</button></div>`:''}
-   </div></section>
-   <section class="blk"><div class="blk-h"><h2>Data</h2></div><div class="surface">
+     <div class="setrow" style="display:block"><div><b>Teman</b><small>Si mata di pojok kiri atas</small></div><div class="bgroup" role="group">${[['on','Normal'],['small','Kecil'],['off','Mati']].map(m=>`<button class="${S.settings.mascot===m[0]?'on':''}" data-action="mascotset" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div><button class="mk-entry" data-action="mk-sheet" aria-label="Buka koleksi teman"><span class="mk-th">${mascotArt(MK.find(c=>c.id===S.settings.mascotChar)||MK[0],38)}</span><span><b>Koleksi teman</b><small>${(MK.find(c=>c.id===S.settings.mascotChar)||MK[0]).name} dipakai · ${S.settings.owned.length} dari ${MK.length} terkumpul</small></span><i class="go">${IC.fwd}</i></button></div>
+     ${pwaRow()}
+   </div>`,
+    cadangan:`<div class="surface">
      <div class="setrow"><div><b>Penyimpanan</b><small>${st}</small></div></div>
      <div class="setrow"><div><b>Cadangan Google Drive</b><small>${gdStatusTxt()}</small></div>${S.settings.gd.on?`<button class="sw-t on" data-action="gd-off" role="switch" aria-checked="true" aria-label="Matikan cadangan otomatis"></button>`:`<button class="pbtn" data-action="gd-login" aria-label="Masuk dengan Google">Masuk</button>`}</div>
      ${S.settings.gd.on?`<div class="gd-btns"><button class="pbtn" data-action="gd-now">Cadangkan</button><button class="pbtn" data-action="gd-restore-btn">Pulihkan</button>${ui.sync==='gdneed'?'<button class="pbtn" data-action="gd-login">Masuk lagi</button>':''}</div>`:''}
      <div class="setrow"><div><b>Cadangkan sekarang</b><small>Unduh file cadangan · ${esc(bkAgo(S.settings.lastBackup))}</small></div><button class="pbtn" data-action="bk-file">Unduh</button></div>
+   </div>`,
+    tampilan:`<div class="surface">
+     <div class="setrow" style="display:block"><div><b>Gaya stiker kategori</b><small>Cara jenis pemasukan dan pengeluaran ditandai</small></div><div class="bgroup" role="group">${[['badge','Lencana panah'],['bg','Latar jenis']].map(m=>`<button class="${S.settings.stk===m[0]?'on':''}" data-action="stkstyle" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div>
+       <div class="stk-prev" aria-label="Contoh">${[S.cats.find(c=>c.t==='exp'),S.cats.find(c=>c.t==='inc')].filter(Boolean).map(c=>catIcon(c,46)).join('')}<span class="t">${S.settings.stk==='badge'?'Warna kategori + panah ▲▼ di pojok':'Latar hijau/merah + cincin warna pilihan'}</span></div></div>
+     <div class="setrow" style="display:block"><div><b>Tampilan kartu</b><small>Cara kartu kredit ditampilkan di beranda</small></div><div class="bgroup" role="group">${[['wallet','Dompet'],['stack','Tumpukan'],['col','Kolom'],['car','Putar']].map(m=>`<button class="${S.settings.cardView===m[0]?'on':''}" data-action="cardview" data-arg="${m[0]}">${m[1]}</button>`).join('')}</div></div>
+     ${(S.settings.cardView==='wallet'||(S.settings.cardView==='col'&&S.cards.length<2)||(S.settings.cardView==='car'&&S.cards.length<2)||(S.settings.cardView==='stack'&&!S.cards.length))?`<div class="setrow" style="display:block"><div><b>Warna dompet kartu</b><small>Dompet tempat kartu kredit menyembul di Beranda</small></div><div class="sw-row" style="margin-top:12px">${Object.keys(WL_COLORS).map(k=>`<button class="sw sw-${k} ${S.settings.wl===k?'on':''}" data-action="wlcolor" data-arg="${k}" aria-label="${WL_COLORS[k]}"></button>`).join('')}</div></div>`:''}
+   </div>`,
+    layout:`<div class="surface">${lay}</div><p class="set-hint">Urutkan dengan ↑ ↓, sembunyikan dengan sakelar.</p>`,
+    fitur:`<div class="surface">
+     <div class="setrow"><div><b>Menu Gestun</b><small>Tampilkan tombol Gestun di Beranda dan kartu</small></div><button class="sw-t ${gestOn()?'on':''}" data-action="gestun-tog" role="switch" aria-checked="${gestOn()}" aria-label="Menu Gestun"></button></div>
+     <div class="setrow"><div><b>Kalender di Riwayat</b><small>Kalender per tanggal di tab Transaksi, ketuk tanggal untuk lihat riwayatnya</small></div><button class="sw-t ${calOn()?'on':''}" data-action="cal-tog" role="switch" aria-checked="${calOn()}" aria-label="Kalender di Riwayat"></button></div>
+     <div class="setrow"><div><b>Tanda tangan transaksi besar</b><small>Transaksi besar ditandatangani dulu, lalu dapat cap</small></div><button class="sw-t ${S.settings.sigOn?'on':''}" data-action="sigtoggle" role="switch" aria-checked="${S.settings.sigOn}" aria-label="Tanda tangan transaksi besar"></button></div>
+     ${S.settings.sigOn?`<div class="setrow" style="display:block"><div class="setrow-h"><div><b>Batas minimal</b><small>Dari nominal ini, transaksi minta tanda tangan</small></div><button class="pbtn" data-action="sigdemo">Coba</button></div>
+<div class="sigmin" style="margin-top:12px"><span style="color:var(--mute);font-weight:650">Rp</span><input id="sigMin" inputmode="numeric" data-input="sigmin" value="${nf.format(S.settings.sigMin)}" aria-label="Batas minimal tanda tangan"></div>
+<div class="sigpre">${[1e6,5e6,10e6,25e6,50e6].map(v=>`<button class="${S.settings.sigMin===v?'on':''}" data-action="sigpre" data-arg="${v}">${v>=1e6?(v/1e6)+' jt':v}</button>`).join('')}</div></div>`:''}
+   </div>`,
+    ekspor:`<div class="surface">
      <div class="setrow"><div><b>Ekspor CSV</b><small>Semua transaksi untuk Excel atau Sheets</small></div><button class="pbtn" data-action="csv">Ekspor</button></div>
      <div class="setrow"><div><b>Ekspor JSON</b><small>Salin seluruh data sebagai cadangan</small></div><button class="pbtn" data-action="bk-export">Ekspor</button></div>
      <div class="setrow"><div><b>Impor JSON</b><small>Ganti data dengan cadangan</small></div><button class="pbtn" data-action="bk-import">Impor</button></div>
      <div class="setrow"><div><b>Muat data contoh</b><small>180 hari transaksi contoh</small></div><button class="pbtn" data-action="sample">Muat</button></div>
+   </div>`,
+    hapus:`<div class="surface dz-zone">
      <div class="setrow"><div><b>${S.settings.demo?'Hapus data contoh':'Hapus semua data'}</b><small>${S.settings.demo?'Mulai dari kosong dengan catatanmu sendiri':'Kosongkan dompet, kartu, dan transaksi'}</small></div><button class="pbtn dz" data-action="wipe">Hapus</button></div>
-   </div></section>`;
+   </div>`
+  };
+  const ic=m=>`<span class="sm-ic">${m}</span>`;
+  const META=[
+    ['umum','Umum','Privasi, teman, layar penuh',sv('<circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/>',22)],
+    ['cadangan','Cadangan',`Cadangan terakhir: ${bkAgo(S.settings.lastBackup).toLowerCase()}${S.settings.gd.on?' · Drive aktif':''}`,sv('<path d="M7 18a4 4 0 0 1-.5-7.97A5.5 5.5 0 0 1 17 8.5a4.5 4.5 0 0 1 0 9.5H7z"/>',22)],
+    ['tampilan','Tampilan','Stiker kategori, kartu, warna dompet',sv('<rect x="3" y="4" width="18" height="13" rx="3"/><path d="M8 21h8M12 17v4"/>',22)],
+    ['layout','Susunan Beranda',`${L.filter(b=>b.on).length} dari ${L.length} blok tampil`,sv('<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/>',22)],
+    ['fitur','Fitur',`${[gestOn(),calOn(),S.settings.sigOn].filter(Boolean).length} dari 3 aktif · Gestun, kalender, tanda tangan`,sv('<path d="M13 3L5 13h6l-1 8 8-10h-6l1-8z"/>',22)],
+    ['ekspor','Ekspor & impor','CSV, JSON, impor, data contoh',sv('<path d="M12 4v12M7 11l5 5 5-5M5 20h14"/>',22)]
+  ];
+  const cur=ui.setSec&&SEC[ui.setSec]?ui.setSec:null;
+  if(cur){
+    const t=cur==='hapus'?'Hapus data':META.find(m=>m[0]===cur)[1];
+    return`<section class="blk"><div class="blk-h sub"><button class="ibtn sm" data-action="set-back" aria-label="Kembali ke Pengaturan">${IC.back}</button><h2>${t}</h2></div>${SEC[cur]}</section>`;
+  }
+  const row=m=>`<button class="sm-r" data-action="set-open" data-arg="${m[0]}">${ic(m[3])}<span class="lm"><b>${m[1]}</b><small>${m[2]}</small></span><i class="go">${IC.fwd}</i></button>`;
+  return`<section class="blk"><div class="blk-h"><h2>Pengaturan</h2></div><div class="surface sm-list">${META.map(row).join('')}</div></section>
+   <section class="blk"><div class="surface sm-list dz-zone"><button class="sm-r dz" data-action="set-open" data-arg="hapus">${ic(sv('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',22))}<span class="lm"><b>${S.settings.demo?'Hapus data contoh':'Hapus data'}</b><small>${S.settings.demo?'Mulai dari kosong dengan catatanmu sendiri':'Kosongkan dompet, kartu, dan transaksi'}</small></span><i class="go">${IC.fwd}</i></button></div></section>`;
 };
 
 /* ============ sheet ============ */
@@ -2747,7 +2772,10 @@ const A={
   sigpre(el,arg){S.settings.sigMin=+arg;persist();render()},
   sigdemo(){askSign(S.settings.sigMin,null,true)},
   sigcancel(){closeSign()},
-  nav(el,arg){const ch=ui.view!==arg;ui.view=arg;ui.mgSort=false;if(arg==='home')ui.bwSeen={};if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
+  'set-open'(el,arg){ui.setSec=arg;render();window.scrollTo(0,0)},
+  'set-go'(el,arg){ui.setSec=arg;ui.view='set';ui.mgSort=false;if(ui.sheet)closeSheet();render();window.scrollTo(0,0)},
+  'set-back'(){ui.setSec=null;render();window.scrollTo(0,0)},
+  nav(el,arg){const ch=ui.view!==arg;if(arg==='set')ui.setSec=null;ui.view=arg;ui.mgSort=false;if(arg==='home')ui.bwSeen={};if(arg==='an')ui.anDrawn='';if(ui.sheet)closeSheet();render();window.scrollTo(0,0);if(ch&&!RM()){const v=$('#view');v.classList.remove('vin');void v.offsetWidth;v.classList.add('vin');clearTimeout(v._t);v._t=setTimeout(()=>v.classList.remove('vin'),360)}},
   'sync-tap'(){if(gdAuto())gdLogin();else if(S.settings.gd.cid)toast('Aktifkan cadangan Drive di Atur');else{ui.view='set';render();window.scrollTo(0,0)}},
   'gd-login'(){gdLogin()},
   'gd-now'(){GD.act='now';setSync('gdsave');gdUpload(true).then(()=>{setSync('gdok');gdClear();render();toast('Tercadangkan ke Drive')}).catch(e=>{gdFail(e);toast(e.message);render()})},
@@ -2990,7 +3018,7 @@ const A={
   wipe(el,a,b,ok){
     if(!ok&&!confirmTap(el,'wipe'))return;
     S=normalize({settings:{privacy:S.settings.privacy},groups:[{id:uid(),name:'Kas & Bank'}],wallets:[],pools:[],cards:[],cats:defaultCats(),tx:[]});
-    closeSheet();commit('Semua data dihapus');
+    ui.setSec=null;closeSheet();commit('Semua data dihapus');
   }
 };
 (function(){let t=null,fired=false;
