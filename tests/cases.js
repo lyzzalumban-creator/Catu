@@ -354,6 +354,16 @@ t('pengaturan: ringkasan menu mengikuti keadaan', () => {
   ui.view = 'home';
 });
 
+/* ============ navigasi bawah ============ */
+t('navigasi bawah: tiap tab punya label yang terlihat dan tab aktif ditandai', () => {
+  fresh(); ui.setSec = null; A.nav(null, 'mut');
+  const nv = [...document.querySelectorAll('.nv')];
+  eq(nv.map((e) => e.querySelector('span').textContent), ['Beranda', 'Transaksi', 'Analitik', 'Kelola', 'Atur']);
+  ok(nv.every((e) => { const r = e.querySelector('span').getBoundingClientRect(); return r.width > 20 && r.height > 5; }), 'label tidak tersembunyi');
+  eq(nv.filter((e) => e.classList.contains('on')).map((e) => e.dataset.nav), ['mut'], 'hanya satu tab aktif');
+  A.nav(null, 'home');
+});
+
 /* ============ tagihan berulang dan tanggal ============ */
 t('tanggal: monShift lintas tahun', () => {
   eq(monShift('2026-12', 1), '2027-01');
