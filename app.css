@@ -751,6 +751,7 @@ a.pbtn{color:inherit;text-decoration:none;display:inline-block}
 .disp .res{width:100%;font-size:12.5px;color:var(--mute);min-height:15px}
 .warn{font-size:12.5px;color:var(--warn);background:var(--warnC);border-radius:12px;padding:8px 12px;margin:4px 0 10px}
 .warn:empty{display:none}
+.warn.info{color:var(--tx2);background:var(--s2)}
 .row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:8px;margin:4px 0 8px}
 .row2 input{padding:10px 14px}
 @media(max-width:350px){.row2 input{padding:10px 10px;font-size:13px}.row2 input[type=date]{letter-spacing:-.02em}}
@@ -956,6 +957,11 @@ input:disabled{opacity:.6}
 .accd-h{position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;margin:4px 0 12px;padding:20px 16px 18px;border-radius:var(--r-xl);background:var(--s2);box-shadow:inset 0 0 0 1px var(--line)}
 .accd-h::before{content:'';position:absolute;z-index:-1;left:50%;top:-60%;width:120%;aspect-ratio:1;transform:translateX(-50%);background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 22%,transparent),transparent 72%);pointer-events:none}
 .accd-t b{display:block;font-size:17px;font-weight:700}
+.goal{width:100%;max-width:300px;margin-top:4px}
+.goal-b{height:6px;border-radius:99px;background:var(--s3);overflow:hidden}
+.goal-b i{display:block;height:100%;min-width:6px;border-radius:inherit;background:var(--c,var(--acc));transition:width .6s var(--emph)}
+.goal small{display:block;margin-top:7px;font-size:12px;color:var(--mute)}
+.goal small b{color:var(--tx);font-weight:700}
 .accd-t small{display:block;margin-top:2px;color:var(--mute);font-size:12.5px}
 .accd-h .big{font-size:34px;font-weight:750;letter-spacing:-.03em;line-height:1.1}
 textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);background:var(--s2);border:0;box-shadow:inset 0 0 0 1px var(--line2);border-radius:var(--r-md);padding:12px;width:100%;height:200px;resize:vertical}
@@ -1211,3 +1217,12 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .tchip.cat{--c:var(--tx2);flex:0 1 auto}
 .tarr{color:var(--mute);font-size:11.5px}
 .arr{font-size:8px;margin-right:5px;vertical-align:2px}
+
+/* tombol kecil di akhir beranda: ajak menyusun beranda sendiri */
+.hm-own{display:flex;justify-content:center;margin:4px 0 8px}
+.hm-own .tbtn{color:var(--mute)}
+/* banner data contoh: informatif, bukan peringatan; tombol di bawah teks */
+.nudge.demo{flex-direction:column;align-items:stretch;gap:12px;background:var(--s2);box-shadow:inset 0 0 0 1px var(--line2)}
+.nudge.demo b{color:var(--tx)}
+.nudge.demo .nd-b{flex-direction:row;align-items:center;gap:6px}
+.nudge.demo .nd-b .pbtn{background:var(--acc);color:var(--acc-ink)}
