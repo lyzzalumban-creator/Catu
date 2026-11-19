@@ -364,6 +364,67 @@ t('navigasi bawah: tiap tab punya label yang terlihat dan tab aktif ditandai', (
   A.nav(null, 'home');
 });
 
+/* ============ siklus tagihan kartu (cetak tgl 15, jatuh tempo tgl 1; hari ini 17 Nov) ============ */
+t('siklus kartu: belanja sampai tgl cetak ditagih, jatuh tempo 1 Des; belanja sesudahnya belum ditagih', () => {
+  fresh({ cards: [{ id: 'c1', name: 'Kartu A', last4: '1111', limit: 9e6, cut: 15, due: 1, minPct: 10 }], tx: [
+    tx({ t: 'exp', acc: 'c1', amt: 400000, cat: 'k1', d: '2026-10-20' }), tx({ t: 'exp', acc: 'c1', amt: 300000, cat: 'k1', d: '2026-11-10' }),
+    tx({ t: 'exp', acc: 'c1', amt: 100000, cat: 'k1', d: '2026-11-16' })] }); recalc();
+  const b = cardBills(S.cards[0]);
+  eq([b.on, b.lastCut, b.nextCut], [true, '2026-11-15', '2026-12-15']);
+  eq(b.bills.map((x) => [x.stmt, x.due, x.amt, x.min]), [['2026-11-15', '2026-12-01', 700000, 70000]]);
+  eq(b.unbilled, 100000, 'belanja 16 Nov belum ditagih');
+  eq(D.debt.c1, 800000, 'total utang tetap utuh');
+});
+t('siklus kartu: sudah dibayar sesudah tagihan terbit = tidak ada jatuh tempo; bayar sebelum terbit tidak dihitung', () => {
+  const base = [tx({ t: 'exp', acc: 'c1', amt: 700000, cat: 'k1', d: '2026-11-10' }), tx({ t: 'exp', acc: 'c1', amt: 100000, cat: 'k1', d: '2026-11-16' })];
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', cut: 15, due: 1 }], tx: base.concat(tx({ t: 'pay', acc: 'w1', to: 'c1', amt: 700000, d: '2026-11-16' })) }); recalc();
+  eq(cardBills(S.cards[0]).bills, [], 'lunas');
+  eq(planFor('2026-12-01'), [], 'tidak ada Tempo 1 Des');
+  eq(dueNudge(), '');
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', cut: 15, due: 1 }], tx: base.concat(tx({ t: 'pay', acc: 'w1', to: 'c1', amt: 700000, d: '2026-11-14' })) }); recalc();
+  eq(cardBills(S.cards[0]).billed, 700000, 'pembayaran 14 Nov mendahului tagihan 15 Nov');
+});
+t('siklus kartu: tagihan sebelum aplikasi dipakai, pembayaran dilunaskan paling lama dulu', () => {
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', cut: 15, due: 1 }], tx: [
+    tx({ t: 'exp', acc: 'c1', amt: 200000, cat: 'k1', d: '2026-10-05' }),   /* tagihan 15 Okt */
+    tx({ t: 'exp', acc: 'c1', amt: 700000, cat: 'k1', d: '2026-11-10' }),   /* tagihan 15 Nov */
+    tx({ t: 'pay', acc: 'w1', to: 'c1', amt: 500000, d: '2026-11-16' })] }); recalc();
+  const b = cardBills(S.cards[0]);
+  eq(b.bills.map((x) => [x.stmt, x.amt]), [['2026-11-15', 400000]], 'tagihan Okt lunas dulu, Nov sisa 400 rb');
+  eq(b.bills[0].due, '2026-12-01');
+});
+t('siklus kartu: tagihan lama belum dibayar = terlambat dan tetap muncul', () => {
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', cut: 15, due: 1 }], tx: [tx({ t: 'exp', acc: 'c1', amt: 200000, cat: 'k1', d: '2026-10-05' })] }); recalc();
+  const b = cardBills(S.cards[0]);
+  eq(b.bills.map((x) => [x.stmt, x.due]), [['2026-10-15', '2026-11-01']]);
+  ok(dueNudge().includes('terlambat 16 hari'), 'pengingat menyebut terlambat');
+  eq(planFor('2026-11-01').map((x) => x.k), ['due'], 'tampil di 1 Nov');
+});
+t('siklus kartu: kalender menandai Tempo di 1 Des dan Cetak di 15 Des', () => {
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', cut: 15, due: 1 }], tx: [
+    tx({ t: 'exp', acc: 'c1', amt: 700000, cat: 'k1', d: '2026-11-10' }), tx({ t: 'exp', acc: 'c1', amt: 100000, cat: 'k1', d: '2026-11-16' })] }); recalc();
+  eq(planFor('2026-12-01').map((x) => [x.k, x.amt]), [['due', 700000]]);
+  eq(planFor('2026-12-15').map((x) => [x.k, x.amt]), [['cut', 100000]], 'cetak berikutnya, perkiraan dari belanja baru');
+  eq(planFor('2026-11-15'), [], 'tanggal cetak yang sudah lewat tidak jadi rencana');
+});
+t('siklus kartu: Bayar terisi tagihan terbit (bukan seluruh utang), chip Tagihan dan Minimum', () => {
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', cut: 15, due: 1, minPct: 10 }], tx: [
+    tx({ t: 'exp', acc: 'c1', amt: 700000, cat: 'k1', d: '2026-11-10' }), tx({ t: 'exp', acc: 'c1', amt: 100000, cat: 'k1', d: '2026-11-16' })] }); recalc();
+  openPay('c1');
+  eq(ui.amt.expr, '700000');
+  ok(document.querySelector('#panel').innerHTML.includes('data-action="p-bill"'), 'chip Tagihan');
+  A['p-min'](); eq(ui.amt.expr, '70000');
+  A['p-full'](); eq(ui.amt.expr, '800000', 'Lunas = seluruh utang');
+  A['p-bill'](); eq(ui.amt.expr, '700000');
+  ui.sheet = null; renderSheet();
+});
+t('siklus kartu: tanpa tgl cetak memakai cara lama (seluruh utang, jatuh tempo berikutnya)', () => {
+  fresh({ cards: [{ id: 'c1', name: 'A', last4: '1', due: 20 }], tx: [tx({ t: 'exp', acc: 'c1', amt: 300000, cat: 'k1', d: '2026-11-10' })] }); recalc();
+  eq(cardBills(S.cards[0]).on, false);
+  eq(planFor('2026-11-20').map((x) => [x.k, x.amt]), [['due', 300000]]);
+  ok(dueNudge().includes('3 hari lagi'));
+});
+
 /* ============ tagihan berulang dan tanggal ============ */
 t('tanggal: monShift lintas tahun', () => {
   eq(monShift('2026-12', 1), '2027-01');

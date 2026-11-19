@@ -530,10 +530,12 @@ button:active .shi svg.shp,button:hover .shi svg.shp{transform:rotate(36deg) sca
 .an-draw .pbar i{transform-origin:left;animation:wsg .8s var(--emph) both}
 /* rencana di kalender, meter anggaran, baris ulangi */
 .ca.pl{color:var(--warn);background:none;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--warn) 55%,transparent)}
+.ca.pl.cut{color:var(--mute);box-shadow:inset 0 0 0 1px var(--line2)}
 .cd.plan{position:relative}.cd.plan::after{content:"";position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--warn)}
 .pl-h{font-size:12px;font-weight:700;color:var(--mute);margin:12px 0 2px}
 .plr{display:flex;align-items:center;gap:12px;padding:10px 0}
 .plr .pld{width:10px;height:10px;border-radius:50%;background:var(--warn);flex:none;margin:0 14px 0 3px}
+.plr.cut .pld{background:var(--mute)}
 .plr .lm{flex:1;min-width:0}.plr .lm b{display:block;font-size:14px}.plr .lm small{display:block;font-size:12px;color:var(--mute);margin-top:2px}
 .bud{margin:8px 0 0 50px}.bud-t{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
 .bud-b{height:4px;border-radius:99px;background:var(--s3);margin-top:5px;overflow:hidden}.bud-b i{display:block;height:100%;border-radius:99px;transition:width .6s var(--emph)}
