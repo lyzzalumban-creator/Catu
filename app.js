@@ -847,7 +847,7 @@ function cardFlash(id,delay){
 function cardHTML(c,debtOv){
   const debt=debtOv!=null?debtOv:(D.debt[c.id]||0),hasImg=!!c.bg;
   const ov=hasImg?`<div class="cc-img" style="background-image:url('${c.bg}')"></div><div class="cc-ov" style="opacity:${(0.08+clamp(c.contrast==null?40:c.contrast,0,100)/100*0.72).toFixed(2)}"></div>`:'';
-  const due=c.due?nextOcc(c.due):null;
+  const due=cardDue(c);
   return`<div class="cc th-${esc(c.theme||'obsidian')} ${hasImg?'has-img':''}">${ov}<div class="cc-in">
     <div class="cc-top"><div><div class="cc-name">${esc(c.name||'Kartu')}</div><div class="cc-bank">${esc(c.bank||'')}</div></div><div>${c.net==='mc'?IC.mc:IC.visa}</div></div>
     <div class="cc-id">${c.net==='mc'?IC.mc:IC.visa}<span class="cc-dots"><i></i><i></i><i></i><i></i></span><b>${esc(c.last4||'0000')}</b></div>
@@ -898,13 +898,13 @@ function limitBlock(c){
     const hue=Math.round(130-130*(i/(N-1)));
     ticks+=`<i class="${on?(mine?'on':'on o'):''}" style="--i:${i};--h:${hue}"></i>`;
   }
-  const due=c.due?nextOcc(c.due):null,dn=due?daysTo(due):null,hasDue=due&&ci.mine>0;
+  const due=cardDue(c),dn=due?daysTo(due):null,hasDue=due&&(cardBills(c).on||ci.mine>0);
   return`<div class="lim lg"><div class="lg-top"><div class="lg-pct ${tone}"><span>${lim?pct:0}</span><small>%</small><em>terpakai</em></div>
     <div class="lg-rem"><span>Sisa limit</span><b class="num ${ci.remain<0?'neg':''}" ${mv('cr:'+c.id,ci.remain)}>${money(ci.remain)}</b></div></div>
-    <div class="lg-st"><span class="lg-pill ${tone}">${msg}</span>${lim?`<span class="lg-amt num ${hasDue?'hd':''}"><span class="lg-df">dari ${money(lim)}</span>${hasDue?`<span class="lg-ds ${dn<=3?'soon':''}">Jatuh tempo ${due.getDate()+' '+MONS[due.getMonth()]} · ${dn===0?'hari ini':dn+' hari'}</span>`:''}</span>`:''}</div>
+    <div class="lg-st"><span class="lg-pill ${tone}">${msg}</span>${lim?`<span class="lg-amt num ${hasDue?'hd':''}"><span class="lg-df">dari ${money(lim)}</span>${hasDue?`<span class="lg-ds ${dn<=3?'soon':''}">Jatuh tempo ${due.getDate()+' '+MONS[due.getMonth()]} · ${dn===0?'hari ini':dn<0?dnLbl(dn):dn+' hari'}</span>`:''}</span>`:''}</div>
     <div class="lg-g" role="img" aria-label="Limit terpakai ${pct} persen"><div class="lg-ticks">${ticks}</div><b class="lg-mk" style="left:${IDEAL}%"></b></div>
     <div class="lg-stats"><div><span>Tagihan</span><b class="num">${money(ci.mine)}</b></div>
-      <div><span>Jatuh tempo</span><b class="${hasDue&&dn<=3?'soon':''}">${hasDue?due.getDate()+' '+MONS[due.getMonth()]:'–'}</b>${hasDue?`<small>${dn===0?'hari ini':dn+' hari lagi'}</small>`:''}</div>
+      <div><span>Jatuh tempo</span><b class="${hasDue&&dn<=3?'soon':''}">${hasDue?due.getDate()+' '+MONS[due.getMonth()]:'–'}</b>${hasDue?`<small>${dnLbl(dn)}</small>`:''}</div>
       ${ci.pool?`<div><span>Kartu segrup</span><b class="num">${money(ci.other)}</b><small>${esc(ci.pool.name)}</small></div>`:`<div><span>Limit sendiri</span><b class="num">${money(ci.limit)}</b></div>`}</div></div>`;
 }
 const WL_COLORS={neon:'Hijau neon',blue:'Biru',graphite:'Grafit',rose:'Mawar',leather:'Kulit'};
@@ -1288,17 +1288,52 @@ function runRecur(){
     while(m<=cur&&guard++<240){const d=recDate(r,m);if(d>td)break;S.tx.push({id:uid(),d,t:r.t,acc:r.acc,amt:r.amt,cat:r.cat||'',sub:r.sub||'',note:r.note||'',rec:r.id});r.last=m;m=monShift(m,1);n++}});
   return n;
 }
-/* rencana pada satu tanggal: jatuh tempo kartu (tagihan yang berjalan) dan tagihan berulang yang belum dibuat */
+/* ---- siklus tagihan kartu ----
+   Belanja satu siklus (dari tgl cetak sebelumnya sampai tgl cetak) menjadi satu tagihan yang TERBIT di tgl cetak
+   dan JATUH TEMPO di tanggal jatuh tempo berikutnya. Belanja sesudah tgl cetak terakhir belum ditagih.
+   Pembayaran melunasi tagihan yang sudah terbit (paling lama dulu); pembayaran untuk tagihan yang tidak tercatat
+   (mis. sebelum aplikasi dipakai) diabaikan. Tanpa tgl cetak, kartu memakai cara lama (seluruh utang). */
+const dnLbl=dn=>dn===0?'hari ini':dn<0?'terlambat '+(-dn)+' hari':dn+' hari lagi';
+function cardBills(c){
+  D._b=D._b||{};if(D._b[c.id])return D._b[c.id];
+  const td=today(),cs=Math.round(+c.cut),du=Math.round(+c.due),mp=c.minPct==null?10:c.minPct;
+  const out={on:false,bills:[],billed:0,min:0,unbilled:0,nextCut:'',lastCut:''};
+  if(!(cs>=1&&cs<=31&&du>=1&&du<=31))return D._b[c.id]=out;
+  out.on=true;
+  const cm=td.slice(0,7),thisCut=recDate({day:cs},cm);
+  out.lastCut=thisCut<=td?thisCut:recDate({day:cs},monShift(cm,-1));
+  out.nextCut=thisCut>td?thisCut:recDate({day:cs},monShift(cm,1));
+  const ch=S.tx.filter(t=>(t.t==='exp'||t.t==='gcard')&&t.acc===c.id).sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:0);
+  if(!ch.length)return D._b[c.id]=out;
+  const st=[];for(let m=ch[0].d.slice(0,7);m<=cm;m=monShift(m,1)){const e=recDate({day:cs},m);if(e<=td)st.push({e,amt:0})}
+  ch.forEach(t=>{const s0=st.find(x=>x.e>=t.d);if(s0)s0.amt+=t.amt;else out.unbilled+=t.amt});
+  S.tx.filter(t=>t.t==='pay'&&t.to===c.id).sort((x,y)=>x.d<y.d?-1:x.d>y.d?1:0).forEach(t=>{
+    let left=t.amt;for(const s0 of st){if(left<=0)break;if(s0.e<t.d&&s0.amt>0){const x=Math.min(s0.amt,left);s0.amt-=x;left-=x}}});
+  st.forEach(s0=>{if(s0.amt<=0)return;
+    const m=s0.e.slice(0,7),d1=recDate({day:du},m),due=d1>s0.e?d1:recDate({day:du},monShift(m,1)),mn=Math.round(s0.amt*mp/100/1000)*1000;
+    out.bills.push({stmt:s0.e,due,amt:s0.amt,min:mn});out.billed+=s0.amt;out.min+=mn});
+  return D._b[c.id]=out;
+}
+/* jatuh tempo terdekat yang belum dibayar (Date), atau null */
+function cardDue(c){const b=cardBills(c);if(b.on)return b.bills.length?parseD(b.bills[0].due):null;return c.due?nextOcc(c.due):null}
+/* rencana pada satu tanggal: jatuh tempo kartu, cetak tagihan berikutnya, dan tagihan berulang yang belum dibuat */
 function planFor(ds){
   const out=[],td=today();
-  S.cards.forEach(c=>{if(!c.due||(D.debt[c.id]||0)<=0)return;const d=nextOcc(c.due);if(d&&ymd(d)===ds)out.push({k:'due',c,amt:D.debt[c.id]})});
+  S.cards.forEach(c=>{if(!c.due)return;const b=cardBills(c);
+    if(b.on){b.bills.forEach(x=>{if(x.due===ds)out.push({k:'due',c,amt:x.amt,min:x.min,stmt:x.stmt})});
+      if(b.nextCut===ds&&b.unbilled>0)out.push({k:'cut',c,amt:b.unbilled});return}
+    if((D.debt[c.id]||0)<=0)return;const d=nextOcc(c.due);if(d&&ymd(d)===ds)out.push({k:'due',c,amt:D.debt[c.id],min:Math.round(D.debt[c.id]*(c.minPct==null?10:c.minPct)/100/1000)*1000})});
   if(ds>td)(S.recur||[]).forEach(r=>{const m=ds.slice(0,7);if(m>r.last&&recDate(r,m)===ds)out.push({k:'rec',r,amt:r.amt})});
   return out;
 }
 function dueNudge(){
-  const rows=S.cards.map(c=>{const debt=D.debt[c.id]||0;if(!c.due||debt<=0)return null;const dn=daysTo(nextOcc(c.due));return dn<=5?{c,debt,dn}:null}).filter(Boolean).sort((a,b)=>a.dn-b.dn);
+  const rows=[];
+  S.cards.forEach(c=>{if(!c.due)return;const b=cardBills(c);
+    if(b.on){b.bills.forEach(x=>{const dn=daysTo(parseD(x.due));if(dn<=5)rows.push({c,debt:x.amt,dn})});return}
+    const debt=D.debt[c.id]||0;if(debt<=0)return;const dn=daysTo(nextOcc(c.due));if(dn<=5)rows.push({c,debt,dn})});
+  rows.sort((a,b)=>a.dn-b.dn);
   if(!rows.length)return'';
-  return`<section class="blk nudge due" role="status">${rows.map(x=>`<div class="nd-r"><div class="nd-t"><b>${esc(x.c.name)} jatuh tempo ${x.dn<=0?'hari ini':x.dn+' hari lagi'}</b><small>Tagihan ${money(x.debt)} · bayar sebelum jatuh tempo agar tidak kena denda dan bunga</small></div><button class="pbtn" data-action="open-pay" data-id="${x.c.id}">Bayar</button></div>`).join('')}</section>`;
+  return`<section class="blk nudge due" role="status">${rows.map(x=>`<div class="nd-r"><div class="nd-t"><b>${esc(x.c.name)} jatuh tempo ${x.dn<=0?(x.dn<0?dnLbl(x.dn):'hari ini'):x.dn+' hari lagi'}</b><small>Tagihan ${money(x.debt)} · bayar sebelum jatuh tempo agar tidak kena denda dan bunga</small></div><button class="pbtn" data-action="open-pay" data-id="${x.c.id}">Bayar</button></div>`).join('')}</section>`;
 }
 /* ---- Google Drive: cadangan otomatis ke folder tersembunyi milik aplikasi (appDataFolder) ----
    Token hanya di memori. Data lokal selalu menang: tidak ada pemulihan otomatis yang menimpa data. */
@@ -1504,7 +1539,7 @@ function mutBody(){
   const cell=(ds,wd)=>{const o=byD[ds],pl=filtering?[]:planFor(ds),dd=parseD(ds).getDate(),isT=ds===tdy,on=ui.mutSel===ds,has=!!o||pl.length>0;
     let amt='';
     if(o)amt=o.net===0?'<em class="ca z">•</em>':`<em class="ca ${o.net>0?'p':'n'}">${S.settings.privacy?'•••':cmp(o.net)}</em>`;
-    else if(pl.length){const pn=planNet(pl);amt=`<em class="ca pl">${pl.some(x=>x.k==='due')&&!pn?'Tempo':S.settings.privacy?'•••':cmp(pn)}</em>`}
+    else if(pl.length){const pn=planNet(pl);const lb=!pn?(pl.some(x=>x.k==='due')?'Tempo':pl.some(x=>x.k==='cut')?'Cetak':''):'';amt=`<em class="ca pl${lb==='Cetak'?' cut':''}">${lb||(S.settings.privacy?'•••':cmp(pn))}</em>`}
     const inner=`${wd?`<span class="cwd">${WD[parseD(ds).getDay()]}</span>`:''}<span class="cn ${isT?'t':''}">${dd}</span>${amt}`;
     return has?`<button class="cd has ${on?'sel':''} ${pl.length&&o?'plan':''}" data-action="mutcal" data-arg="${ds}" aria-label="${dd} ${MON[parseD(ds).getMonth()]}${o?', '+o.n+' transaksi':''}${pl.length?', '+pl.length+' rencana':''}">${inner}</button>`:`<i class="cd">${inner}</i>`};
   let head,body;
@@ -1525,8 +1560,9 @@ function mutBody(){
   let panel='';
   if(calOn()&&ui.mutSel){const o=byD[ui.mutSel],pl=filtering?[]:planFor(ui.mutSel);
     if(o||pl.length){
-      const prow=x=>{if(x.k==='due'){const mn=Math.round(x.amt*(x.c.minPct==null?10:x.c.minPct)/100/1000)*1000;
-          return`<div class="plr"><i class="pld"></i><span class="lm"><b>Jatuh tempo ${esc(x.c.name)} ••${esc(x.c.last4)}</b><small>Tagihan · minimum ${money(mn)}</small></span><span class="lr"><b>${money(x.amt)}</b></span></div>`}
+      const prow=x=>{if(x.k==='due'){const late=ui.mutSel<today();
+          return`<div class="plr"><i class="pld"></i><span class="lm"><b>Jatuh tempo ${esc(x.c.name)} ••${esc(x.c.last4)}</b><small>${late?'Belum dibayar · ':''}${x.stmt?'Tagihan terbit '+fmtDate(x.stmt)+' · ':'Tagihan · '}minimum ${money(x.min)}</small></span><span class="lr"><b>${money(x.amt)}</b></span></div>`}
+        if(x.k==='cut')return`<div class="plr cut"><i class="pld"></i><span class="lm"><b>Cetak tagihan ${esc(x.c.name)} ••${esc(x.c.last4)}</b><small>Perkiraan dari belanja sejak cetak sebelumnya</small></span><span class="lr"><b>${money(x.amt)}</b></span></div>`;
         const c=S.cats.find(y=>y.id===x.r.cat);return`<div class="plr"><i class="pld"></i><span class="lm"><b>${esc((c?c.name:'Tanpa kategori')+(x.r.note?' · '+x.r.note:''))}</b><small>Rencana berulang · ${esc(accName(x.r.acc))}</small></span><span class="lr"><b class="${x.r.t==='inc'?'pos':'neg'}">${x.r.t==='inc'?'+':'−'}${money(x.amt)}</b></span></div>`};
       const rows=(pl.length?`<div class="pl-h">Rencana</div>${pl.map(prow).join('')}`:'')+(o?`${pl.length?'<div class="pl-h">Transaksi</div>':''}${lall.filter(t=>t.d===ui.mutSel).map(txRow2).join('')}`:'');
       const sub=[o?o.n+' transaksi':'',pl.length?pl.length+' rencana':''].filter(Boolean).join(' · ');
@@ -2314,13 +2350,13 @@ const linkedRow=(label,id)=>{const w=accById(id);return`<div class="pk-g" style=
 const unlinkedHint='<p class="hint">Kartu ini belum punya dompet terhubung. Atur di Kelola → Kartu → Ubah supaya otomatis.</p>';
 const richest=()=>{const w=S.wallets.slice().sort((a,b)=>(D.bal[b.id]||0)-(D.bal[a.id]||0))[0];return w?w.id:''};
 const richestX=()=>{const w=S.wallets.filter(canXfer).sort((a,b)=>(D.bal[b.id]||0)-(D.bal[a.id]||0))[0];return w?w.id:''};
-function openPay(cardId){ui.pay={card:cardId,from:cardWallet(S.cards.find(x=>x.id===cardId))||richest(),date:today()};const debt=Math.round(Math.max(0,D.debt[cardId]||0));ui.amt={expr:debt?String(debt):''};ui.sheet='pay';renderSheet()}
+function openPay(cardId){ui.pay={card:cardId,from:cardWallet(S.cards.find(x=>x.id===cardId))||richest(),date:today()};const bb=cardBills(S.cards.find(x=>x.id===cardId)||{}),debt=bb.on?Math.round(bb.billed):Math.round(Math.max(0,D.debt[cardId]||0));ui.amt={expr:debt?String(debt):''};ui.sheet='pay';renderSheet()}
 function payHTML(){
   const P=ui.pay,c=S.cards.find(x=>x.id===P.card);if(!c)return'';const mp=c.minPct==null?10:c.minPct;
   return`<div class="sh-h"><h3>Bayar kartu</h3>${closeBtn}</div>${cardChips('p-card',P.card)}
   <div class="mini"><span>${esc(c.name)} <span class="mute">••${esc(c.last4)}</span></span><b class="num neg">${money(D.debt[c.id]||0)}</b></div>
   ${cardWallet(c)?linkedRow('Bayar dari',cardWallet(c)):`<div class="pk-g" style="margin-top:6px">Bayar dari</div>${walletChips('p-from',P.from)}${unlinkedHint}`}
-  <div class="chips" style="margin-top:12px"><button class="chip" data-action="p-full">Lunas</button><button class="chip" data-action="p-min">Minimum ${mp}%</button></div>
+  <div class="chips" style="margin-top:12px">${cardBills(c).on&&cardBills(c).billed>0?'<button class="chip" data-action="p-bill">Tagihan</button>':''}<button class="chip" data-action="p-full">Lunas</button><button class="chip" data-action="p-min">Minimum ${mp}%</button></div>
   ${amtDisp()}
   <div class="row2" style="grid-template-columns:1fr"><input id="p_date" type="date" data-input="p-date" value="${esc(P.date)}" aria-label="Tanggal"></div>
   ${numpad('p-save','Bayar')}`;
@@ -2917,7 +2953,8 @@ const A={
   'q-amt'(el,arg){ui.amt.expr=String(+arg||'');updateAmt()},
   'q-all'(){const v=Math.max(0,Math.round(D.bal[ui.xfer.from]||0));ui.amt.expr=v?String(v):'';updateAmt()},
   'p-full'(){const v=Math.max(0,D.debt[ui.pay.card]||0);ui.amt.expr=v?String(v):'';updateAmt()},
-  'p-min'(){const c=S.cards.find(x=>x.id===ui.pay.card),mp=c&&c.minPct!=null?c.minPct:10,v=Math.round(Math.max(0,D.debt[ui.pay.card]||0)*mp/100/1000)*1000;ui.amt.expr=v?String(v):'';updateAmt()},
+  'p-bill'(){const c=S.cards.find(x=>x.id===ui.pay.card),b=c?cardBills(c):null,v=b&&b.on?Math.round(b.billed):0;ui.amt.expr=v?String(v):'';updateAmt()},
+  'p-min'(){const c=S.cards.find(x=>x.id===ui.pay.card),b=c?cardBills(c):null,mp=c&&c.minPct!=null?c.minPct:10,v=b&&b.on&&b.billed>0?b.min:Math.round(Math.max(0,D.debt[ui.pay.card]||0)*mp/100/1000)*1000;ui.amt.expr=v?String(v):'';updateAmt()},
   'p-save'(){
     const P=ui.pay,amt=amtVal();if(!(amt>0))return toast('Isi nominal dulu');{const lw=cardWallet(S.cards.find(x=>x.id===P.card));if(lw)P.from=lw}if(!P.from)return toast('Pilih dompet');
     if(sigGate(amt,()=>A['p-save']()))return;
