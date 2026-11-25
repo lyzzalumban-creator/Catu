@@ -1374,3 +1374,11 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
   }
 }
 @media (prefers-reduced-transparency:reduce){.panel.wtint .accd-h{-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+/* detail dompet: tanpa ikon, nama dompet besar di tengah */
+.accd-h{gap:6px;padding:26px 16px 22px}
+.accd-h .accd-t{max-width:100%}
+.accd-h .accd-t b{font-size:clamp(22px,7vw,28px);font-weight:750;letter-spacing:-.02em;line-height:1.15;overflow-wrap:anywhere}
+.accd-h .accd-t small{margin-top:4px}
+.accd-h .big{margin-top:8px}
+@supports (color:oklch(from red l c h)){.panel.wtint .accd-h .accd-t b{color:color-mix(in srgb,var(--tint,#fff) 22%,#fff)}}
