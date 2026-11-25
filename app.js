@@ -1390,7 +1390,7 @@ function dueNudge(){
     const debt=D.debt[c.id]||0;if(debt<=0)return;const dn=daysTo(nextOcc(c.due));if(dn<=5)rows.push({c,debt,dn})});
   rows.sort((a,b)=>a.dn-b.dn);
   if(!rows.length)return'';
-  return`<section class="blk nudge due" role="status">${rows.map(x=>`<div class="nd-r"><div class="nd-t"><b>${esc(x.c.name)} jatuh tempo ${x.dn<=0?(x.dn<0?dnLbl(x.dn):'hari ini'):x.dn+' hari lagi'}</b><small>Tagihan ${money(x.debt)} · bayar sebelum jatuh tempo agar tidak kena denda dan bunga</small></div><button class="pbtn" data-action="open-pay" data-id="${x.c.id}">Bayar</button></div>`).join('')}</section>`;
+  return`<section class="blk nudge due" role="status">${rows.slice(0,2).map(x=>`<div class="nd-r"><div class="nd-t"><b>${esc(x.c.name)} jatuh tempo ${x.dn<=0?(x.dn<0?dnLbl(x.dn):'hari ini'):x.dn+' hari lagi'}</b><small>Tagihan ${money(x.debt)} · bayar sebelum jatuh tempo agar tidak kena denda dan bunga</small></div><button class="pbtn" data-action="open-pay" data-id="${x.c.id}">Bayar</button></div>`).join('')}</section>`;
 }
 /* ---- Google Drive: cadangan otomatis ke folder tersembunyi milik aplikasi (appDataFolder) ----
    Token hanya di memori. Data lokal selalu menang: tidak ada pemulihan otomatis yang menimpa data. */
