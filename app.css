@@ -1264,8 +1264,19 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
   .sync,.ibtn{background:var(--glass);-webkit-backdrop-filter:blur(16px) saturate(1.5);backdrop-filter:blur(16px) saturate(1.5);
     box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-ln)}
   .ibtn:active{background:rgba(255,255,255,.12)}
+  /* panel detail kartu */
+  .wl-detail{background:linear-gradient(180deg,rgba(30,38,34,.62),rgba(18,23,20,.58));-webkit-backdrop-filter:blur(20px) saturate(1.5);backdrop-filter:blur(20px) saturate(1.5);
+    box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-ln)}
+  .wl-detail .lg-stats>div{background:rgba(255,255,255,.055);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+  /* sheet: lebih pekat karena isinya form */
+  .panel,.panel2{background:rgba(17,22,19,.80);-webkit-backdrop-filter:blur(28px) saturate(1.5);backdrop-filter:blur(28px) saturate(1.5);
+    box-shadow:0 -20px 50px rgba(0,0,0,.4),inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-ln)}
+  .panel .handle,.panel2 .handle{background:rgba(17,22,19,.9)}
+  .handle i{background:rgba(255,255,255,.22)}
 }
 @media (prefers-reduced-transparency:reduce){
   .tbar{background:rgba(27,27,32,.96);-webkit-backdrop-filter:none;backdrop-filter:none}
   .sync,.ibtn{background:var(--s2);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .wl-detail{background:var(--s2);-webkit-backdrop-filter:none;backdrop-filter:none}
+  .panel,.panel2{background:var(--s1);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
