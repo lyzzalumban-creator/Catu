@@ -59,3 +59,45 @@
   addEventListener('resize', function () { last = 0; go(); });
   go();
 })();
+
+/* Penanda tab dock berbentuk "amuba": dua gumpalan menyusul dengan kecepatan beda, lalu menyatu (filter goo). */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  window.navBlob = function (instant) {
+    var bar = document.querySelector('.tbar');
+    if (!bar) return;
+    var on = bar.querySelector('.nv.on');
+    if (!on) return;
+    var goo = bar.querySelector('.nv-goo');
+    if (!goo) {
+      if (!document.getElementById('gooF')) {
+        var s = document.createElementNS(NS, 'svg');
+        s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.setAttribute('aria-hidden', 'true');
+        s.style.cssText = 'position:absolute;pointer-events:none';
+        s.innerHTML = '<defs><filter id="gooF" x="-20%" y="-60%" width="140%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"/></filter></defs>';
+        document.body.appendChild(s);
+      }
+      goo = document.createElement('div'); goo.className = 'nv-goo'; goo.setAttribute('aria-hidden', 'true');
+      goo.innerHTML = '<i></i><i></i>';
+      bar.insertBefore(goo, bar.firstChild); bar.classList.add('goo');
+      instant = true;
+    }
+    var bs = goo.children, r = on.getBoundingClientRect(), br = bar.getBoundingClientRect();
+    var x = r.left - br.left, w = r.width, h = r.height, y = r.top - br.top;
+    var prev = goo._x == null ? x : goo._x, dir = x >= prev ? 1 : -1;
+    goo._x = x;
+    for (var k = 0; k < 2; k++) {
+      var b = bs[k];
+      b.style.width = w + 'px'; b.style.height = h + 'px'; b.style.top = y + 'px';
+      if (instant) { b.style.transition = 'none'; b.style.transform = 'translateX(' + x + 'px)'; continue; }
+      /* penyusul (k=0) cepat, pengikut (k=1) lebih lambat sehingga sempat terpisah lalu menyatu */
+      var lead = (k === 0) === (dir > 0) || (k === 1) === (dir < 0) ? 0 : 1;
+      var dur = lead === 0 ? .38 : .62, del = lead === 0 ? 0 : .05;
+      b.style.transition = 'transform ' + dur + 's cubic-bezier(.34,1.18,.5,1) ' + del + 's, width .3s ease';
+      b.style.transform = 'translateX(' + x + 'px)';
+    }
+    if (instant) { void goo.offsetWidth; for (var j = 0; j < 2; j++) bs[j].style.transition = ''; }
+  };
+  addEventListener('resize', function () { window.navBlob(true); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { window.navBlob(true); });
+})();
