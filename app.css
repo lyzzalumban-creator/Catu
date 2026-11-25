@@ -1382,3 +1382,62 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .accd-h .accd-t small{margin-top:4px}
 .accd-h .big{margin-top:8px}
 @supports (color:oklch(from red l c h)){.panel.wtint .accd-h .accd-t b{color:color-mix(in srgb,var(--tint,#fff) 22%,#fff)}}
+
+/* ===== Transaksi versi ringkas ===== */
+/* ringkasan bulan: satu angka + garis masuk/keluar, rincian saat diketuk */
+.msum2{display:block;width:100%;text-align:left;background:var(--s2);border-radius:18px;padding:12px 16px;margin-bottom:10px}
+.ms-k{display:block;font-size:12px;color:var(--mute)}
+.ms-v{display:block;font-size:24px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:2px;line-height:1.15}
+.ms-bar{display:flex;gap:3px;height:6px;margin-top:10px}
+.ms-bar i{display:block;min-width:0;border-radius:99px;transition:flex .5s var(--spring)}
+.ms-bar .in,.ms-di .in{background:var(--acc)}.ms-bar .out,.ms-di .out{background:var(--neg)}
+.ms-bar.z i{background:var(--s4)}
+.ms-d{display:grid;grid-template-rows:0fr;transition:grid-template-rows .4s var(--emph)}
+.msum2.open .ms-d{grid-template-rows:1fr;transition:grid-template-rows .5s var(--spring)}
+.ms-di{min-height:0;overflow:hidden;display:flex;flex-wrap:wrap;gap:0 18px;font-size:12.5px;color:var(--mute)}
+.ms-di>span{display:flex;align-items:center;gap:6px;padding-top:10px;white-space:nowrap}
+.ms-di i{width:8px;height:8px;border-radius:50%}
+.ms-di b{font-variant-numeric:tabular-nums;font-weight:700}
+/* 7 hari: batang naik (masuk) / turun (keluar) dari garis tengah, tanpa teks */
+.mcal.cm-s{padding:8px 6px 6px}
+.cbars{display:grid;grid-template-columns:repeat(7,1fr) 26px;gap:2px;align-items:stretch}
+.cd.cb{min-height:0;gap:6px;padding:6px 1px 5px;background:none;justify-content:flex-end}
+.cd.cb.has{background:none}
+.cd.cb.has:active{background:rgba(255,255,255,.05)}
+.cd.cb.sel{box-shadow:inset 0 0 0 1.5px var(--acc)}
+.cb-t{position:relative;display:block;width:100%;height:46px}
+.cb-t::before{content:"";position:absolute;left:22%;right:22%;top:50%;height:1px;background:var(--line2)}
+.cb-t i{position:absolute;left:50%;width:10px;margin-left:-5px;border-radius:99px;animation:cbg .6s var(--spring) both}
+.cb-t i.p{bottom:50%;background:var(--acc);transform-origin:50% 100%}
+.cb-t i.n{top:50%;background:var(--neg);transform-origin:50% 0}
+.cb-t i.z{top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;background:var(--mute)}
+.cb-t i.pl{top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;box-shadow:inset 0 0 0 1.5px var(--warn)}
+@keyframes cbg{from{transform:scaleY(0)}}
+.cbx{display:grid;place-items:center;border-radius:12px;color:var(--mute)}
+.cbx:active{background:rgba(255,255,255,.05)}
+@media (prefers-reduced-motion:reduce){.cb-t i{animation:none}.ms-bar i{transition:none}}
+/* grup hari: satu baris */
+.dh4{padding:13px 2px}
+.dh4 .dt{display:flex;align-items:center;gap:8px}
+.dh4 .dt b{display:inline;font-size:14px;color:var(--tx)}
+.dcn{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;font-size:11px;font-weight:700;color:var(--mute);background:rgba(255,255,255,.06);font-variant-numeric:tabular-nums}
+.dh4 .dtn{font-size:14px;font-weight:700}
+.dh4 .dtn.pos{color:var(--acc)}.dh4 .dtn.neg{color:#E7A4A0}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .msum2{background:rgba(22,28,25,.82);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px rgba(255,255,255,.06)}
+}
+/* putaran 2: ringkasan & batang dalam satu kartu, chip lebih kecil, baris transaksi tanpa pil */
+.mhero{background:var(--s2);border-radius:var(--r-xl);margin-bottom:10px;overflow:hidden}
+.mhero .msum2{background:none;box-shadow:none;margin:0;border-radius:0;padding:14px 16px 4px}
+.mhero .mcal{background:none;box-shadow:none;border-radius:0;margin:0}
+.mhero .mcal.cm-s{padding:4px 8px 8px}
+.mhero .mcal.cm-f{padding:10px 8px 8px}
+.mhero .mcal .cb-t{height:40px}
+.chips .chip{padding:7px 12px;font-size:12.5px}
+.tacc{font-style:normal;display:inline-flex;align-items:center;gap:5px;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:550;color:var(--mute)}
+.tacc::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--c)}
+.tchips .tarr{font-size:11px}
+.trec{font-style:normal;font-size:12px;color:var(--mute)}
+@supports ((-webkit-backdrop-filter:blur(1px)) or (backdrop-filter:blur(1px))){
+  .mhero{background:rgba(22,28,25,.82);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px rgba(255,255,255,.06)}
+}
