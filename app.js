@@ -2167,7 +2167,8 @@ function renderSheet(){
   const fresh=el.hidden||el.classList.contains('out');el.classList.remove('out');
   const inner={flow:flowHTML,pay:payHTML,gest:gestHTML,xfer:xferHTML,form:formHTML,txd:txdHTML,backup:backupHTML,accd:accdHTML,koleksi:koleksiHTML}[ui.sheet]();
   const st=fresh?0:($('#panel')||{}).scrollTop||0;
-  el.innerHTML=`<div class="ov" data-action="sheet-close"></div><div class="panel" id="panel" style="${fresh?'':'animation:none'}"><div class="handle" id="handle"><i></i></div>${inner}</div>${subPop()}`;
+  const wt=(ui.sheet==='accd'&&ui.accd&&!isCard(ui.accd.id)&&accById(ui.accd.id))?walCol(accById(ui.accd.id)):'';
+  el.innerHTML=`<div class="ov" data-action="sheet-close"></div><div class="panel${wt?' wtint':''}" id="panel" style="${fresh?'':'animation:none;'}${wt?'--c:'+wt:''}"><div class="handle" id="handle"><i></i></div>${inner}</div>${subPop()}`;
   el.hidden=false;document.body.classList.add('lock');$('#panel').scrollTop=st;
   if($('#dExpr'))updateAmt();
   if(ui.sheet==='form'&&ui.form.kind==='card')updateCardPrev();
