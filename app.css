@@ -1285,6 +1285,14 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
   /* menu tombol + */
   .fmi{-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 1px rgba(255,255,255,.12)}
   .fmi.neg{background:rgba(255,120,80,.2)}.fmi.pos{background:rgba(168,245,82,.2)}.fmi.blu{background:rgba(110,190,255,.2)}
+  /* kaca ringan tanpa blur (murah untuk daftar & grafik): tint tembus + garis tepi + kilau tipis */
+  .surface,.tile{background:rgba(22,28,25,.82);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px rgba(255,255,255,.06)}
+  .surface.dz-zone{box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px color-mix(in srgb,var(--neg) 30%,transparent)}
+  .chip:not(.on){background:rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.08)}
+  .chip.on{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 0 0 1px rgba(168,245,82,.2)}
+  .vtab{background:rgba(22,28,25,.7);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px rgba(255,255,255,.07)}
+  .bgroup:not(.rng)>button:not(.on):not(.fill):not(.tonal){background:rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px rgba(255,255,255,.07)}
+  .bgroup:not(.rng)>button.on,.bgroup:not(.rng)>button.fill{box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
   /* toast */
   .snack{background:rgba(28,34,31,.72);color:var(--tx);-webkit-backdrop-filter:blur(22px) saturate(1.6);backdrop-filter:blur(22px) saturate(1.6);
     box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px var(--glass-ln)}
