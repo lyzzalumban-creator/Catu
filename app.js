@@ -386,48 +386,105 @@ function normalize(s){
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function makeSample(){
   const R=mulberry32(7),pick=a=>a[Math.floor(R()*a.length)],rr=(a,b,st)=>Math.round((a+R()*(b-a))/st)*st;
+  const W=(id,g,name,note,open,color,extra)=>Object.assign({id,g,name,note,open,color},extra||{});
   const s={v:1,updated:0,settings:{privacy:false,layout:[],collapsed:{},anCollapsed:{},demo:true},
-    groups:[{id:'g1',name:'Kas & Bank'},{id:'g2',name:'E-Wallet'}],
-    wallets:[{id:'w1',g:'g1',name:'Tunai',note:'Dompet harian',open:600000},{id:'w2',g:'g1',name:'Bank Utama',note:'Gaji & tagihan rutin',open:4200000},{id:'w3',g:'g1',name:'Bank Digital',note:'Dana darurat',open:1500000},{id:'w4',g:'g2',name:'E-Wallet A',note:'Transport & jajan',open:200000},{id:'w5',g:'g2',name:'E-Wallet B',note:'QRIS & pulsa',open:120000}],
-    pools:[{id:'p1',name:'Plafon Bank Utama',limit:25000000}],
+    groups:[{id:'g1',name:'Kas & Bank',color:'#38BDF8'},{id:'g2',name:'E-Wallet',color:'#5BE49B'},{id:'g3',name:'Tabungan',color:'#FBBF24'},{id:'g4',name:'Investasi',color:'#A78BFA'},{id:'g5',name:'Usaha',color:'#FB923C'}],
+    purs:[{id:'pu1',name:'Darurat',color:'#F87171'},{id:'pu2',name:'Liburan',color:'#38BDF8'},{id:'pu3',name:'Pendidikan',color:'#FBBF24'},{id:'pu4',name:'Hari tua',color:'#A78BFA'}],
+    wallets:[
+      W('w1','g1','Tunai','Dompet harian',800000,'#D4D4D8'),
+      W('w2','g1','Bank Utama','Gaji & tagihan rutin',6000000,'#38BDF8'),
+      W('w3','g1','Bank Digital','Cashback & freelance',2000000,'#3B82F6'),
+      W('w6','g1','Bank Syariah','Zakat & sedekah',500000,'#2DD4BF'),
+      W('w4','g2','E-Wallet A','Transport & jajan',300000,'#5BE49B'),
+      W('w5','g2','E-Wallet B','QRIS & pulsa',150000,'#A8F552'),
+      W('w7','g2','E-Wallet C','Belanja online',250000,'#F472B6'),
+      W('w8','g3','Dana Darurat','6 bulan pengeluaran',8000000,'#FB7185',{tg:30000000,pu:'pu1',use:'xfer'}),
+      W('w9','g3','Tabungan Liburan','Jepang tahun depan',3500000,'#38BDF8',{tg:12000000,pu:'pu2',use:'xfer'}),
+      W('w10','g3','Tabungan Pendidikan','Kursus & sertifikasi',2000000,'#FBBF24',{tg:20000000,pu:'pu3',use:'xfer'}),
+      W('w12','g4','Reksa Dana','Indeks & pasar uang',12000000,'#A78BFA',{pu:'pu4',use:'xfer'}),
+      W('w13','g4','Saham','Blue chip',9000000,'#818CF8',{pu:'pu4',use:'xfer'}),
+      W('w14','g4','Emas','Tabungan emas',7500000,'#FDE047',{pu:'pu4',use:'xfer'}),
+      W('w15','g4','Kripto','Eksperimen kecil',2500000,'#E879F9',{use:'xfer'}),
+      W('w16','g5','Kas Usaha','Warung online',1500000,'#FB923C'),
+      W('w17','g5','Rekening Usaha','Hasil jualan',3000000,'#F87171')],
+    pools:[{id:'p1',name:'Plafon Bank Utama',limit:30000000}],
     cards:[
       {id:'k1',name:'Everyday',bank:'Bank Utama',last4:'4821',net:'visa',theme:'obsidian',pool:'p1',wallet:'w2',limit:0,cut:20,due:8,minPct:10,bg:null,contrast:40},
       {id:'k2',name:'Platinum',bank:'Bank Utama',last4:'7305',net:'mc',theme:'silver',pool:'p1',wallet:'w2',limit:0,cut:20,due:8,minPct:10,bg:null,contrast:40},
-      {id:'k3',name:'Gold Plus',bank:'Bank Kedua',last4:'1190',net:'visa',theme:'aurora',pool:'',wallet:'w3',limit:12000000,cut:12,due:28,minPct:10,bg:null,contrast:40}],
-    cats:defaultCats(),tx:[]};
+      {id:'k6',name:'Premier',bank:'Bank Utama',last4:'5560',net:'visa',theme:'rose',pool:'p1',wallet:'w2',limit:0,cut:20,due:8,minPct:10,bg:null,contrast:40},
+      {id:'k3',name:'Gold Plus',bank:'Bank Kedua',last4:'1190',net:'visa',theme:'aurora',pool:'',wallet:'w3',limit:12000000,cut:12,due:28,minPct:10,bg:null,contrast:40},
+      {id:'k4',name:'Travel Miles',bank:'Bank Kedua',last4:'2204',net:'mc',theme:'midnight',pool:'',wallet:'w2',limit:30000000,cut:5,due:25,minPct:10,bg:null,contrast:40},
+      {id:'k5',name:'Cashback',bank:'Bank Digital',last4:'9317',net:'visa',theme:'emerald',pool:'',wallet:'w3',limit:8000000,cut:17,due:6,minPct:10,bg:null,contrast:40}],
+    cats:defaultCats(),tx:[],recur:[]};
+  const bud={c_makan:1800000,c_transport:600000,c_belanja:1200000,c_hiburan:400000,c_tagihan:900000,c_sehat:300000};
+  s.cats.forEach(c=>{if(bud[c.id])c.budget=bud[c.id]});
   S=s;normalize(s);
   const bal={},debt={};s.wallets.forEach(w=>bal[w.id]=w.open);s.cards.forEach(c=>debt[c.id]=0);
   const add=(d,t,acc,amt,cat,sub,note,extra)=>{const x=Object.assign({id:uid(),d,t,acc,amt,cat:cat||'',sub:sub||'',note:note||''},extra||{});effect(x,bal,debt,1);s.tx.push(x);return x};
-  const poolUsed=()=>debt.k1+debt.k2;
+  const xf=(d,from,to,amt,note,keep)=>{if(bal[from]-amt>=(keep||0))add(d,'xfer',from,amt,'','',note,{to})};
+  const poolUsed=()=>debt.k1+debt.k2+debt.k6;
   const spend=(d,amt,cat,sub,note)=>{
-    const cash=['w1','w4','w5','w3'].filter(id=>bal[id]>=amt);
+    const cash=['w1','w4','w5','w7','w3'].filter(id=>bal[id]>=amt);
     if(bal.w2-amt>3000000)cash.push('w2');
     let acc=null;
-    if(cash.length&&R()<.7)acc=pick(cash);
-    else{const cs=[];if(poolUsed()+amt<24000000)cs.push('k1','k2');if(debt.k3+amt<11000000)cs.push('k3');acc=cs.length?pick(cs):(cash[0]||null)}
+    if(cash.length&&R()<.62)acc=pick(cash);
+    else{const cs=[];if(poolUsed()+amt<28500000)cs.push('k1','k2','k6');if(debt.k3+amt<11000000)cs.push('k3');if(debt.k4+amt<28000000)cs.push('k4');if(debt.k5+amt<7000000)cs.push('k5');acc=cs.length?pick(cs):(cash[0]||null)}
     if(acc)add(d,'exp',acc,amt,cat,sub,note);
   };
   let d=addDays(today(),-179);
   for(let i=0;i<180;i++,d=addDays(d,1)){
-    const dt=parseD(d),dom=dt.getDate(),dow=dt.getDay();
-    if(dom===25)add(d,'inc','w2',9000000,'i_gaji','','Gaji bulanan');
-    if(dom===26&&bal.w2>1000000)add(d,'xfer','w2',500000,'','','Isi saldo',{to:'w4'});
-    if(dom===27&&bal.w2>1000000)add(d,'xfer','w2',400000,'','','Tarik tunai',{to:'w1'});
+    const dt=parseD(d),dom=dt.getDate(),dow=dt.getDay(),mon=dt.getMonth();
+    /* pemasukan */
+    if(dom===25)add(d,'inc','w2',10500000,'i_gaji','','Gaji bulanan');
+    if(dom===15&&mon%6===0)add(d,'inc','w2',5000000,'i_bonus','','Bonus semester');
+    if(dom===20)[['w12',90000,260000],['w13',60000,380000],['w14',30000,160000],['w15',20000,330000]].forEach(p=>add(d,'inc',p[0],rr(p[1],p[2],5000),'i_invest','','Imbal hasil'));
+    /* isi saldo & tabungan & investasi */
+    if(dom===26){xf(d,'w2','w4',600000,'Isi saldo',1000000);xf(d,'w2','w7',400000,'Isi saldo belanja',1000000);xf(d,'w2','w5',200000,'Isi saldo QRIS',1000000)}
+    if(dom===27){xf(d,'w2','w1',500000,'Tarik tunai',1000000);xf(d,'w2','w6',300000,'Zakat & sedekah',1000000)}
+    if(dom===26){xf(d,'w2','w8',1000000,'Dana darurat',1000000);xf(d,'w2','w9',500000,'Tabungan liburan',1000000);xf(d,'w2','w10',400000,'Tabungan pendidikan',1000000)}
+    if(dom===27){xf(d,'w2','w12',1000000,'Beli reksa dana',1000000);xf(d,'w2','w13',500000,'Beli saham',1000000)}
+    if(dom===10){xf(d,'w2','w14',300000,'Beli emas',1000000);xf(d,'w2','w15',200000,'Top up kripto',1000000)}
+    /* tagihan rutin */
     if(dom===1)add(d,'exp','w2',1500000,'c_rumah','Sewa','Sewa kamar');
     if(dom===3&&bal.w2>800000)add(d,'exp','w2',350000,'c_tagihan','Internet','');
+    if(dom===20&&bal.w2>800000)add(d,'exp','w2',rr(380000,520000,10000),'c_tagihan','Listrik','');
+    if(dom===18&&bal.w2>1000000)add(d,'exp','w2',600000,'c_didik','','Kursus daring');
+    if(dom===28&&bal.w6>=250000)add(d,'exp','w6',250000,'c_sosial','Donasi','Sedekah bulanan');
     if(dom===15)spend(d,100000,'c_tagihan','Pulsa','');
-    if(dom===12)add(d,'exp','k1',54000,'c_hiburan','Streaming','Langganan');
-    if(dom===5)[['k1','w2'],['k2','w2'],['k3','w3']].forEach(p=>{const amt=debt[p[0]];if(amt>0){const from=[p[1],'w2'].find(x=>bal[x]>=amt);if(from)add(d,'pay',from,amt,'','','Bayar tagihan',{to:p[0]})}});
-    if(i===105){gestunTx(d,'k3','w3',3000000,90000,'A','Dana darurat').forEach(x=>{effect(x,bal,debt,1);s.tx.push(x)})}
+    if(dom===12){add(d,'exp','k1',54000,'c_hiburan','Streaming','Langganan');add(d,'exp','k5',89000,'c_hiburan','Streaming','Musik & video')}
+    /* bayar tagihan kartu */
+    {const due=[['k1','w2',5],['k2','w2',5],['k6','w2',5],['k5','w3',5],['k4','w2',26],['k3','w3',27]];
+     due.forEach(p=>{if(dom!==p[2])return;const amt=debt[p[0]];if(amt>0){const from=[p[1],'w2','w3'].find(x=>bal[x]>=amt+500000);if(from)add(d,'pay',from,amt,'','','Bayar tagihan',{to:p[0]})}})}
+    /* gestun */
+    if(i===105)gestunTx(d,'k3','w3',3000000,90000,'A','Dana darurat').forEach(x=>{effect(x,bal,debt,1);s.tx.push(x)});
+    if(i===62)gestunTx(d,'k4','w2',2000000,60000,'A','Modal usaha').forEach(x=>{effect(x,bal,debt,1);s.tx.push(x)});
+    /* usaha */
+    if(R()<.27)add(d,'inc','w17',rr(100000,600000,10000),'i_usaha','',pick(['Penjualan online','Pesanan reseller','Pesanan grosir']));
+    if(R()<.12){const amt=rr(100000,450000,10000);if(bal.w16>=amt)add(d,'exp','w16',amt,'c_belanja','Online',pick(['Bahan usaha','Kemasan','Ongkos kirim']))}
+    if(dom===19){xf(d,'w17','w16',500000,'Modal usaha',300000);xf(d,'w17','w2',1500000,'Bagi hasil',800000)}
+    /* harian */
     if(R()<.92)spend(d,rr(15000,70000,500),'c_makan',pick(['Sarapan','Makan siang','Makan malam','Kopi & jajan']),'');
     if(R()<.35)spend(d,rr(12000,45000,500),'c_makan','Kopi & jajan','');
     if(dow===0||dow===3)spend(d,rr(40000,90000,5000),'c_transport','Bensin','');
+    if(R()<.3)spend(d,rr(10000,40000,1000),'c_transport',pick(['Ojek online','Parkir']),'');
     if(R()<.22)spend(d,rr(60000,380000,5000),'c_belanja',pick(['Kebutuhan harian','Pakaian','Online']),'');
     if(R()<.06)spend(d,rr(25000,200000,5000),'c_sehat',pick(['Obat','Dokter']),'');
     if(R()<.07)spend(d,rr(50000,180000,5000),'c_hiburan',pick(['Game','Nonton']),'');
-    if(R()<.03){const c=pick(['k1','k2']),big=rr(1200000,2800000,50000);if(poolUsed()+big<24000000)add(d,'exp',c,big,'c_belanja','Online','Elektronik')}
+    if(R()<.04)spend(d,rr(50000,250000,5000),'c_sosial',pick(['Hadiah','Donasi']),'');
+    if(R()<.03){const c=pick(['k1','k2','k6','k4']),big=rr(1200000,2800000,50000);if(c==='k4'?debt.k4+big<28000000:poolUsed()+big<28500000)add(d,'exp',c,big,'c_belanja','Online','Elektronik')}
     if(R()<.05)add(d,'inc',pick(['w3','w4']),rr(250000,900000,10000),'i_usaha','','Proyek sampingan');
   }
+  /* tagihan berulang: dianggap sudah tercatat sampai bulan ini/lalu */
+  {const tn=parseD(today()),ym=x=>x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0');
+   const lastFor=day=>tn.getDate()>=day?ym(tn):ym(new Date(tn.getFullYear(),tn.getMonth()-1,1));
+   s.recur=[
+     {id:uid(),t:'inc',acc:'w2',cat:'i_gaji',sub:'',amt:10500000,day:25,note:'Gaji bulanan'},
+     {id:uid(),t:'exp',acc:'w2',cat:'c_rumah',sub:'Sewa',amt:1500000,day:1,note:'Sewa kamar'},
+     {id:uid(),t:'exp',acc:'w2',cat:'c_tagihan',sub:'Internet',amt:350000,day:3,note:'Internet rumah'},
+     {id:uid(),t:'exp',acc:'w2',cat:'c_didik',sub:'',amt:600000,day:18,note:'Kursus daring'},
+     {id:uid(),t:'exp',acc:'k1',cat:'c_hiburan',sub:'Streaming',amt:54000,day:12,note:'Langganan'},
+     {id:uid(),t:'exp',acc:'k5',cat:'c_hiburan',sub:'Streaming',amt:89000,day:12,note:'Musik & video'}
+   ].map(r=>Object.assign(r,{last:lastFor(r.day)}));}
   return s;
 }
 
@@ -2106,7 +2163,7 @@ VIEWS.set=function(){
      <div class="setrow"><div><b>Ekspor CSV</b><small>Semua transaksi untuk Excel atau Sheets</small></div><button class="pbtn" data-action="csv">Ekspor</button></div>
      <div class="setrow"><div><b>Ekspor JSON</b><small>Salin seluruh data sebagai cadangan</small></div><button class="pbtn" data-action="bk-export">Ekspor</button></div>
      <div class="setrow"><div><b>Impor JSON</b><small>Ganti data dengan cadangan</small></div><button class="pbtn" data-action="bk-import">Impor</button></div>
-     <div class="setrow"><div><b>Muat data contoh</b><small>180 hari transaksi contoh</small></div><button class="pbtn" data-action="sample">Muat</button></div>
+     <div class="setrow"><div><b>Muat data contoh</b><small>180 hari transaksi, 16 dompet, 6 kartu</small></div><button class="pbtn" data-action="sample">Muat</button></div>
    </div>`,
     hapus:`<div class="surface dz-zone">
      <div class="setrow"><div><b>${S.settings.demo?'Hapus data contoh':'Hapus semua data'}</b><small>${S.settings.demo?'Mulai dari kosong dengan catatanmu sendiri':'Kosongkan dompet, kartu, dan transaksi'}</small></div><button class="pbtn dz" data-action="wipe">Hapus</button></div>
