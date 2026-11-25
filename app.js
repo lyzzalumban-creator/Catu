@@ -1557,7 +1557,7 @@ function mutFilter(t){const f=ui.mutF;if(f==='all')return true;if(f==='exp')retu
 /* ---- halaman Transaksi: tab bulan, ringkasan bulan, kelompok per hari ---- */
 const MONF=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const accCol=id=>{const a=accById(id);return a?(a.color||PAL[hsh(a.id)%PAL.length][1]):'#8a8f98'};
-const accChip=id=>{const n=accName(id);return n?`<i class="tchip" style="--c:${accCol(id)}">${esc(n)}</i>`:''};
+const accChip=id=>{const n=accName(id);return n?`<i class="tacc" style="--c:${accCol(id)}">${esc(n)}</i>`:''};
 function mutMonth(){return ui.mutM||today().slice(0,7)}
 function mutMatch(t,q){
   if(!q)return true;const cat=S.cats.find(c=>c.id===t.cat);
@@ -1568,8 +1568,8 @@ function txRow2(t){
   const cat=S.cats.find(c=>c.id===t.cat);let ico,title,chips='',amt='',cls='';
   const catTxt=cat?cat.name+(t.sub?' · '+t.sub:''):'Tanpa kategori';
   switch(t.t){
-    case'exp':case'inc':ico=txIcon(cat,t,42);title=t.note||catTxt;
-      chips=accChip(t.acc)+(t.note?`<i class="tchip cat">${esc(catTxt)}</i>`:'')+(t.rec?'<i class="tchip cat">↻ Berulang</i>':'');
+    case'exp':case'inc':ico=txIcon(cat,t,42);title=t.note||t.sub||(cat?cat.name:'Tanpa kategori');
+      chips=accChip(t.acc)+(t.rec?'<i class="trec" aria-label="Berulang">↻</i>':'');
       cls=t.t==='inc'?'pos':'neg';amt=(t.t==='inc'?'+':'−')+money(t.amt);break;
     case'pay':case'xfer':
       title=t.t==='pay'?'Bayar kartu':'Transfer';chips=accChip(t.acc)+'<span class="tarr">→</span>'+accChip(t.to);
@@ -1628,7 +1628,7 @@ function mutBody(){
         const c=S.cats.find(y=>y.id===x.r.cat);return`<div class="plr"><i class="pld"></i><span class="lm"><b>${esc((c?c.name:'Tanpa kategori')+(x.r.note?' · '+x.r.note:''))}</b><small>Rencana berulang · ${esc(accName(x.r.acc))}</small></span><span class="lr"><b class="${x.r.t==='inc'?'pos':'neg'}">${x.r.t==='inc'?'+':'−'}${money(x.amt)}</b></span></div>`};
       const rows=(pl.length?`<div class="pl-h">Rencana</div>${pl.map(prow).join('')}`:'')+(o?`${pl.length?'<div class="pl-h">Transaksi</div>':''}${lall.filter(t=>t.d===ui.mutSel).map(txRow2).join('')}`:'');
       const sub=[o?o.n+' transaksi':'',pl.length?pl.length+' rencana':''].filter(Boolean).join(' · ');
-      panel=`<div class="cpanel"><div class="cph"><span class="dt"><b>${esc(relDate(ui.mutSel))}</b><small>${sub}</small></span>${o?`<span class="dtn ${o.net<0?'neg':o.net>0?'pos':''}">${o.net<0?'−':o.net>0?'+':''}${money(Math.abs(o.net))}</span>`:''}<button class="ibtn sm" data-action="mutcalx" aria-label="Tutup riwayat tanggal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>${rows}</div>`}}
+      panel=`<div class="cpanel"><div class="cph"><span class="dt"><b>${esc(relDate(ui.mutSel))}</b></span>${o?`<span class="dtn ${o.net<0?'neg':o.net>0?'pos':''}">${o.net<0?'−':o.net>0?'+':''}${money(Math.abs(o.net))}</span>`:''}<button class="ibtn sm" data-action="mutcalx" aria-label="Tutup riwayat tanggal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>${rows}</div>`}}
   /* hari ini terbuka, hari sebelumnya tertutup; saat mencari/memfilter semua terbuka. Ringkasan hari tetap terlihat di header. */
   const td=today();
   let h='',last='',buf='',net=0,cnt=0,di=0,dout=0;
@@ -1638,7 +1638,7 @@ function mutBody(){
     h+=`<div class="md ${open?'open':''}" data-d="${last}"><button class="dh3 dh4" data-action="mutday" data-arg="${last}" aria-expanded="${open}" aria-label="${esc(relDate(last))}, ${cnt} transaksi, selisih ${net<0?'minus ':''}${money(Math.abs(net))}"><span class="dt"><b>${dl}</b><span class="dcn">${cnt}</span></span><span class="dtn ${net<0?'neg':net>0?'pos':''}">${S.settings.privacy?'•••':net?cmp(net):'0'}</span></button><div class="md-b"><div class="md-in">${buf}</div></div></div>`;buf='';net=0;cnt=0;di=0;dout=0};
   l.forEach(t=>{if(t.d!==last){flush();last=t.d}buf+=txRow2(t);cnt++;if(t.t==='exp'||t.t==='gfee'){net-=t.amt;dout+=t.amt}else if(t.t==='inc'){net+=t.amt;di+=t.amt}});flush();
   const empty=`<p class="empty">${q?'Tidak ada transaksi yang cocok.':'Belum ada transaksi di '+MONF[+m.slice(5)-1]+'.'}</p>`;
-  return sum+(calOn()?cal+`<div class="cpw ${panel?'open':''}"><div class="cpi">${panel}</div></div>`:'')+`<div class="surface">${h||empty}</div>`;
+  return(calOn()?`<div class="mhero">${sum}${cal}</div><div class="cpw ${panel?'open':''}"><div class="cpi">${panel}</div></div>`:sum)+`<div class="surface">${h||empty}</div>`;
 }
 const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
 /* perbarui panel tanggal dan penanda pilihan tanpa menggambar ulang kalender: panel membuka/menutup dengan gerak pegas */
