@@ -2167,7 +2167,8 @@ function renderSheet(){
   const fresh=el.hidden||el.classList.contains('out');el.classList.remove('out');
   const inner={flow:flowHTML,pay:payHTML,gest:gestHTML,xfer:xferHTML,form:formHTML,txd:txdHTML,backup:backupHTML,accd:accdHTML,koleksi:koleksiHTML}[ui.sheet]();
   const st=fresh?0:($('#panel')||{}).scrollTop||0;
-  el.innerHTML=`<div class="ov" data-action="sheet-close"></div><div class="panel" id="panel" style="${fresh?'':'animation:none'}"><div class="handle" id="handle"><i></i></div>${inner}</div>${subPop()}`;
+  const wt=(ui.sheet==='accd'&&ui.accd&&!isCard(ui.accd.id)&&accById(ui.accd.id))?walCol(accById(ui.accd.id)):'';
+  el.innerHTML=`<div class="ov" data-action="sheet-close"></div><div class="panel${wt?' wtint':''}" id="panel" style="${fresh?'':'animation:none;'}${wt?'--c:'+wt:''}"><div class="handle" id="handle"><i></i></div>${inner}</div>${subPop()}`;
   el.hidden=false;document.body.classList.add('lock');$('#panel').scrollTop=st;
   if($('#dExpr'))updateAmt();
   if(ui.sheet==='form'&&ui.form.kind==='card')updateCardPrev();
@@ -2436,7 +2437,7 @@ function accdHTML(){
     acts=`<div class="bgroup" style="margin-bottom:6px"><button class="fill" data-action="swipe" data-id="${id}">+ Gesek</button><button class="tonal" data-action="open-pay" data-id="${id}">Bayar</button>${gestOn()?`<button class="tonal" data-action="open-gest" data-id="${id}">Gestun</button>`:''}<button class="tonal" data-action="fedit" data-arg="card" data-id="${id}">Ubah</button></div>${limitBlock(a)}`;
   }else{
     const g=S.groups.find(x=>x.id===a.g);
-    head=`<div class="accd-h" style="--c:${walCol(a)}">${colIcon(esc((a.name||'?').charAt(0).toUpperCase()),walCol(a),'squircle',52)}<div class="accd-t"><b>${esc(a.name)}</b><small>${esc([g?g.name:'',a.note].filter(Boolean).join(' · '))}</small></div><div class="big num" ${mv('s:ab:'+id,D.bal[id]||0)}>${money(D.bal[id]||0)}</div>${goalBar(a)}</div>`;
+    head=`<div class="accd-h" style="--c:${walCol(a)}"><div class="accd-t"><b>${esc(a.name)}</b><small>${esc([g?g.name:'',a.note].filter(Boolean).join(' · '))}</small></div><div class="big num" ${mv('s:ab:'+id,D.bal[id]||0)}>${money(D.bal[id]||0)}</div>${goalBar(a)}</div>`;
     acts=`<div class="bgroup"><button class="fill" data-action="open-acc" data-id="${id}">${canExp(a)?'+ Catat':'+ Pemasukan'}</button>${canXfer(a)?`<button class="tonal" data-action="open-xfer" data-id="${id}">Transfer</button>`:''}<button class="tonal" data-action="fedit" data-arg="wallet" data-id="${id}">Ubah</button></div>`;
   }
   return`<div class="sh-h"><h3>${card?'Detail kartu':'Detail dompet'}</h3>${closeBtn}</div>${head}${acts}<div class="pk-g" style="margin-top:20px">Riwayat</div>${txList(list,id)}`;
