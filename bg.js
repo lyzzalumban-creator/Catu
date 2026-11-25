@@ -70,13 +70,7 @@
     if (!on) return;
     var goo = bar.querySelector('.nv-goo');
     if (!goo) {
-      if (!document.getElementById('gooF')) {
-        var s = document.createElementNS(NS, 'svg');
-        s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.setAttribute('aria-hidden', 'true');
-        s.style.cssText = 'position:absolute;pointer-events:none';
-        s.innerHTML = '<defs><filter id="gooF" x="-20%" y="-60%" width="140%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="6" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"/></filter></defs>';
-        document.body.appendChild(s);
-      }
+      window.ensureGoo();
       goo = document.createElement('div'); goo.className = 'nv-goo'; goo.setAttribute('aria-hidden', 'true');
       goo.innerHTML = '<i></i><i></i>';
       bar.insertBefore(goo, bar.firstChild); bar.classList.add('goo');
@@ -100,4 +94,59 @@
   };
   addEventListener('resize', function () { window.navBlob(true); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { window.navBlob(true); });
+})();
+
+/* Filter goo bersama + tetesan menu "+" + garis bulan bergaya amuba */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  window.ensureGoo = function () {
+    if (document.getElementById('gooF')) return;
+    var f = function (id, sd, a, b) {
+      return '<filter id="' + id + '" x="-30%" y="-60%" width="160%" height="220%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="' + sd + '" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 ' + a + ' ' + b + '"/></filter>';
+    };
+    var s = document.createElementNS(NS, 'svg');
+    s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.setAttribute('aria-hidden', 'true');
+    s.style.cssText = 'position:absolute;pointer-events:none';
+    s.innerHTML = '<defs>' + f('gooF', 6, 20, -9) + f('gooS', 3, 22, -10) + '</defs>';
+    document.body.appendChild(s);
+  };
+
+  /* menu "+": tiga tetesan lepas dari tombol lalu menjadi pilihan */
+  var dock = document.getElementById('dock'), dockIn = dock && dock.querySelector('.dock-in');
+  if (dockIn && !dockIn.querySelector('.fab-goo')) {
+    window.ensureGoo();
+    var g = document.createElement('div'); g.className = 'fab-goo'; g.setAttribute('aria-hidden', 'true');
+    g.innerHTML = '<i class="b0"></i><i class="d" style="--k:2"></i><i class="d" style="--k:1"></i><i class="d" style="--k:0"></i>';
+    dockIn.insertBefore(g, dockIn.querySelector('#fabm'));
+    dock.classList.add('goo-fab');
+    var tm = 0;
+    new MutationObserver(function () {
+      g.classList.add('go'); clearTimeout(tm);
+      tm = setTimeout(function () { g.classList.remove('go'); }, 760);
+    }).observe(dock, { attributes: true, attributeFilter: ['class'], attributeOldValue: false });
+  }
+
+  /* garis bulan: dua gumpalan tipis menyusul ke bulan terpilih */
+  var lastX = null;
+  window.mtabBlob = function () {
+    var tb = document.getElementById('mtabs'); if (!tb) { lastX = null; return; }
+    var on = tb.querySelector('.mm.on'); if (!on) return;
+    window.ensureGoo();
+    tb.classList.add('goo');
+    var g = document.createElement('div'); g.className = 'mm-goo'; g.setAttribute('aria-hidden', 'true');
+    g.style.width = tb.scrollWidth + 'px';
+    g.innerHTML = '<i></i><i></i>';
+    tb.appendChild(g);
+    var w = on.offsetWidth * .7, x = on.offsetLeft + on.offsetWidth * .15;
+    var from = lastX == null ? x : lastX, dir = x >= from ? 1 : -1;
+    lastX = x;
+    var bs = g.children;
+    for (var k = 0; k < 2; k++) { bs[k].style.width = w + 'px'; bs[k].style.transition = 'none'; bs[k].style.transform = 'translateX(' + from + 'px)'; }
+    void g.offsetWidth;
+    for (var j = 0; j < 2; j++) {
+      var lead = (j === 0) === (dir > 0) ? 0 : 1;
+      bs[j].style.transition = 'transform ' + (lead ? .6 : .36) + 's cubic-bezier(.34,1.18,.5,1) ' + (lead ? .05 : 0) + 's';
+      bs[j].style.transform = 'translateX(' + x + 'px)';
+    }
+  };
 })();

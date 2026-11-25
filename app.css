@@ -1313,3 +1313,20 @@ textarea{font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;color:var(--tx);bac
 .nv{z-index:1}
 .tbar.goo .nv.on{background:none!important;box-shadow:none!important}
 @media (prefers-reduced-motion:reduce){.nv-goo i{transition:none!important}}
+
+/* menu "+" amuba: tetesan lepas dari tombol lalu jadi pilihan */
+.fab-goo{position:absolute;right:0;bottom:calc(100% + 12px);width:80px;height:230px;pointer-events:none;filter:url(#gooF);opacity:0;z-index:0;transition:opacity .22s ease}
+.fab-goo.go{opacity:1;transition:none}
+.fab-goo i{position:absolute;right:0;bottom:0;border-radius:50%;background:#A8F552;transition:transform .55s cubic-bezier(.34,1.3,.5,1)}
+.fab-goo .b0{width:58px;height:58px;border-radius:20px}
+.fab-goo .d{width:50px;height:50px;border-radius:18px;transition-delay:calc(var(--k)*30ms)}
+.dock.fab-open .fab-goo .d{transform:translateY(calc(var(--k)*-66px));transition-delay:calc((2 - var(--k))*35ms)}
+.dock.goo-fab.fab-open .fm{transition-delay:calc((2 - var(--d))*45ms + 260ms)}
+.dock.goo-fab:not(.fab-open) .fm{transition-delay:0ms}
+.fabm{z-index:1}
+/* garis bulan amuba */
+.mtabs{position:relative}
+.mm-goo{position:absolute;left:0;bottom:0;height:12px;pointer-events:none;filter:url(#gooS);z-index:1}
+.mm-goo i{position:absolute;left:0;bottom:0;height:5px;border-radius:99px;background:var(--acc);will-change:transform}
+.mtabs.goo .mm::after{display:none}
+@media (prefers-reduced-motion:reduce){.fab-goo{display:none}.mm-goo i{transition:none!important}}

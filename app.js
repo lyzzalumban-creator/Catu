@@ -803,7 +803,7 @@ function render(){
   $('#view').innerHTML=VIEWS[ui.view]();
   document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav===ui.view));if(window.navBlob)navBlob();
   {const dk=$('#dock');if(dk){const hide=!(ui.view==='home'||ui.view==='mut');dk.classList.toggle('nofab',hide);if(hide)dk.classList.remove('fab-open')}}
-  if(ui.view==='mut'){const tb=$('#mtabs'),a=tb&&tb.querySelector('.mm.on');if(a)tb.scrollLeft=a.offsetLeft-tb.clientWidth/2+a.offsetWidth/2}
+  if(ui.view==='mut'){const tb=$('#mtabs'),a=tb&&tb.querySelector('.mm.on');if(a)tb.scrollLeft=a.offsetLeft-tb.clientWidth/2+a.offsetWidth/2}if(ui.view==='mut'&&window.mtabBlob)mtabBlob();
   $('#eyeBtn').innerHTML=S.settings.privacy?IC.eyeOff:IC.eye;
   if(ui.view==='home')drawChart();
   if(ui.view==='an')drawAn();
