@@ -1,7 +1,7 @@
 /* penniq: service worker sederhana (mode offline). Naikkan VERSI bila daftar berkas berubah.
    Berkas milik penniq diambil dari jaringan dulu (supaya versi baru cepat muncul), cadangannya cache.
    Login Google dan API Drive tidak pernah disentuh. */
-const VERSI = 'penniq-v14';
+const VERSI = 'penniq-v15';
 const INTI = ['./', 'index.html', 'app.css', 'app.js', 'bg.js', 'manifest.json',
   'assets/logo/penniq-ikon-192.png', 'assets/logo/penniq-ikon-512.png', 'assets/logo/penniq-maskable-512.png'];
 const FONT = ['fonts.googleapis.com', 'fonts.gstatic.com'];
